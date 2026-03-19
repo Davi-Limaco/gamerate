@@ -37,7 +37,7 @@ GameRate allows players to discover, evaluate and discuss games in a centralized
 
 ## Getting Started
 
-### Prerequisites
+### Pre requisites
 - Node.js 18+
 - MySQL 8.0+
 
