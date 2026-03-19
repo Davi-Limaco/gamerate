@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Catálogo</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .cat-layout{display:grid;grid-template-columns:240px 1fr;gap:32px;padding:40px 48px;position:relative;z-index:1;}
+    .filters-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;height:fit-content;position:sticky;top:84px;}
+    .filter-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:20px;color:var(--accent);}
+    .filter-group{margin-bottom:18px;}
+    .filter-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+    .filter-group select,
+    .filter-group input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;}
+    .filter-group select:focus,
+    .filter-group input:focus{border-color:var(--accent);}
+    .filter-group select option{background:var(--surface);}
+    .filter-reset{width:100%;margin-top:8px;}
+
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;}
+    .cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+    .cat-header h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;}
+    .cat-header .total{font-size:13px;color:var(--muted);}
+    .pagination{display:flex;gap:8px;justify-content:center;margin-top:40px;}
+    .page-btn{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+    .page-btn:hover,.page-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+    .page-btn:disabled{opacity:.3;cursor:default;}
+
+    @media(max-width:900px){
+      .cat-layout{grid-template-columns:1fr;padding:24px 16px;}
+      .filters-panel{position:static;}
+    }
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/login.html"    class="guest-only">Login</a>
+    <a href="/pages/cadastro.html" class="guest-only btn-accent">Registrar</a>
+    <a href="/pages/perfil.html"   class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="cat-layout">
+    <aside class="filters-panel">
+      <div class="filter-title">FILTROS</div>
+      <div class="filter-group">
+        <label>Gênero</label>
+        <select id="fGenero"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Plataforma</label>
+        <select id="fPlat"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Ordenar por</label>
+        <select id="fOrdem">
+          <option value="nota_media">Melhor avaliados</option>
+          <option value="total_avaliacoes">Mais avaliados</option>
+          <option value="data_lancamento">Mais recentes</option>
+          <option value="nome_jogo">Nome A-Z</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Direção</label>
+        <select id="fDir">
+          <option value="DESC">Decrescente</option>
+          <option value="ASC">Crescente</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost filter-reset btn-sm" onclick="resetFiltros()">Limpar filtros</button>
+    </aside>
+
+    <main>
+      <div class="cat-header">
+        <h2>CATÁLOGO <em style="color:var(--accent)">DE JOGOS</em></h2>
+        <span class="total" id="totalLabel">...</span>
+      </div>
+      <div class="games-grid" id="gamesGrid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </main>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-links"><a href="/pages/contato.html">Contato</a></div>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+
+const params  = new URLSearchParams(location.search);
+let page      = 1;
+const LIMIT   = 20;
+
+if (params.get('search')) document.getElementById('searchInput').value = params.get('search');
+if (params.get('genero')) { /* set after options load */ }
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') { page = 1; loadJogos(); }
+});
+['fGenero','fPlat','fOrdem','fDir'].forEach(id =>
+  document.getElementById(id).addEventListener('change', () => { page = 1; loadJogos(); })
+);
+
+function resetFiltros() {
+  document.getElementById('fGenero').value = '';
+  document.getElementById('fPlat').value   = '';
+  document.getElementById('fOrdem').value  = 'nota_media';
+  document.getElementById('fDir').value    = 'DESC';
+  document.getElementById('searchInput').value = '';
+  page = 1; loadJogos();
+}
+
+async function loadFiltros() {
+  try {
+    const [gs, ps] = await Promise.all([api.get('/generos'), api.get('/plataformas')]);
+    const sel = document.getElementById('fGenero');
+    gs.forEach(g => sel.innerHTML += `<option value="${g.nome_genero}">${g.nome_genero} (${g.total_jogos})</option>`);
+    if (params.get('genero')) sel.value = params.get('genero');
+
+    const selP = document.getElementById('fPlat');
+    ps.forEach(p => selP.innerHTML += `<option value="${p.nome_plataforma}">${p.nome_plataforma}</option>`);
+  } catch {}
+}
+
+async function loadJogos() {
+  const grid = document.getElementById('gamesGrid');
+  grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>';
+
+  const q = new URLSearchParams({
+    search:    document.getElementById('searchInput').value,
+    genero:    document.getElementById('fGenero').value,
+    plataforma:document.getElementById('fPlat').value,
+    ordem:     document.getElementById('fOrdem').value,
+    dir:       document.getElementById('fDir').value,
+    page, limit: LIMIT
+  });
+
+  try {
+    const data = await api.get(`/jogos?${q}`);
+    document.getElementById('totalLabel').textContent = `${data.total} jogos encontrados`;
+
+    if (!data.jogos.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎮</div><p>Nenhum jogo encontrado.</p></div>';
+    } else {
+      grid.innerHTML = data.jogos.map(g => {
+        const nota = g.nota_media ? parseFloat(g.nota_media).toFixed(1) : '—';
+        const img  = g.capa
+          ? `<img src="${g.capa}" alt="${g.nome_jogo}" loading="lazy" onerror="this.style.display='none'">`
+          : '';
+        return `
+          <div class="game-card" onclick="location.href='/pages/jogo.html?id=${g.id_jogo}'">
+            <div class="card-img-wrap">${img}
+              <div class="card-overlay"><div class="card-play">▶</div></div>
+            </div>
+            <div class="card-title">${g.nome_jogo}</div>
+            <div class="card-meta">
+              <div class="card-rating">★ ${nota}</div>
+              <div class="card-genre">${g.total_avaliacoes||0} aval.</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    renderPagination(data.total);
+  } catch (e) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Erro: ${e.message}</p></div>`;
+  }
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / LIMIT);
+  const pag = document.getElementById('pagination');
+  if (pages <= 1) { pag.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i-page) <= 2)
+      html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if (Math.abs(i-page) === 3)
+      html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`;
+  pag.innerHTML = html;
+}
+
+function goPage(p) { page = p; loadJogos(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+loadFiltros();
+loadJogos();
+</script>
+</body>
+</html>

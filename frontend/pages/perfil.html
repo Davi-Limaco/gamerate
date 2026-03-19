@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Meu Perfil</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .perfil-wrap{max-width:900px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+    .perfil-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;gap:28px;align-items:center;margin-bottom:32px;flex-wrap:wrap;}
+    .perfil-avatar{width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--bg);flex-shrink:0;}
+    .perfil-info{flex:1;}
+    .perfil-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:4px;}
+    .perfil-email{font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .perfil-badge{display:inline-block;background:rgba(232,255,71,.1);border:1px solid rgba(232,255,71,.25);border-radius:30px;padding:3px 12px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;}
+    .perfil-stats{display:flex;gap:24px;flex-wrap:wrap;}
+    .perfil-stat{text-align:center;}
+    .perfil-stat-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);}
+    .perfil-stat-label{font-size:11px;color:var(--muted);}
+    .tab-bar{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0;}
+    .tab{padding:10px 20px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+    .tab.active{color:var(--accent);border-color:var(--accent);}
+    .hist-list{display:flex;flex-direction:column;gap:14px;}
+    .hist-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer;transition:border-color .2s;}
+    .hist-card:hover{border-color:rgba(232,255,71,.2);}
+    .hist-capa{width:44px;height:58px;border-radius:6px;object-fit:cover;background:var(--surface2);}
+    .hist-info{flex:1;min-width:0;}
+    .hist-game{font-size:14px;font-weight:600;}
+    .hist-titulo{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .hist-nota{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);}
+    .edit-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;}
+    .edit-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:24px;}
+    .notif-list{display:flex;flex-direction:column;gap:10px;}
+    .notif-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+    .notif-item.unread{border-color:rgba(232,255,71,.2);}
+    .notif-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+    .notif-msg{font-size:13px;color:var(--muted);}
+    .notif-date{font-size:11px;color:var(--muted);margin-top:6px;}
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/perfil.html" class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+    <a href="/pages/login.html" class="guest-only">Login</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="perfil-wrap">
+    <div class="perfil-card" id="perfilCard">
+      <div class="empty-state" style="width:100%"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('historico', this)">Minhas Avaliações</div>
+      <div class="tab" onclick="switchTab('notificacoes', this)">Notificações</div>
+      <div class="tab" onclick="switchTab('editar', this)">Editar Perfil</div>
+    </div>
+
+    <div id="tab-historico">
+      <div class="hist-list" id="histList">
+        <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+      </div>
+    </div>
+
+    <div id="tab-notificacoes" style="display:none">
+      <div class="notif-list" id="notifList">
+        <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+      </div>
+    </div>
+
+    <div id="tab-editar" style="display:none">
+      <div class="edit-panel">
+        <div class="edit-title">EDITAR PERFIL</div>
+        <div class="form-group">
+          <label>Nome de usuário</label>
+          <input type="text" id="editNome" placeholder="Novo nome"/>
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="editEmail" placeholder="Novo e-mail"/>
+        </div>
+        <div class="form-group">
+          <label>Nova senha (deixe em branco para manter)</label>
+          <input type="password" id="editSenha" placeholder="••••••••"/>
+        </div>
+        <div id="editErr" class="form-error" style="margin-bottom:12px"></div>
+        <button class="btn btn-accent" id="btnSalvar">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+if (!isLoggedIn()) window.location.href = '/pages/login.html?next=/pages/perfil.html';
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
+});
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['historico','notificacoes','editar'].forEach(t =>
+    document.getElementById(`tab-${t}`).style.display = t === name ? '' : 'none'
+  );
+  if (name === 'notificacoes') loadNotificacoes();
+}
+
+const COLORS = ['#e8ff47','#ff4f4f','#47c5ff','#ff9f47','#a78bfa','#34d399'];
+function colorFor(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return COLORS[h%COLORS.length]; }
+
+async function loadPerfil() {
+  try {
+    const u = await api.get('/usuarios/me');
+    const col = colorFor(u.nome_usuario);
+    document.getElementById('perfilCard').innerHTML = `
+      <div class="perfil-avatar">${u.nome_usuario.slice(0,2).toUpperCase()}</div>
+      <div class="perfil-info">
+        <div class="perfil-name">${u.nome_usuario}</div>
+        <div class="perfil-email">${u.email}</div>
+        <span class="perfil-badge">${u.nome_perfil}</span>
+      </div>
+      <div class="perfil-stats">
+        <div class="perfil-stat">
+          <div class="perfil-stat-num">${u.total_avaliacoes}</div>
+          <div class="perfil-stat-label">Avaliações</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-num">${u.total_seguidores}</div>
+          <div class="perfil-stat-label">Seguidores</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-num">${u.total_seguindo}</div>
+          <div class="perfil-stat-label">Seguindo</div>
+        </div>
+      </div>`;
+
+    document.getElementById('editNome').value  = u.nome_usuario;
+    document.getElementById('editEmail').value = u.email;
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function loadHistorico() {
+  try {
+    const rows = await api.get('/usuarios/me/avaliacoes');
+    if (!rows.length) {
+      document.getElementById('histList').innerHTML =
+        '<div class="empty-state"><div class="empty-icon">🎮</div><p>Você ainda não fez nenhuma avaliação.</p></div>';
+      return;
+    }
+    document.getElementById('histList').innerHTML = rows.map(a => `
+      <div class="hist-card" onclick="location.href='/pages/avaliacao.html?id=${a.id_avaliacao}'">
+        <img class="hist-capa" src="${a.capa||''}" alt="${a.nome_jogo}" onerror="this.style.background='var(--surface2)';this.src=''">
+        <div class="hist-info">
+          <div class="hist-game">${a.nome_jogo}</div>
+          <div class="hist-titulo">${a.titulo}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${fmtDate(a.data_publicacao)} · ♥ ${a.total_curtidas}</div>
+        </div>
+        <div class="hist-nota">${a.nota}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('histList').innerHTML = `<div class="empty-state"><p>Erro ao carregar.</p></div>`;
+  }
+}
+
+async function loadNotificacoes() {
+  try {
+    const rows = await api.get('/usuarios/me/notificacoes');
+    if (!rows.length) {
+      document.getElementById('notifList').innerHTML =
+        '<div class="empty-state"><div class="empty-icon">🔔</div><p>Nenhuma notificação.</p></div>';
+      return;
+    }
+    document.getElementById('notifList').innerHTML = rows.map(n => `
+      <div class="notif-item ${n.lido ? '' : 'unread'}">
+        <div class="notif-title">${n.titulo}</div>
+        <div class="notif-msg">${n.mensagem}</div>
+        <div class="notif-date">${n.data_envio ? fmtDate(n.data_envio) : ''}</div>
+      </div>`).join('');
+  } catch {}
+}
+
+document.getElementById('btnSalvar').addEventListener('click', async () => {
+  const nome_usuario = document.getElementById('editNome').value.trim();
+  const email  = document.getElementById('editEmail').value.trim();
+  const senha  = document.getElementById('editSenha').value;
+  const err    = document.getElementById('editErr');
+  err.textContent = '';
+
+  const payload = {};
+  if (nome_usuario) payload.nome_usuario = nome_usuario;
+  if (email)  payload.email  = email;
+  if (senha)  payload.senha  = senha;
+
+  const btn = document.getElementById('btnSalvar');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+
+  try {
+    await api.put('/usuarios/me', payload);
+    // Update localStorage nome
+    if (nome_usuario) {
+      const user = getUser();
+      saveSession(getToken(), nome_usuario, user.perfil);
+      setupNav();
+    }
+    toast('Perfil atualizado!', 'success');
+    loadPerfil();
+  } catch(e) {
+    err.textContent = e.message;
+  } finally {
+    btn.textContent = 'Salvar alterações'; btn.disabled = false;
+  }
+});
+
+loadPerfil();
+loadHistorico();
+</script>
+</body>
+</html>

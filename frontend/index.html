@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Avalie. Descubra. Domine.</title>
+  <link rel="stylesheet" href="css/shared.css"/>
+  <style>
+    .hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:0 48px 80px;overflow:hidden;}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(232,255,71,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 70% at 85% 60%,rgba(255,79,79,.08) 0%,transparent 60%),linear-gradient(180deg,var(--bg) 0%,#0a0a12 100%);z-index:0;}
+    .hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 80% at 60% 50%,black,transparent);}
+    .hero-content{position:relative;z-index:1;max-width:680px;}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(232,255,71,.1);border:1px solid rgba(232,255,71,.25);border-radius:30px;padding:4px 14px;font-size:12px;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;}
+    .hero-eyebrow .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 1.8s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.6);}}
+    .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,8vw,96px);line-height:.95;letter-spacing:2px;margin-bottom:24px;}
+    .hero h1 em{font-style:normal;color:var(--accent);text-shadow:0 0 60px rgba(232,255,71,.5);}
+    .hero p{font-size:16px;color:var(--muted);line-height:1.7;max-width:480px;margin-bottom:36px;}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
+    .reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
+    .review-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;cursor:pointer;transition:border-color .2s,transform .2s;}
+    .review-card:hover{border-color:rgba(232,255,71,.25);transform:translateY(-2px);}
+    .review-game-row{display:flex;gap:14px;align-items:center;margin-bottom:16px;}
+    .review-game-img{width:52px;height:68px;border-radius:6px;object-fit:cover;background:var(--surface2);}
+    .review-score-wrap{display:flex;align-items:center;gap:8px;margin-top:4px;}
+    .review-score{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;}
+    .review-score-bar{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+    .review-score-fill{height:100%;background:var(--accent);border-radius:2px;}
+    .review-title{font-size:14px;font-weight:600;margin-bottom:8px;}
+    .review-text{font-size:13px;color:var(--muted);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:16px;}
+    .review-footer{display:flex;align-items:center;justify-content:space-between;}
+    .review-author{display:flex;align-items:center;gap:8px;}
+    .author-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--bg);}
+    .author-name{font-size:12px;color:var(--muted);}
+    .review-likes{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);}
+    .genres-grid{display:flex;flex-wrap:wrap;gap:10px;}
+    .genre-chip{display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--surface);border:1px solid var(--border);border-radius:30px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text);}
+    .genre-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(232,255,71,.06);}
+    .genre-chip .chip-count{font-size:11px;color:var(--muted);}
+    @media(max-width:768px){
+      .hero{padding:0 20px 60px;min-height:90vh;}
+      .stats-bar{padding:20px;flex-wrap:wrap;gap:16px;}
+      .stat-item{border:none;flex:1 1 40%;}
+    }
+  </style>
+</head>
+<body>
+
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/login.html"    class="guest-only">Login</a>
+    <a href="/pages/cadastro.html" class="guest-only btn-accent">Registrar</a>
+    <a href="/pages/perfil.html"   class="auth-only" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-username"></span>
+    </a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content fade-in">
+    <div class="hero-eyebrow"><span class="dot"></span>Plataforma de Avaliações</div>
+    <h1>AVALIE.<br>DESCUBRA.<br><em>DOMINE.</em></h1>
+    <p>A plataforma definitiva para avaliações técnicas de jogos eletrônicos. Leia análises de críticos e jogadores reais — tome decisões de compra melhores.</p>
+    <div class="hero-cta">
+      <a href="/pages/catalogo.html" class="btn btn-accent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Explorar Jogos
+      </a>
+      <a href="/pages/cadastro.html" class="btn btn-ghost guest-only">Criar Conta Grátis</a>
+    </div>
+  </div>
+</section>
+
+<section class="section page-wrap">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-title">LANÇAMENTOS <span>NOTÁVEIS</span></div>
+      <div class="section-sub">Os títulos mais recentes catalogados</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="scroll-btns">
+        <button class="scroll-btn" id="sL1">&#8592;</button>
+        <button class="scroll-btn" id="sR1">&#8594;</button>
+      </div>
+      <a href="/pages/catalogo.html" class="see-all">Ver todos →</a>
+    </div>
+  </div>
+  <div class="scroll-row" id="rowLancamentos">
+    <div class="empty-state" style="width:100%"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-title">MAIS BEM <span>AVALIADOS</span></div>
+      <div class="section-sub">Baseado na média das avaliações da comunidade</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="scroll-btns">
+        <button class="scroll-btn" id="sL2">&#8592;</button>
+        <button class="scroll-btn" id="sR2">&#8594;</button>
+      </div>
+      <a href="/pages/catalogo.html?ordem=nota_media" class="see-all">Ver todos →</a>
+    </div>
+  </div>
+  <div class="scroll-row" id="rowMelhores">
+    <div class="empty-state" style="width:100%"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-title">ANÁLISES EM <span>DESTAQUE</span></div>
+      <div class="section-sub">As resenhas mais curtidas da semana</div>
+    </div>
+    <a href="/pages/catalogo.html" class="see-all">Ver todas →</a>
+  </div>
+  <div class="reviews-grid" id="reviewsGrid">
+    <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="section-header fade-in">
+    <div><div class="section-title">EXPLORAR POR <span>GÊNERO</span></div></div>
+  </div>
+  <div class="genres-grid fade-in" id="genresGrid"></div>
+</section>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-links">
+    <a href="/pages/contato.html">Contato</a>
+    <a href="#">Termos</a>
+    <a href="#">Privacidade</a>
+  </div>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
+});
+
+function gameCardHTML(g) {
+  const nota = g.nota_media ? parseFloat(g.nota_media).toFixed(1) : '—';
+  const img  = g.capa
+    ? `<img src="${g.capa}" alt="${g.nome_jogo}" loading="lazy" onerror="this.style.display='none'">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;">Sem capa</div>`;
+  return `
+    <div class="game-card" onclick="location.href='/pages/jogo.html?id=${g.id_jogo}'">
+      <div class="card-img-wrap">${img}
+        <div class="card-overlay"><div class="card-play">▶</div></div>
+      </div>
+      <div class="card-title">${g.nome_jogo}</div>
+      <div class="card-meta">
+        <div class="card-rating">★ ${nota}</div>
+        <div class="card-genre">${g.total_avaliacoes || 0} aval.</div>
+      </div>
+    </div>`;
+}
+
+const COLORS = ['#e8ff47','#ff4f4f','#47c5ff','#ff9f47','#a78bfa','#34d399'];
+function reviewCardHTML(r, i) {
+  const pct = r.nota ? (parseFloat(r.nota)/5*100).toFixed(0) : 0;
+  const col = COLORS[i % COLORS.length];
+  return `
+    <div class="review-card fade-in" onclick="location.href='/pages/avaliacao.html?id=${r.id_avaliacao}'">
+      <div class="review-game-row">
+        <img class="review-game-img" src="${r.capa||''}" alt="${r.nome_jogo}"
+             onerror="this.style.background='var(--surface2)';this.src=''">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:600">${r.nome_jogo}</div>
+          <div class="review-score-wrap">
+            <div class="review-score">${r.nota||'—'}</div>
+            <div class="review-score-bar">
+              <div class="review-score-fill" style="width:${pct}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="review-title">${r.titulo}</div>
+      <div class="review-text">${r.texto}</div>
+      <div class="review-footer">
+        <div class="review-author">
+          <div class="author-avatar" style="background:${col}">${r.nome_usuario.slice(0,2).toUpperCase()}</div>
+          <div class="author-name">@${r.nome_usuario}</div>
+        </div>
+        <div class="review-likes">♥ ${r.total_curtidas||0}</div>
+      </div>
+    </div>`;
+}
+
+async function loadHome() {
+  try {
+    const s = await api.get('/jogos/stats');
+    animateCount(document.getElementById('sJogos'), s.total_jogos);
+    animateCount(document.getElementById('sAval'),  s.total_aval);
+    animateCount(document.getElementById('sUsers'), s.total_usuarios);
+    animateCount(document.getElementById('sPlat'),  s.total_plat);
+  } catch(e) { console.error('stats:', e); }
+
+  try {
+    const d = await api.get('/jogos/destaques');
+    document.getElementById('rowLancamentos').innerHTML = d.lancamentos.length
+      ? d.lancamentos.map(gameCardHTML).join('')
+      : '<div class="empty-state" style="width:100%"><p>Nenhum jogo cadastrado ainda.</p></div>';
+    document.getElementById('rowMelhores').innerHTML = d.melhores.length
+      ? d.melhores.map(gameCardHTML).join('')
+      : '<div class="empty-state" style="width:100%"><p>Nenhum jogo avaliado ainda.</p></div>';
+  } catch(e) { console.error('destaques:', e); }
+
+  try {
+    const revs = await api.get('/avaliacoes/destaque');
+    document.getElementById('reviewsGrid').innerHTML = revs.length
+      ? revs.map((r,i) => reviewCardHTML(r,i)).join('')
+      : '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">💬</div><p>Nenhuma avaliação ainda.</p></div>';
+  } catch(e) { console.error('destaque revs:', e); }
+
+  try {
+    const gs = await api.get('/generos');
+    document.getElementById('genresGrid').innerHTML = gs.map(g =>
+      `<a href="/pages/catalogo.html?genero=${encodeURIComponent(g.nome_genero)}" class="genre-chip">
+         ${g.nome_genero} <span class="chip-count">${g.total_jogos}</span>
+       </a>`
+    ).join('');
+  } catch(e) { console.error('generos:', e); }
+}
+
+function animateCount(el, target) {
+  let start = 0;
+  const step = ts => {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / 1400, 1);
+    el.textContent = Math.floor(p * target).toLocaleString('pt-BR');
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function setupScroll(lId, rId, rowId) {
+  const row = document.getElementById(rowId);
+  document.getElementById(lId).addEventListener('click', () => row.scrollBy({left:-440, behavior:'smooth'}));
+  document.getElementById(rId).addEventListener('click', () => row.scrollBy({left: 440, behavior:'smooth'}));
+}
+setupScroll('sL1','sR1','rowLancamentos');
+setupScroll('sL2','sR2','rowMelhores');
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, {threshold: .1});
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+loadHome();
+</script>
+</body>
+</html>

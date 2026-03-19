@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Cadastro</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+    .auth-box{position:relative;z-index:1;width:100%;max-width:420px;padding:20px;}
+    .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;}
+    .auth-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--accent);text-align:center;display:block;margin-bottom:8px;text-decoration:none;}
+    .auth-logo span{color:var(--text);}
+    .auth-sub{text-align:center;font-size:14px;color:var(--muted);margin-bottom:32px;}
+    .auth-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
+    .auth-footer a{color:var(--accent);text-decoration:none;}
+    .btn-full{width:100%;justify-content:center;}
+  </style>
+</head>
+<body>
+<div class="auth-box">
+  <a href="/index.html" class="auth-logo">GAME<span>RATE</span></a>
+  <p class="auth-sub">Crie sua conta gratuita</p>
+  <div class="auth-card">
+    <div class="form-group">
+      <label>Nome de usuário</label>
+      <input type="text" id="nome" placeholder="Ex: GamerPro123"/>
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="email" placeholder="seu@email.com"/>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="senha" placeholder="Mínimo 6 caracteres"/>
+    </div>
+    <div id="errMsg" class="form-error" style="margin-bottom:12px"></div>
+    <button class="btn btn-accent btn-full" id="btnCadastro">Criar Conta</button>
+  </div>
+  <div class="auth-footer">
+    Já tem conta? <a href="/pages/login.html">Entrar</a> · <a href="/index.html">← Home</a>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+if (isLoggedIn()) window.location.href = '/index.html';
+
+document.getElementById('btnCadastro').addEventListener('click', async () => {
+  const nome_usuario = document.getElementById('nome').value.trim();
+  const email  = document.getElementById('email').value.trim();
+  const senha  = document.getElementById('senha').value;
+  const err    = document.getElementById('errMsg');
+  err.textContent = '';
+
+  if (!nome_usuario || !email || !senha) { err.textContent = 'Preencha todos os campos'; return; }
+  if (senha.length < 6) { err.textContent = 'Senha deve ter no mínimo 6 caracteres'; return; }
+
+  const btn = document.getElementById('btnCadastro');
+  btn.textContent = 'Criando...'; btn.disabled = true;
+
+  try {
+    const data = await api.post('/auth/cadastro', { nome_usuario, email, senha });
+    saveSession(data.token, data.nome, data.perfil);
+    window.location.href = '/index.html';
+  } catch (e) {
+    err.textContent = e.message;
+    btn.textContent = 'Criar Conta'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Jogo</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .jogo-hero{position:relative;z-index:1;padding:40px 48px;display:grid;grid-template-columns:220px 1fr;gap:40px;align-items:start;}
+    .jogo-capa{width:220px;height:300px;border-radius:12px;object-fit:cover;background:var(--surface2);display:block;box-shadow:0 12px 40px rgba(0,0,0,.7);}
+    .jogo-capa-placeholder{width:220px;height:300px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;}
+    .jogo-info{padding-top:8px;}
+    .jogo-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+    .tag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:30px;border:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .tag-accent{border-color:rgba(232,255,71,.3);color:var(--accent);}
+    .jogo-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,64px);letter-spacing:1px;line-height:1;margin-bottom:12px;}
+    .jogo-dev{font-size:14px;color:var(--muted);margin-bottom:24px;}
+    .jogo-score-row{display:flex;align-items:center;gap:24px;margin-bottom:24px;flex-wrap:wrap;}
+    .jogo-nota{font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--accent);line-height:1;text-shadow:0 0 40px rgba(232,255,71,.3);}
+    .jogo-nota-sub{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .jogo-stats{display:flex;gap:20px;}
+    .jogo-stat{text-align:center;}
+    .jogo-stat-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);}
+    .jogo-stat-label{font-size:11px;color:var(--muted);}
+    .jogo-desc{font-size:15px;color:var(--muted);line-height:1.7;max-width:600px;margin-bottom:28px;}
+    .jogo-actions{display:flex;gap:12px;flex-wrap:wrap;}
+    .aval-section{padding:0 48px 60px;position:relative;z-index:1;}
+    .aval-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+    .aval-list{display:flex;flex-direction:column;gap:16px;}
+    .aval-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;cursor:pointer;transition:border-color .2s;}
+    .aval-card:hover{border-color:rgba(232,255,71,.2);}
+    .aval-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+    .aval-card-title{font-size:15px;font-weight:600;}
+    .aval-nota{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--accent);}
+    .aval-text{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .aval-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
+    .aval-meta{display:flex;gap:16px;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:24px;}
+    .nota-slider{display:flex;align-items:center;gap:12px;}
+    .nota-slider input[type=range]{flex:1;accent-color:var(--accent);}
+    .nota-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);min-width:36px;}
+
+    @media(max-width:768px){
+      .jogo-hero{grid-template-columns:1fr;padding:24px 16px;}
+      .jogo-capa,.jogo-capa-placeholder{width:100%;height:200px;}
+      .aval-section{padding:0 16px 40px;}
+    }
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/login.html"    class="guest-only">Login</a>
+    <a href="/pages/cadastro.html" class="guest-only btn-accent">Registrar</a>
+    <a href="/pages/perfil.html"   class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="jogo-hero" id="jogoHero">
+    <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+  </div>
+
+  <div class="aval-section">
+    <div class="aval-header">
+      <div class="section-title">AVALIAÇÕES <span id="avalCount"></span></div>
+      <button class="btn btn-accent btn-sm auth-only" id="btnAvaliar" style="display:none" onclick="abrirModal()">
+        + Escrever avaliação
+      </button>
+    </div>
+    <div class="aval-list" id="avalList">
+      <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="fecharModalBg(event)">
+  <div class="modal">
+    <div class="modal-title">NOVA AVALIAÇÃO</div>
+    <div class="form-group">
+      <label>Nota (1 a 5)</label>
+      <div class="nota-slider">
+        <input type="range" id="modalNota" min="1" max="5" step="0.5" value="4"
+               oninput="document.getElementById('notaVal').textContent=this.value"/>
+        <div class="nota-val" id="notaVal">4</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="modalTitulo" placeholder="Resumo da sua opinião"/>
+    </div>
+    <div class="form-group">
+      <label>Avaliação (mín. 40 caracteres)</label>
+      <textarea id="modalTexto" rows="5" placeholder="Escreva sua análise detalhada..."></textarea>
+    </div>
+    <div id="modalErr" class="form-error" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-accent" id="btnEnviarAval">Publicar</button>
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+const jogoId = new URLSearchParams(location.search).get('id');
+if (!jogoId) window.location.href = '/pages/catalogo.html';
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
+});
+
+async function loadJogo() {
+  try {
+    const j = await api.get(`/jogos/${jogoId}`);
+    document.title = `GameRate — ${j.nome_jogo}`;
+
+    const nota     = j.nota_media ? parseFloat(j.nota_media).toFixed(1) : '—';
+    const generos  = j.generos.map(g => `<span class="tag tag-accent">${g.nome_genero}</span>`).join('');
+    const plats    = j.plataformas.map(p => `<span class="tag">${p.nome_plataforma}</span>`).join('');
+    const dataFmt  = new Date(j.data_lancamento).toLocaleDateString('pt-BR',{year:'numeric',month:'long'});
+    const capaEl   = j.capa
+      ? `<img class="jogo-capa" src="${j.capa}" alt="${j.nome_jogo}">`
+      : `<div class="jogo-capa-placeholder">Sem capa</div>`;
+
+    document.getElementById('jogoHero').innerHTML = `
+      ${capaEl}
+      <div class="jogo-info">
+        <div class="jogo-tags">${generos}${plats}</div>
+        <h1 class="jogo-title">${j.nome_jogo}</h1>
+        <div class="jogo-dev">${j.desenvolvedora} · ${dataFmt}</div>
+        <div class="jogo-score-row">
+          <div>
+            <div class="jogo-nota">${nota}</div>
+            <div class="jogo-nota-sub">Nota média / 5</div>
+          </div>
+          <div class="jogo-stats">
+            <div class="jogo-stat">
+              <div class="jogo-stat-num">${j.total_avaliacoes||0}</div>
+              <div class="jogo-stat-label">Avaliações</div>
+            </div>
+          </div>
+        </div>
+        <p class="jogo-desc">${j.descricao}</p>
+        <div class="jogo-actions">
+          <button class="btn btn-accent auth-only" id="btnAvaliarHero" onclick="abrirModal()" style="display:none">
+            + Avaliar este jogo
+          </button>
+          <a href="/pages/catalogo.html" class="btn btn-ghost">← Catálogo</a>
+        </div>
+      </div>`;
+
+    const user = getUser();
+    document.querySelectorAll('.auth-only').forEach(el =>
+      el.style.display = user ? 'inline-flex' : 'none'
+    );
+  } catch(e) {
+    document.getElementById('jogoHero').innerHTML =
+      `<div class="empty-state" style="grid-column:1/-1"><p>Erro: ${e.message}</p></div>`;
+  }
+}
+
+async function loadAvaliacoes() {
+  try {
+    const data = await api.get(`/avaliacoes?jogo_id=${jogoId}&limit=20`);
+    document.getElementById('avalCount').textContent = `(${data.total})`;
+
+    if (!data.avaliacoes.length) {
+      document.getElementById('avalList').innerHTML =
+        '<div class="empty-state"><div class="empty-icon">💬</div><p>Sem avaliações ainda. Seja o primeiro!</p></div>';
+      return;
+    }
+
+    const COLORS = ['#e8ff47','#ff4f4f','#47c5ff','#ff9f47','#a78bfa','#34d399'];
+    document.getElementById('avalList').innerHTML = data.avaliacoes.map((a,i) => {
+      const col = COLORS[i % COLORS.length];
+      return `
+        <div class="aval-card" onclick="location.href='/pages/avaliacao.html?id=${a.id_avaliacao}'">
+          <div class="aval-card-top">
+            <div>
+              <div class="aval-card-title">${a.titulo}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                <div style="width:24px;height:24px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)">${a.nome_usuario.slice(0,2).toUpperCase()}</div>
+                <span style="font-size:12px;color:var(--muted)">@${a.nome_usuario} · ${fmtDate(a.data_publicacao)}</span>
+              </div>
+            </div>
+            <div class="aval-nota">${a.nota}</div>
+          </div>
+          <div class="aval-text">${a.texto}</div>
+          <div class="aval-footer">
+            <div class="aval-meta">
+              <span>♥ ${a.total_curtidas} curtidas</span>
+              <span>💬 ${a.total_comentarios} comentários</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('avalList').innerHTML = `<div class="empty-state"><p>Erro ao carregar avaliações.</p></div>`;
+  }
+}
+
+function abrirModal() {
+  if (!isLoggedIn()) { window.location.href = `/pages/login.html?next=/pages/jogo.html?id=${jogoId}`; return; }
+  document.getElementById('modalBg').classList.add('open');
+}
+function fecharModal() { document.getElementById('modalBg').classList.remove('open'); }
+function fecharModalBg(e) { if (e.target === document.getElementById('modalBg')) fecharModal(); }
+
+document.getElementById('btnEnviarAval').addEventListener('click', async () => {
+  const nota   = parseFloat(document.getElementById('modalNota').value);
+  const titulo = document.getElementById('modalTitulo').value.trim();
+  const texto  = document.getElementById('modalTexto').value.trim();
+  const err    = document.getElementById('modalErr');
+  err.textContent = '';
+
+  if (!titulo || !texto) { err.textContent = 'Preencha todos os campos'; return; }
+  if (texto.length < 40) { err.textContent = 'Texto deve ter no mínimo 40 caracteres'; return; }
+
+  const btn = document.getElementById('btnEnviarAval');
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+
+  try {
+    await api.post('/avaliacoes', { id_jogo_fk: parseInt(jogoId), nota, titulo, texto });
+    fecharModal();
+    toast('Avaliação publicada!', 'success');
+    loadAvaliacoes();
+    loadJogo();
+  } catch(e) {
+    err.textContent = e.message;
+    btn.textContent = 'Publicar'; btn.disabled = false;
+  }
+});
+
+loadJogo();
+loadAvaliacoes();
+</script>
+</body>
+</html>

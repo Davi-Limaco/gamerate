@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Painel Admin</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 68px);position:relative;z-index:1;}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 16px;}
+    .sidebar-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;padding:0 8px;}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
+    .sidebar-link:hover,.sidebar-link.active{background:rgba(232,255,71,.08);color:var(--accent);}
+    .main-content{padding:36px;}
+    .admin-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:28px;}
+    .admin-title span{color:var(--accent);}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;}
+    .stat-card-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--accent);line-height:1;}
+    .stat-card-label{font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;border-bottom:1px solid var(--border);}
+    .data-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;}
+    .data-table tr:last-child td{border-bottom:none;}
+    .data-table tr:hover td{background:rgba(255,255,255,.02);}
+    .badge{display:inline-block;padding:2px 8px;border-radius:30px;font-size:11px;font-weight:600;}
+    .badge-jogador{background:rgba(71,197,255,.15);color:#47c5ff;}
+    .badge-critico{background:rgba(232,255,71,.15);color:var(--accent);}
+    .badge-admin{background:rgba(255,79,79,.15);color:var(--accent2);}
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .table-header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border);}
+    .table-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;}
+
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:24px;}
+
+    @media(max-width:900px){
+      .admin-layout{grid-template-columns:1fr;}
+      .sidebar{display:flex;gap:4px;flex-wrap:wrap;padding:12px 16px;border-right:none;border-bottom:1px solid var(--border);}
+      .sidebar-title{display:none;}
+    }
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap" style="display:none"></div>
+  <nav class="nav-links">
+    <a href="/pages/perfil.html" class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">PAINEL</div>
+      <button class="sidebar-link active" onclick="switchSection('dashboard',this)">📊 Dashboard</button>
+      <button class="sidebar-link" onclick="switchSection('jogos',this)">🎮 Jogos</button>
+      <button class="sidebar-link" onclick="switchSection('usuarios',this)">👥 Usuários</button>
+      <button class="sidebar-link" onclick="switchSection('avaliacoes',this)">⭐ Avaliações</button>
+      <button class="sidebar-link" onclick="switchSection('contatos',this)">✉️ Contatos</button>
+    </aside>
+
+    <main class="main-content">
+      <div id="sec-dashboard">
+        <div class="admin-title">PAINEL <span>ADMIN</span></div>
+        <div class="stats-row" id="adminStats">
+          <div class="stat-card shimmer" style="height:88px"></div>
+          <div class="stat-card shimmer" style="height:88px"></div>
+          <div class="stat-card shimmer" style="height:88px"></div>
+          <div class="stat-card shimmer" style="height:88px"></div>
+        </div>
+      </div>
+
+      <div id="sec-jogos" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="table-title">GERENCIAR JOGOS</div>
+            <button class="btn btn-accent btn-sm" onclick="abrirModalJogo()">+ Novo jogo</button>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Nome</th><th>Desenvolvedora</th><th>Lançamento</th><th>Nota</th><th>Aval.</th><th>Ações</th></tr></thead>
+            <tbody id="jogosBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sec-usuarios" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">GERENCIAR USUÁRIOS</div></div>
+          <table class="data-table">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Cadastro</th><th>Ações</th></tr></thead>
+            <tbody id="usersBody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sec-avaliacoes" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">MODERAR AVALIAÇÕES</div></div>
+          <table class="data-table">
+            <thead><tr><th>Título</th><th>Jogo</th><th>Usuário</th><th>Nota</th><th>Data</th><th>Ações</th></tr></thead>
+            <tbody id="avalsBody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sec-contatos" style="display:none">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">MENSAGENS DE CONTATO</div></div>
+          <table class="data-table">
+            <thead><tr><th>E-mail</th><th>Tipo</th><th>Mensagem</th><th>Data</th></tr></thead>
+            <tbody id="contatosBody"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalJogoBg" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-title">CADASTRAR JOGO</div>
+    <div class="form-group"><label>Nome do jogo</label><input type="text" id="jNome"/></div>
+    <div class="form-group"><label>Desenvolvedora</label><input type="text" id="jDev"/></div>
+    <div class="form-group"><label>Data de lançamento</label><input type="date" id="jData"/></div>
+    <div class="form-group"><label>Descrição</label><textarea id="jDesc" rows="4"></textarea></div>
+    <div class="form-group"><label>URL da capa</label><input type="text" id="jCapa" placeholder="https://..."/></div>
+    <div id="jogoErr" class="form-error" style="margin-bottom:12px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-accent" id="btnSalvarJogo">Cadastrar</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modalJogoBg').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+const user = getUser();
+if (!user || user.perfil !== 'Administrador') {
+  alert('Acesso restrito a administradores.');
+  window.location.href = '/index.html';
+}
+
+function switchSection(name, el) {
+  document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  ['dashboard','jogos','usuarios','avaliacoes','contatos'].forEach(s =>
+    document.getElementById(`sec-${s}`).style.display = s === name ? '' : 'none'
+  );
+  loaders[name]?.();
+}
+
+const loaded = {};
+const loaders = {
+  dashboard: loadDashboard,
+  jogos:     loadAdminJogos,
+  usuarios:  loadAdminUsuarios,
+  avaliacoes:loadAdminAvals,
+  contatos:  loadAdminContatos,
+};
+
+async function loadDashboard() {
+  if (loaded.dashboard) return; loaded.dashboard = true;
+  try {
+    const s = await api.get('/jogos/stats');
+    document.getElementById('adminStats').innerHTML = [
+      { num: s.total_jogos,    label: 'Jogos' },
+      { num: s.total_aval,     label: 'Avaliações' },
+      { num: s.total_usuarios, label: 'Usuários' },
+      { num: s.total_plat,     label: 'Plataformas' },
+    ].map(i => `
+      <div class="stat-card">
+        <div class="stat-card-num">${i.num}</div>
+        <div class="stat-card-label">${i.label}</div>
+      </div>`).join('');
+  } catch {}
+}
+
+async function loadAdminJogos() {
+  if (loaded.jogos) return; loaded.jogos = true;
+  try {
+    const { jogos } = await api.get('/jogos?limit=100');
+    document.getElementById('jogosBody').innerHTML = jogos.map(j => `
+      <tr>
+        <td>${j.nome_jogo}</td>
+        <td style="color:var(--muted)">${j.desenvolvedora}</td>
+        <td style="color:var(--muted)">${new Date(j.data_lancamento).getFullYear()}</td>
+        <td><span style="color:var(--accent);font-weight:600">${j.nota_media||'—'}</span></td>
+        <td style="color:var(--muted)">${j.total_avaliacoes}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="excluirJogo(${j.id_jogo},'${j.nome_jogo.replace(/'/g,"\'")}')">Excluir</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadAdminUsuarios() {
+  if (loaded.usuarios) return; loaded.usuarios = true;
+  const perfis = { Jogador:'badge-jogador', 'Crítico Especializado':'badge-critico', Administrador:'badge-admin' };
+  try {
+    const users = await api.get('/usuarios');
+    document.getElementById('usersBody').innerHTML = users.map(u => `
+      <tr>
+        <td>${u.nome_usuario}</td>
+        <td style="color:var(--muted)">${u.email}</td>
+        <td><span class="badge ${perfis[u.nome_perfil]||'badge-jogador'}">${u.nome_perfil}</span></td>
+        <td style="color:var(--muted)">${fmtDate(u.data_criacao)}</td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-danger btn-sm" onclick="excluirUsuario(${u.id_usuario},'${u.nome_usuario.replace(/'/g,"\'")}')">Excluir</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadAdminAvals() {
+  if (loaded.avaliacoes) return; loaded.avaliacoes = true;
+  try {
+    const { avaliacoes } = await api.get('/avaliacoes?limit=50');
+    document.getElementById('avalsBody').innerHTML = avaliacoes.map(a => `
+      <tr>
+        <td>${a.titulo}</td>
+        <td style="color:var(--muted)">${a.nome_jogo}</td>
+        <td style="color:var(--muted)">@${a.nome_usuario}</td>
+        <td><span style="color:var(--accent);font-weight:600">${a.nota}</span></td>
+        <td style="color:var(--muted)">${fmtDate(a.data_publicacao)}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="excluirAval(${a.id_avaliacao})">Excluir</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadAdminContatos() {
+  if (loaded.contatos) return; loaded.contatos = true;
+  try {
+    const rows = await api.get('/contato');
+    document.getElementById('contatosBody').innerHTML = rows.map(c => `
+      <tr>
+        <td>${c.email_contato}</td>
+        <td><span class="badge badge-jogador">${c.tipo}</span></td>
+        <td style="color:var(--muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.mensagem}</td>
+        <td style="color:var(--muted)">${fmtDate(c.data_comunicacao)}</td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function abrirModalJogo() { document.getElementById('modalJogoBg').classList.add('open'); }
+
+document.getElementById('btnSalvarJogo').addEventListener('click', async () => {
+  const nome_jogo       = document.getElementById('jNome').value.trim();
+  const desenvolvedora  = document.getElementById('jDev').value.trim();
+  const data_lancamento = document.getElementById('jData').value;
+  const descricao       = document.getElementById('jDesc').value.trim();
+  const capa            = document.getElementById('jCapa').value.trim();
+  const err = document.getElementById('jogoErr');
+  err.textContent = '';
+
+  if (!nome_jogo || !desenvolvedora || !data_lancamento || !descricao) {
+    err.textContent = 'Preencha todos os campos obrigatórios'; return;
+  }
+  const btn = document.getElementById('btnSalvarJogo');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  try {
+    await api.post('/jogos', { nome_jogo, desenvolvedora, data_lancamento, descricao, capa: capa||null });
+    document.getElementById('modalJogoBg').classList.remove('open');
+    toast('Jogo cadastrado!','success');
+    loaded.jogos = false; loadAdminJogos();
+  } catch(e) {
+    err.textContent = e.message;
+  } finally {
+    btn.textContent = 'Cadastrar'; btn.disabled = false;
+  }
+});
+
+async function excluirJogo(id, nome) {
+  if (!confirm(`Excluir "${nome}"?`)) return;
+  try { await api.delete(`/jogos/${id}`); toast('Jogo excluído','success'); loaded.jogos=false; loadAdminJogos(); }
+  catch(e) { toast(e.message,'error'); }
+}
+
+async function excluirUsuario(id, nome) {
+  if (!confirm(`Excluir usuário "${nome}"?`)) return;
+  try { await api.delete(`/usuarios/${id}`); toast('Usuário excluído','success'); loaded.usuarios=false; loadAdminUsuarios(); }
+  catch(e) { toast(e.message,'error'); }
+}
+
+async function excluirAval(id) {
+  if (!confirm('Excluir esta avaliação?')) return;
+  try { await api.delete(`/avaliacoes/${id}`); toast('Avaliação excluída','success'); loaded.avaliacoes=false; loadAdminAvals(); }
+  catch(e) { toast(e.message,'error'); }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
