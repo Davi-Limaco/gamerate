@@ -17,16 +17,14 @@
     .filter-group input:focus{border-color:var(--accent);}
     .filter-group select option{background:var(--surface);}
     .filter-reset{width:100%;margin-top:8px;}
-
     .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;}
     .cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
     .cat-header h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;}
     .cat-header .total{font-size:13px;color:var(--muted);}
-    .pagination{display:flex;gap:8px;justify-content:center;margin-top:40px;}
+    .pagination{display:flex;gap:8px;justify-content:center;margin-top:40px;flex-wrap:wrap;}
     .page-btn{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
     .page-btn:hover,.page-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
-    .page-btn:disabled{opacity:.3;cursor:default;}
-
+    .page-btn:disabled{opacity:.3;cursor:default;pointer-events:none;}
     @media(max-width:900px){
       .cat-layout{grid-template-columns:1fr;padding:24px 16px;}
       .filters-panel{position:static;}
@@ -64,17 +62,17 @@
       <div class="filter-group">
         <label>Ordenar por</label>
         <select id="fOrdem">
+          <option value="nome_jogo">Nome A-Z</option>
           <option value="nota_media">Melhor avaliados</option>
           <option value="total_avaliacoes">Mais avaliados</option>
           <option value="data_lancamento">Mais recentes</option>
-          <option value="nome_jogo">Nome A-Z</option>
         </select>
       </div>
       <div class="filter-group">
         <label>Direção</label>
         <select id="fDir">
-          <option value="DESC">Decrescente</option>
           <option value="ASC">Crescente</option>
+          <option value="DESC">Decrescente</option>
         </select>
       </div>
       <button class="btn btn-ghost filter-reset btn-sm" onclick="resetFiltros()">Limpar filtros</button>
@@ -103,52 +101,83 @@
 <script>
 setupNav();
 
-const params  = new URLSearchParams(location.search);
-let page      = 1;
-const LIMIT   = 20;
+const params = new URLSearchParams(location.search);
+let page     = 1;
+const LIMIT  = 20;
+let carregando = false; // flag para evitar requisições duplicadas
 
+// Popula busca vinda da URL
 if (params.get('search')) document.getElementById('searchInput').value = params.get('search');
-if (params.get('genero')) { /* set after options load */ }
 
+// Eventos — só mudam page=1 e recarregam, sem disparar durante loadFiltros
 document.getElementById('searchInput').addEventListener('keyup', e => {
   if (e.key === 'Enter') { page = 1; loadJogos(); }
 });
-['fGenero','fPlat','fOrdem','fDir'].forEach(id =>
-  document.getElementById(id).addEventListener('change', () => { page = 1; loadJogos(); })
-);
+
+// Adiciona listeners APÓS loadFiltros terminar (ver abaixo)
+function addFilterListeners() {
+  ['fGenero','fPlat','fOrdem','fDir'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => {
+      page = 1;
+      loadJogos();
+    })
+  );
+}
 
 function resetFiltros() {
   document.getElementById('fGenero').value = '';
   document.getElementById('fPlat').value   = '';
-  document.getElementById('fOrdem').value  = 'nota_media';
-  document.getElementById('fDir').value    = 'DESC';
+  document.getElementById('fOrdem').value  = 'nome_jogo';
+  document.getElementById('fDir').value    = 'ASC';
   document.getElementById('searchInput').value = '';
-  page = 1; loadJogos();
+  page = 1;
+  loadJogos();
 }
 
 async function loadFiltros() {
   try {
     const [gs, ps] = await Promise.all([api.get('/generos'), api.get('/plataformas')]);
-    const sel = document.getElementById('fGenero');
-    gs.forEach(g => sel.innerHTML += `<option value="${g.nome_genero}">${g.nome_genero} (${g.total_jogos})</option>`);
-    if (params.get('genero')) sel.value = params.get('genero');
+
+    const selG = document.getElementById('fGenero');
+    gs.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value       = g.nome_genero;
+      opt.textContent = `${g.nome_genero} (${g.total_jogos})`;
+      selG.appendChild(opt);
+    });
+    if (params.get('genero')) selG.value = params.get('genero');
 
     const selP = document.getElementById('fPlat');
-    ps.forEach(p => selP.innerHTML += `<option value="${p.nome_plataforma}">${p.nome_plataforma}</option>`);
-  } catch {}
+    ps.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value       = p.nome_plataforma;
+      opt.textContent = p.nome_plataforma;
+      selP.appendChild(opt);
+    });
+  } catch(e) {
+    console.error('filtros:', e);
+  }
+
+  addFilterListeners();
+  loadJogos();
 }
 
 async function loadJogos() {
+  if (carregando) return;
+  carregando = true;
+
   const grid = document.getElementById('gamesGrid');
   grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>';
+  document.getElementById('pagination').innerHTML = '';
 
   const q = new URLSearchParams({
-    search:    document.getElementById('searchInput').value,
+    search:    document.getElementById('searchInput').value.trim(),
     genero:    document.getElementById('fGenero').value,
     plataforma:document.getElementById('fPlat').value,
     ordem:     document.getElementById('fOrdem').value,
     dir:       document.getElementById('fDir').value,
-    page, limit: LIMIT
+    page:      page,
+    limit:     LIMIT
   });
 
   try {
@@ -162,7 +191,7 @@ async function loadJogos() {
         const nota = g.nota_media ? parseFloat(g.nota_media).toFixed(1) : '—';
         const img  = g.capa
           ? `<img src="${g.capa}" alt="${g.nome_jogo}" loading="lazy" onerror="this.style.display='none'">`
-          : '';
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;">Sem capa</div>`;
         return `
           <div class="game-card" onclick="location.href='/pages/jogo.html?id=${g.id_jogo}'">
             <div class="card-img-wrap">${img}
@@ -178,31 +207,40 @@ async function loadJogos() {
     }
 
     renderPagination(data.total);
-  } catch (e) {
+  } catch(e) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Erro: ${e.message}</p></div>`;
+  } finally {
+    carregando = false;
   }
 }
 
 function renderPagination(total) {
   const pages = Math.ceil(total / LIMIT);
-  const pag = document.getElementById('pagination');
+  const pag   = document.getElementById('pagination');
   if (pages <= 1) { pag.innerHTML = ''; return; }
 
   let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+
   for (let i = 1; i <= pages; i++) {
-    if (i === 1 || i === pages || Math.abs(i-page) <= 2)
+    if (i === 1 || i === pages || Math.abs(i - page) <= 1) {
       html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    else if (Math.abs(i-page) === 3)
-      html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+    } else if (Math.abs(i - page) === 2) {
+      html += `<span style="color:var(--muted);padding:0 4px;line-height:36px">…</span>`;
+    }
   }
+
   html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`;
   pag.innerHTML = html;
 }
 
-function goPage(p) { page = p; loadJogos(); window.scrollTo({top:0,behavior:'smooth'}); }
+function goPage(p) {
+  if (p < 1 || carregando) return;
+  page = p;
+  loadJogos();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
 
 loadFiltros();
-loadJogos();
 </script>
 </body>
 </html>
