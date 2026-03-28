@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
        LEFT JOIN jogo_plataforma jp ON jp.id_jogo_fk       = j.id_jogo
        LEFT JOIN plataforma     pl  ON pl.id_plataforma    = jp.id_plataforma_fk
        ${where}
-       ORDER BY j.${safeOrd} ${safeDir}
+       ORDER BY CASE WHEN j.${safeOrd} IS NULL THEN 1 ELSE 0 END, j.${safeOrd} ${safeDir}
        LIMIT ? OFFSET ?`,
       [...params, parseInt(limit), offset]
     );
