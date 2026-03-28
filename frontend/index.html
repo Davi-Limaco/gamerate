@@ -6,7 +6,6 @@
   <title>GameRate — Avalie. Descubra. Domine.</title>
   <link rel="stylesheet" href="css/shared.css"/>
   <style>
-    /* ── HERO ── */
     .hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:0 48px 80px;overflow:hidden;}
     .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(232,255,71,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 70% at 85% 60%,rgba(255,79,79,.08) 0%,transparent 60%),linear-gradient(180deg,var(--bg) 0%,#0a0a12 100%);z-index:0;}
     .hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 80% at 60% 50%,black,transparent);}
@@ -19,14 +18,12 @@
     .hero p{font-size:16px;color:var(--muted);line-height:1.7;max-width:480px;margin-bottom:36px;}
     .hero-cta{display:flex;gap:12px;flex-wrap:wrap;}
 
-    /* ── STATS ── */
     .stats-bar{position:relative;z-index:1;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 48px;display:flex;align-items:center;}
     .stat-item{flex:1;text-align:center;padding:0 24px;border-right:1px solid var(--border);}
     .stat-item:last-child{border-right:none;}
     .stat-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--accent);line-height:1;}
     .stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
 
-    /* ── REVIEW CARDS ── */
     .reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;}
     .review-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;cursor:pointer;transition:border-color .2s,transform .2s;}
     .review-card:hover{border-color:rgba(232,255,71,.25);transform:translateY(-2px);}
@@ -44,28 +41,40 @@
     .author-name{font-size:12px;color:var(--muted);}
     .review-likes{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);}
 
-    /* ── GENRES ── */
     .genres-grid{display:flex;flex-wrap:wrap;gap:10px;}
     .genre-chip{display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--surface);border:1px solid var(--border);border-radius:30px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text);}
     .genre-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(232,255,71,.06);}
     .genre-chip .chip-count{font-size:11px;color:var(--muted);}
 
-    /* ── TRAILER ── */
-    .trailer-wrap{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
-    .trailer-badge{position:absolute;top:20px;left:20px;z-index:2;background:var(--accent2);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:30px;letter-spacing:1px;}
-    .trailer-player{position:relative;width:100%;padding-top:56.25%;}
-    .trailer-player iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
-    .trailer-info{padding:24px 28px;}
-    .trailer-game-title{font-family:"Bebas Neue",sans-serif;font-size:32px;letter-spacing:1.5px;margin-bottom:4px;}
-    .trailer-game-dev{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:12px;}
-    .trailer-game-desc{font-size:14px;color:var(--muted);line-height:1.7;max-width:700px;}
-
+    .trailers-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;}
+    .trailer-main{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .trailer-main-player{position:relative;width:100%;padding-top:56.25%;}
+    .trailer-main-player iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+    .trailer-main-info{padding:18px 20px;}
+    .trailer-main-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,79,79,.15);border:1px solid rgba(255,79,79,.3);color:var(--accent2);font-size:11px;font-weight:700;padding:3px 10px;border-radius:30px;letter-spacing:.5px;margin-bottom:10px;}
+    .trailer-main-title{font-family:"Bebas Neue",sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:4px;}
+    .trailer-main-dev{font-size:12px;color:var(--accent);font-weight:600;}
+    .trailer-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;scrollbar-width:none;}
+    .trailer-list::-webkit-scrollbar{display:none;}
+    .trailer-item{display:flex;gap:10px;align-items:center;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;}
+    .trailer-item:hover{border-color:rgba(232,255,71,.25);background:rgba(232,255,71,.03);}
+    .trailer-item.active{border-color:var(--accent);background:rgba(232,255,71,.06);}
+    .trailer-thumb{position:relative;flex-shrink:0;width:100px;height:60px;border-radius:6px;overflow:hidden;background:var(--surface2);}
+    .trailer-thumb img{width:100%;height:100%;object-fit:cover;}
+    .trailer-thumb-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);}
+    .trailer-thumb-play svg{color:#fff;opacity:.9;}
+    .trailer-item-info{flex:1;min-width:0;}
+    .trailer-item-title{font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .trailer-item-sub{font-size:11px;color:var(--muted);}
+    @media(max-width:900px){
+      .trailers-layout{grid-template-columns:1fr;}
+      .trailer-list{flex-direction:row;max-height:none;overflow-x:auto;overflow-y:visible;}
+      .trailer-item{min-width:200px;}
+    }
     @media(max-width:768px){
       .hero{padding:0 20px 60px;min-height:90vh;}
       .stats-bar{padding:20px;flex-wrap:wrap;gap:16px;}
       .stat-item{border:none;flex:1 1 40%;}
-      .trailer-info{padding:16px;}
-      .trailer-game-title{font-size:24px;}
     }
   </style>
 </head>
@@ -89,7 +98,6 @@
   </nav>
 </header>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
@@ -107,7 +115,6 @@
   </div>
 </section>
 
-<!-- STATS -->
 <div class="stats-bar" id="statsBar">
   <div class="stat-item fade-in"><div class="stat-num" id="sJogos">—</div><div class="stat-label">Jogos Catalogados</div></div>
   <div class="stat-item fade-in" style="transition-delay:.1s"><div class="stat-num" id="sAval">—</div><div class="stat-label">Avaliações</div></div>
@@ -115,7 +122,6 @@
   <div class="stat-item fade-in" style="transition-delay:.3s"><div class="stat-num" id="sPlat">—</div><div class="stat-label">Plataformas</div></div>
 </div>
 
-<!-- LANÇAMENTOS -->
 <section class="section page-wrap">
   <div class="section-header fade-in">
     <div>
@@ -135,7 +141,6 @@
   </div>
 </section>
 
-<!-- MAIS BEM AVALIADOS -->
 <section class="section" style="padding-top:0">
   <div class="section-header fade-in">
     <div>
@@ -155,7 +160,6 @@
   </div>
 </section>
 
-<!-- ANÁLISES EM DESTAQUE -->
 <section class="section" style="padding-top:0">
   <div class="section-header fade-in">
     <div>
@@ -169,34 +173,35 @@
   </div>
 </section>
 
-<!-- TRAILER EM DESTAQUE -->
 <section class="section" style="padding-top:0">
   <div class="section-header fade-in">
     <div>
-      <div class="section-title">TRAILER EM <span>DESTAQUE</span></div>
-      <div class="section-sub">Resident Evil Requiem — Em breve</div>
+      <div class="section-title">TRAILERS EM <span>DESTAQUE</span></div>
+      <div class="section-sub">Os lançamentos mais aguardados</div>
     </div>
   </div>
-  <div class="trailer-wrap fade-in">
-    <div class="trailer-badge">🔴 EM BREVE</div>
-    <div class="trailer-player">
-      <iframe
-        src="https://www.youtube.com/embed/w75_Wh9Aq_c?rel=0&modestbranding=1"
-        title="Resident Evil Requiem — Trailer Oficial"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
+  <div class="trailers-layout fade-in">
+    <div class="trailer-main">
+      <div class="trailer-main-player">
+        <iframe id="trailerIframe"
+          src="https://www.youtube.com/embed/w75_Wh9Aq_c?rel=0&modestbranding=1"
+          title="Trailer"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="trailer-main-info">
+        <div class="trailer-main-badge">🔴 EM BREVE</div>
+        <div class="trailer-main-title" id="trailerTitle">Resident Evil Requiem</div>
+        <div class="trailer-main-dev" id="trailerDev">Capcom · 2025</div>
+      </div>
     </div>
-    <div class="trailer-info">
-      <div class="trailer-game-title">Resident Evil Requiem</div>
-      <div class="trailer-game-dev">Capcom · 2025</div>
-      <p class="trailer-game-desc">O próximo capítulo da lendária franquia de terror e sobrevivência da Capcom. Prepare-se para uma nova experiência aterrorizante.</p>
-    </div>
+
+    <div class="trailer-list" id="trailerList"></div>
   </div>
 </section>
 
-<!-- GÊNEROS -->
 <section class="section" style="padding-top:0">
   <div class="section-header fade-in">
     <div><div class="section-title">EXPLORAR POR <span>GÊNERO</span></div></div>
@@ -204,7 +209,6 @@
   <div class="genres-grid fade-in" id="genresGrid"></div>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
   <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
   <div class="footer-links">
@@ -335,6 +339,70 @@ const obs = new IntersectionObserver(entries => {
 document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
 loadHome();
+
+const TRAILERS = [
+  {
+    id: 'w75_Wh9Aq_c',
+    title: 'Resident Evil Requiem',
+    dev: 'Capcom · 2025',
+    badge: '🔴 EM BREVE'
+  },
+  {
+    id: 'R59mT0IFKeI',
+    title: 'Death Stranding 2',
+    dev: 'Kojima Productions · 2025',
+    badge: '🔴 EM BREVE'
+  },
+  {
+    id: 'NIcf1L0HNrU',
+    title: 'Ghost of Yōtei',
+    dev: 'Sucker Punch Productions · 2025',
+    badge: '🔴 EM BREVE'
+  },
+  {
+    id: '-zpr21HzJ9Q',
+    title: 'Elden Ring Nightreign',
+    dev: 'FromSoftware · 2025',
+    badge: '🔴 EM BREVE'
+  },
+  {
+    id: 'MKaGSIm9juI',
+    title: 'Borderlands 4',
+    dev: 'Gearbox Software · 2025',
+    badge: '🔴 EM BREVE'
+  },
+];
+
+let trailerAtivo = 0;
+
+function renderTrailerList() {
+  const list = document.getElementById('trailerList');
+  list.innerHTML = TRAILERS.map((t, i) => `
+    <div class="trailer-item ${i === trailerAtivo ? 'active' : ''}" onclick="selecionarTrailer(${i})">
+      <div class="trailer-thumb">
+        <img src="https://img.youtube.com/vi/${t.id}/mqdefault.jpg" alt="${t.title}" loading="lazy">
+        <div class="trailer-thumb-play">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <div class="trailer-item-info">
+        <div class="trailer-item-title">${t.title}</div>
+        <div class="trailer-item-sub">${t.dev}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selecionarTrailer(i) {
+  trailerAtivo = i;
+  const t = TRAILERS[i];
+  document.getElementById('trailerIframe').src =
+    `https://www.youtube.com/embed/${t.id}?rel=0&modestbranding=1&autoplay=1`;
+  document.getElementById('trailerTitle').textContent = t.title;
+  document.getElementById('trailerDev').textContent   = t.dev;
+  renderTrailerList();
+}
+
+renderTrailerList();
 </script>
 </body>
 </html>
