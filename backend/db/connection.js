@@ -19,4 +19,3 @@ if (process.env.MYSQL_URL) {
 }
 
 module.exports = pool;
-```
