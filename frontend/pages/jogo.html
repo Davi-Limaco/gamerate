@@ -35,10 +35,27 @@
     .aval-text{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
     .aval-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
     .aval-meta{display:flex;gap:16px;}
-    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
-    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:auto;}
-    .modal-bg.open{display:flex;}
-    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+
+    .modal-bg{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.8);
+      z-index:200;
+      overflow-y:auto;
+      padding:40px 20px;
+    }
+    .modal-bg.open{display:flex;align-items:flex-start;justify-content:center;}
+    .modal{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:36px;
+      width:100%;
+      max-width:520px;
+      margin:auto;
+      position:relative;
+    }
     .modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:24px;}
     .nota-slider{display:flex;align-items:center;gap:12px;}
     .nota-slider input[type=range]{flex:1;accent-color:var(--accent);}
@@ -48,6 +65,8 @@
       .jogo-hero{grid-template-columns:1fr;padding:24px 16px;}
       .jogo-capa,.jogo-capa-placeholder{width:100%;height:200px;}
       .aval-section{padding:0 16px 40px;}
+      .modal{padding:24px;}
+      .modal-bg{padding:20px 12px;}
     }
   </style>
 </head>
@@ -71,7 +90,6 @@
   <div class="jogo-hero" id="jogoHero">
     <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
   </div>
-
   <div class="aval-section">
     <div class="aval-header">
       <div class="section-title">AVALIAÇÕES <span id="avalCount"></span></div>
@@ -131,12 +149,11 @@ async function loadJogo() {
   try {
     const j = await api.get(`/jogos/${jogoId}`);
     document.title = `GameRate — ${j.nome_jogo}`;
-
-    const nota     = j.nota_media ? parseFloat(j.nota_media).toFixed(1) : '—';
-    const generos  = j.generos.map(g => `<span class="tag tag-accent">${g.nome_genero}</span>`).join('');
-    const plats    = j.plataformas.map(p => `<span class="tag">${p.nome_plataforma}</span>`).join('');
-    const dataFmt  = new Date(j.data_lancamento).toLocaleDateString('pt-BR',{year:'numeric',month:'long'});
-    const capaEl   = j.capa
+    const nota    = j.nota_media ? parseFloat(j.nota_media).toFixed(1) : '—';
+    const generos = j.generos.map(g => `<span class="tag tag-accent">${g.nome_genero}</span>`).join('');
+    const plats   = j.plataformas.map(p => `<span class="tag">${p.nome_plataforma}</span>`).join('');
+    const dataFmt = new Date(j.data_lancamento).toLocaleDateString('pt-BR',{year:'numeric',month:'long'});
+    const capaEl  = j.capa
       ? `<img class="jogo-capa" src="${j.capa}" alt="${j.nome_jogo}">`
       : `<div class="jogo-capa-placeholder">Sem capa</div>`;
 
@@ -181,13 +198,11 @@ async function loadAvaliacoes() {
   try {
     const data = await api.get(`/avaliacoes?jogo_id=${jogoId}&limit=20`);
     document.getElementById('avalCount').textContent = `(${data.total})`;
-
     if (!data.avaliacoes.length) {
       document.getElementById('avalList').innerHTML =
         '<div class="empty-state"><div class="empty-icon">💬</div><p>Sem avaliações ainda. Seja o primeiro!</p></div>';
       return;
     }
-
     const COLORS = ['#e8ff47','#ff4f4f','#47c5ff','#ff9f47','#a78bfa','#34d399'];
     document.getElementById('avalList').innerHTML = data.avaliacoes.map((a,i) => {
       const col = COLORS[i % COLORS.length];
@@ -213,16 +228,26 @@ async function loadAvaliacoes() {
         </div>`;
     }).join('');
   } catch(e) {
-    document.getElementById('avalList').innerHTML = `<div class="empty-state"><p>Erro ao carregar avaliações.</p></div>`;
+    document.getElementById('avalList').innerHTML =
+      `<div class="empty-state"><p>Erro ao carregar avaliações.</p></div>`;
   }
 }
 
 function abrirModal() {
-  if (!isLoggedIn()) { window.location.href = `/pages/login.html?next=/pages/jogo.html?id=${jogoId}`; return; }
+  if (!isLoggedIn()) {
+    window.location.href = `/pages/login.html?next=/pages/jogo.html?id=${jogoId}`;
+    return;
+  }
   document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
-function fecharModal() { document.getElementById('modalBg').classList.remove('open'); }
-function fecharModalBg(e) { if (e.target === document.getElementById('modalBg')) fecharModal(); }
+function fecharModal() {
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function fecharModalBg(e) {
+  if (e.target === document.getElementById('modalBg')) fecharModal();
+}
 
 document.getElementById('btnEnviarAval').addEventListener('click', async () => {
   const nota   = parseFloat(document.getElementById('modalNota').value);
@@ -230,13 +255,10 @@ document.getElementById('btnEnviarAval').addEventListener('click', async () => {
   const texto  = document.getElementById('modalTexto').value.trim();
   const err    = document.getElementById('modalErr');
   err.textContent = '';
-
   if (!titulo || !texto) { err.textContent = 'Preencha todos os campos'; return; }
   if (texto.length < 40) { err.textContent = 'Texto deve ter no mínimo 40 caracteres'; return; }
-
   const btn = document.getElementById('btnEnviarAval');
   btn.textContent = 'Publicando...'; btn.disabled = true;
-
   try {
     await api.post('/avaliacoes', { id_jogo_fk: parseInt(jogoId), nota, titulo, texto });
     fecharModal();
