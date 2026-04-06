@@ -35,7 +35,8 @@
     .aval-text{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
     .aval-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
     .aval-meta{display:flex;gap:16px;}
-    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:auto;}
     .modal-bg.open{display:flex;}
     .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
     .modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:24px;}
