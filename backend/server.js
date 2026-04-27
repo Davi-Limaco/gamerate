@@ -22,6 +22,15 @@ app.use('/api/jogos',      require('./routes/jogos'));
 app.use('/api/avaliacoes', require('./routes/avaliacoes'));
 app.use('/api/usuarios',   require('./routes/usuarios'));
 app.use('/api',            require('./routes/misc'));
+app.get('/api/diagnostico', async (req, res) => {
+  const pool = require('./db/connection');
+  try {
+    const r = await pool.query('SELECT NOW() as agora');
+    res.json({ ok: true, banco: r.rows[0].agora, database_url: process.env.DATABASE_URL ? 'definida' : 'NÃO DEFINIDA' });
+  } catch (err) {
+    res.json({ ok: false, erro: err.message, database_url: process.env.DATABASE_URL ? 'definida' : 'NÃO DEFINIDA' });
+  }
+});
 
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 
