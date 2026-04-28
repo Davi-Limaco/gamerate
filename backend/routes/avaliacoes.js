@@ -1,6 +1,8 @@
-const router = require('express').Router();
-const pool   = require('../db/connection');
-const { authRequired } = require('../middleware/auth');
+import express from 'express';
+import pool from '../db/connection.js';
+import { authRequired } from '../middleware/auth.js';
+
+const router = express.Router();
 
 // GET /api/avaliacoes/destaque
 router.get('/destaque', async (req, res) => {
@@ -28,6 +30,7 @@ router.get('/destaque', async (req, res) => {
 // GET /api/avaliacoes
 router.get('/', async (req, res) => {
   const { jogo_id, page = 1, limit = 10, ordem = 'data_publicacao', dir = 'DESC' } = req.query;
+
   const ordens  = ['data_publicacao','nota','titulo'];
   const dirs    = ['ASC','DESC'];
   const safeOrd = ordens.includes(ordem) ? ordem : 'data_publicacao';
@@ -36,8 +39,13 @@ router.get('/', async (req, res) => {
 
   const conditions = ['1=1'];
   const params     = [];
-  let   idx        = 1;
-  if (jogo_id) { conditions.push(`a.id_jogo_fk = $${idx++}`); params.push(jogo_id); }
+  let idx = 1;
+
+  if (jogo_id) {
+    conditions.push(`a.id_jogo_fk = $${idx++}`);
+    params.push(jogo_id);
+  }
+
   const where = 'WHERE ' + conditions.join(' AND ');
 
   try {
@@ -57,6 +65,7 @@ router.get('/', async (req, res) => {
       ),
       pool.query(`SELECT COUNT(*)::int AS total FROM avaliacao a ${where}`, params),
     ]);
+
     res.json({ avaliacoes: rows.rows, total: cnt.rows[0].total });
   } catch (err) {
     console.error('listagem aval error:', err.message);
@@ -73,17 +82,23 @@ router.get('/:id', async (req, res) => {
        FROM avaliacao a
        JOIN usuario u ON u.id_usuario = a.id_usuario_fk
        JOIN jogo    j ON j.id_jogo    = a.id_jogo_fk
-       WHERE a.id_avaliacao = $1`, [req.params.id]
+       WHERE a.id_avaliacao = $1`,
+      [req.params.id]
     );
-    if (!r.rows.length) return res.status(404).json({ erro: 'Avaliação não encontrada' });
+
+    if (!r.rows.length) {
+      return res.status(404).json({ erro: 'Avaliação não encontrada' });
+    }
 
     const comentarios = await pool.query(
       `SELECT co.id_comentario, co.texto, co.data_comentario, u.id_usuario, u.nome_usuario
        FROM comentario co
        JOIN usuario u ON u.id_usuario = co.id_usuario_fk
        WHERE co.id_avaliacao_fk = $1
-       ORDER BY co.data_comentario ASC`, [req.params.id]
+       ORDER BY co.data_comentario ASC`,
+      [req.params.id]
     );
+
     res.json({ ...r.rows[0], comentarios: comentarios.rows });
   } catch (err) {
     console.error('detalhe aval error:', err.message);
@@ -94,29 +109,40 @@ router.get('/:id', async (req, res) => {
 // POST /api/avaliacoes
 router.post('/', authRequired, async (req, res) => {
   const { id_jogo_fk, nota, titulo, texto } = req.body;
-  if (!id_jogo_fk || nota == null || !titulo || !texto)
+
+  if (!id_jogo_fk || nota == null || !titulo || !texto) {
     return res.status(400).json({ erro: 'Campos obrigatórios não preenchidos' });
-  if (texto.length < 40)
+  }
+
+  if (texto.length < 40) {
     return res.status(400).json({ erro: 'Texto deve ter no mínimo 40 caracteres' });
+  }
 
   try {
     const existe = await pool.query(
       'SELECT id_avaliacao FROM avaliacao WHERE id_usuario_fk = $1 AND id_jogo_fk = $2',
       [req.usuario.id, id_jogo_fk]
     );
-    if (existe.rows.length) return res.status(409).json({ erro: 'Você já avaliou este jogo' });
+
+    if (existe.rows.length) {
+      return res.status(409).json({ erro: 'Você já avaliou este jogo' });
+    }
 
     const r = await pool.query(
       `INSERT INTO avaliacao (id_usuario_fk, id_jogo_fk, nota, titulo, texto, data_publicacao)
-       VALUES ($1,$2,$3,$4,$5,CURRENT_DATE) RETURNING id_avaliacao`,
+       VALUES ($1,$2,$3,$4,$5,CURRENT_DATE)
+       RETURNING id_avaliacao`,
       [req.usuario.id, id_jogo_fk, nota, titulo, texto]
     );
+
     await pool.query(
       `UPDATE jogo SET
          nota_media       = (SELECT AVG(nota)   FROM avaliacao WHERE id_jogo_fk = $1),
          total_avaliacoes = (SELECT COUNT(*)::int FROM avaliacao WHERE id_jogo_fk = $1)
-       WHERE id_jogo = $1`, [id_jogo_fk]
+       WHERE id_jogo = $1`,
+      [id_jogo_fk]
     );
+
     res.status(201).json({ id_avaliacao: r.rows[0].id_avaliacao });
   } catch (err) {
     console.error(err.message);
@@ -127,15 +153,29 @@ router.post('/', authRequired, async (req, res) => {
 // PUT /api/avaliacoes/:id
 router.put('/:id', authRequired, async (req, res) => {
   const { nota, titulo, texto } = req.body;
+
   try {
-    const r = await pool.query('SELECT id_usuario_fk FROM avaliacao WHERE id_avaliacao = $1', [req.params.id]);
-    if (!r.rows.length) return res.status(404).json({ erro: 'Avaliação não encontrada' });
-    if (r.rows[0].id_usuario_fk !== req.usuario.id && req.usuario.perfil !== 'Administrador')
+    const r = await pool.query(
+      'SELECT id_usuario_fk FROM avaliacao WHERE id_avaliacao = $1',
+      [req.params.id]
+    );
+
+    if (!r.rows.length) {
+      return res.status(404).json({ erro: 'Avaliação não encontrada' });
+    }
+
+    if (
+      r.rows[0].id_usuario_fk !== req.usuario.id &&
+      req.usuario.perfil !== 'Administrador'
+    ) {
       return res.status(403).json({ erro: 'Sem permissão' });
+    }
+
     await pool.query(
       'UPDATE avaliacao SET nota=$1, titulo=$2, texto=$3 WHERE id_avaliacao=$4',
       [nota, titulo, texto, req.params.id]
     );
+
     res.json({ mensagem: 'Avaliação atualizada' });
   } catch (err) {
     console.error(err.message);
@@ -147,20 +187,35 @@ router.put('/:id', authRequired, async (req, res) => {
 router.delete('/:id', authRequired, async (req, res) => {
   try {
     const r = await pool.query(
-      'SELECT id_usuario_fk, id_jogo_fk FROM avaliacao WHERE id_avaliacao = $1', [req.params.id]
+      'SELECT id_usuario_fk, id_jogo_fk FROM avaliacao WHERE id_avaliacao = $1',
+      [req.params.id]
     );
-    if (!r.rows.length) return res.status(404).json({ erro: 'Avaliação não encontrada' });
-    if (r.rows[0].id_usuario_fk !== req.usuario.id && req.usuario.perfil !== 'Administrador')
+
+    if (!r.rows.length) {
+      return res.status(404).json({ erro: 'Avaliação não encontrada' });
+    }
+
+    if (
+      r.rows[0].id_usuario_fk !== req.usuario.id &&
+      req.usuario.perfil !== 'Administrador'
+    ) {
       return res.status(403).json({ erro: 'Sem permissão' });
+    }
 
     const jogo_id = r.rows[0].id_jogo_fk;
-    await pool.query('DELETE FROM avaliacao WHERE id_avaliacao = $1', [req.params.id]);
+
+    await pool.query('DELETE FROM avaliacao WHERE id_avaliacao = $1', [
+      req.params.id
+    ]);
+
     await pool.query(
       `UPDATE jogo SET
          nota_media       = (SELECT AVG(nota)    FROM avaliacao WHERE id_jogo_fk = $1),
          total_avaliacoes = (SELECT COUNT(*)::int FROM avaliacao WHERE id_jogo_fk = $1)
-       WHERE id_jogo = $1`, [jogo_id]
+       WHERE id_jogo = $1`,
+      [jogo_id]
     );
+
     res.json({ mensagem: 'Avaliação excluída' });
   } catch (err) {
     console.error(err.message);
@@ -175,6 +230,7 @@ router.post('/:id/curtir', authRequired, async (req, res) => {
       'SELECT 1 FROM curtida WHERE id_avaliacao_fk=$1 AND id_usuario_fk=$2',
       [req.params.id, req.usuario.id]
     );
+
     if (ja.rows.length) {
       await pool.query(
         'DELETE FROM curtida WHERE id_avaliacao_fk=$1 AND id_usuario_fk=$2',
@@ -182,10 +238,12 @@ router.post('/:id/curtir', authRequired, async (req, res) => {
       );
       return res.json({ curtiu: false });
     }
+
     await pool.query(
       'INSERT INTO curtida (id_avaliacao_fk, id_usuario_fk, data_curtida) VALUES ($1,$2,CURRENT_DATE)',
       [req.params.id, req.usuario.id]
     );
+
     res.json({ curtiu: true });
   } catch (err) {
     console.error(err.message);
@@ -196,13 +254,19 @@ router.post('/:id/curtir', authRequired, async (req, res) => {
 // POST /api/avaliacoes/:id/comentar
 router.post('/:id/comentar', authRequired, async (req, res) => {
   const { texto } = req.body;
-  if (!texto) return res.status(400).json({ erro: 'Texto obrigatório' });
+
+  if (!texto) {
+    return res.status(400).json({ erro: 'Texto obrigatório' });
+  }
+
   try {
     const r = await pool.query(
       `INSERT INTO comentario (id_avaliacao_fk, id_usuario_fk, texto, data_comentario)
-       VALUES ($1,$2,$3,CURRENT_DATE) RETURNING id_comentario`,
+       VALUES ($1,$2,$3,CURRENT_DATE)
+       RETURNING id_comentario`,
       [req.params.id, req.usuario.id, texto]
     );
+
     res.status(201).json({ id_comentario: r.rows[0].id_comentario });
   } catch (err) {
     console.error(err.message);
@@ -210,4 +274,4 @@ router.post('/:id/comentar', authRequired, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
