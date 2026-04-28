@@ -1,6 +1,6 @@
-import express from 'express';
-import pool from '../db/connection.js';
-import { authRequired } from '../middleware/auth.js';
+const express = require('express');
+const pool = require('../db/connection');
+const { authRequired } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -274,4 +274,4 @@ router.post('/:id/comentar', authRequired, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

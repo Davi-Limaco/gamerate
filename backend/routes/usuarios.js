@@ -1,7 +1,7 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import pool from '../db/connection.js';
-import { authRequired, requirePerfil } from '../middleware/auth.js';
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const pool = require('../db/connection');
+const { authRequired, requirePerfil } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -218,4 +218,4 @@ router.delete('/:id', authRequired, requirePerfil('Administrador'), async (req, 
   }
 });
 
-export default router;
+module.exports = router;

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Backend da plataforma GameRate",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
