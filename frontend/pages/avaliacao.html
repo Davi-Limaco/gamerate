@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Avaliação</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .aval-wrap{max-width:800px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+    .aval-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;margin-bottom:24px;transition:color .2s;}
+    .aval-back:hover{color:var(--text);}
+    .aval-game-row{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:24px;cursor:pointer;transition:border-color .2s;}
+    .aval-game-row:hover{border-color:rgba(232,255,71,.2);}
+    .aval-game-capa{width:52px;height:68px;border-radius:6px;object-fit:cover;background:var(--surface2);}
+    .aval-main{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:30px;margin-bottom:24px;}
+    .aval-titulo{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;margin-bottom:12px;}
+    .aval-author-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+    .aval-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--bg);}
+    .aval-nota-big{font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--accent);line-height:1;text-shadow:0 0 40px rgba(232,255,71,.3);}
+    .aval-nota-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .aval-nota-wrap{display:flex;align-items:flex-end;gap:16px;margin-bottom:24px;}
+    .nota-bar-wrap{flex:1;max-width:240px;}
+    .nota-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:8px;}
+    .nota-bar-fill{height:100%;background:var(--accent);border-radius:3px;}
+    .aval-texto{font-size:15px;color:var(--muted);line-height:1.8;white-space:pre-wrap;}
+    .aval-actions{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+    .btn-like{display:flex;align-items:center;gap:6px;background:rgba(255,79,79,.1);border:1px solid rgba(255,79,79,.3);color:var(--accent2);border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;}
+    .btn-like:hover,.btn-like.liked{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+
+    .comments-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;}
+    .comments-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:20px;}
+    .comment-form{display:flex;gap:10px;margin-bottom:24px;}
+    .comment-form input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;}
+    .comment-form input:focus{border-color:var(--accent);}
+    .comment-list{display:flex;flex-direction:column;gap:14px;}
+    .comment-item{display:flex;gap:12px;}
+    .comment-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--bg);flex-shrink:0;}
+    .comment-body{flex:1;}
+    .comment-author{font-size:13px;font-weight:600;margin-bottom:4px;}
+    .comment-author span{font-weight:400;color:var(--muted);font-size:11px;margin-left:6px;}
+    .comment-text{font-size:13px;color:var(--muted);line-height:1.6;}
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/login.html"    class="guest-only">Login</a>
+    <a href="/pages/cadastro.html" class="guest-only btn-accent">Registrar</a>
+    <a href="/pages/perfil.html"   class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="aval-wrap" id="avalWrap">
+    <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+const avalId = new URLSearchParams(location.search).get('id');
+if (!avalId) window.location.href = '/pages/catalogo.html';
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
+});
+
+const COLORS = ['#e8ff47','#ff4f4f','#47c5ff','#ff9f47','#a78bfa','#34d399'];
+function colorFor(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return COLORS[h%COLORS.length]; }
+
+let curtidas = 0;
+let curtiu   = false;
+
+async function loadAvaliacao() {
+  try {
+    const a = await api.get(`/avaliacoes/${avalId}`);
+    document.title = `GameRate — ${a.titulo}`;
+    curtidas = a.total_curtidas;
+
+    const col   = colorFor(a.nome_usuario);
+    const pct   = a.nota ? (parseFloat(a.nota)/5*100).toFixed(0) : 0;
+    const capaEl = a.capa
+      ? `<img class="aval-game-capa" src="${a.capa}" alt="${a.nome_jogo}">`
+      : `<div class="aval-game-capa"></div>`;
+
+    const user    = getUser();
+    const isOwner = user && a.id_usuario === parseInt(getUser()?.id);
+
+    const commentsHTML = a.comentarios.length
+      ? a.comentarios.map(c => `
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:${colorFor(c.nome_usuario)}">${c.nome_usuario.slice(0,2).toUpperCase()}</div>
+            <div class="comment-body">
+              <div class="comment-author">@${c.nome_usuario} <span>${fmtDate(c.data_comentario)}</span></div>
+              <div class="comment-text">${c.texto}</div>
+            </div>
+          </div>`).join('')
+      : '<div style="color:var(--muted);font-size:13px">Nenhum comentário ainda.</div>';
+
+    document.getElementById('avalWrap').innerHTML = `
+      <a href="/pages/jogo.html?id=${a.id_jogo}" class="aval-back">← Voltar para ${a.nome_jogo}</a>
+
+      <div class="aval-game-row" onclick="location.href='/pages/jogo.html?id=${a.id_jogo}'">
+        ${capaEl}
+        <div>
+          <div style="font-size:16px;font-weight:600">${a.nome_jogo}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Ver página do jogo →</div>
+        </div>
+      </div>
+
+      <div class="aval-main">
+        <div class="aval-titulo">${a.titulo}</div>
+        <div class="aval-author-row">
+          <div class="aval-avatar" style="background:${col}">${a.nome_usuario.slice(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-size:14px;font-weight:600">@${a.nome_usuario}</div>
+            <div style="font-size:12px;color:var(--muted)">${fmtDate(a.data_publicacao)}</div>
+          </div>
+        </div>
+        <div class="aval-nota-wrap">
+          <div>
+            <div class="aval-nota-big">${a.nota||'—'}</div>
+            <div class="aval-nota-label">de 5.0</div>
+          </div>
+          <div class="nota-bar-wrap">
+            <div style="font-size:12px;color:var(--muted)">Nota do jogador</div>
+            <div class="nota-bar"><div class="nota-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="aval-texto">${a.texto}</div>
+        <div class="aval-actions">
+          <button class="btn-like ${curtiu?'liked':''}" id="btnLike" onclick="toggleCurtida()">
+            ♥ <span id="likeCount">${curtidas}</span>
+          </button>
+          ${isOwner ? `
+            <button class="btn btn-danger btn-sm" onclick="excluirAval()">Excluir</button>
+          ` : ''}
+        </div>
+      </div>
+
+      <div class="comments-section">
+        <div class="comments-title">COMENTÁRIOS (${a.comentarios.length})</div>
+        ${isLoggedIn() ? `
+          <div class="comment-form">
+            <input type="text" id="commentInput" placeholder="Escreva um comentário..."/>
+            <button class="btn btn-accent btn-sm" onclick="enviarComentario()">Enviar</button>
+          </div>` : `
+          <div style="font-size:13px;color:var(--muted);margin-bottom:20px">
+            <a href="/pages/login.html" style="color:var(--accent)">Faça login</a> para comentar.
+          </div>`}
+        <div class="comment-list" id="commentList">${commentsHTML}</div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('avalWrap').innerHTML =
+      `<div class="empty-state"><p>Avaliação não encontrada.</p></div>`;
+  }
+}
+
+async function toggleCurtida() {
+  if (!isLoggedIn()) { window.location.href = `/pages/login.html?next=/pages/avaliacao.html?id=${avalId}`; return; }
+  try {
+    const r = await api.post(`/avaliacoes/${avalId}/curtir`);
+    curtiu = r.curtiu;
+    curtidas += curtiu ? 1 : -1;
+    const btn = document.getElementById('btnLike');
+    btn.classList.toggle('liked', curtiu);
+    document.getElementById('likeCount').textContent = curtidas;
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function enviarComentario() {
+  const input = document.getElementById('commentInput');
+  const texto = input.value.trim();
+  if (!texto) return;
+  try {
+    await api.post(`/avaliacoes/${avalId}/comentar`, { texto });
+    input.value = '';
+    toast('Comentário publicado!', 'success');
+    loadAvaliacao();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function excluirAval() {
+  if (!confirm('Excluir esta avaliação? Esta ação é irreversível.')) return;
+  try {
+    const aval = await api.get(`/avaliacoes/${avalId}`);
+    await api.delete(`/avaliacoes/${avalId}`);
+    toast('Avaliação excluída', 'success');
+    setTimeout(() => window.location.href = `/pages/jogo.html?id=${aval.id_jogo}`, 1200);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+loadAvaliacao();
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GameRate — Contato</title>
+  <link rel="stylesheet" href="../css/shared.css"/>
+  <style>
+    .contato-wrap{max-width:580px;margin:0 auto;padding:60px 24px;position:relative;z-index:1;}
+    .contato-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;margin-bottom:8px;}
+    .contato-title span{color:var(--accent);}
+    .contato-sub{font-size:15px;color:var(--muted);margin-bottom:36px;line-height:1.6;}
+    .contato-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;}
+    .btn-full{width:100%;justify-content:center;}
+    .success-box{background:rgba(232,255,71,.08);border:1px solid rgba(232,255,71,.2);border-radius:10px;padding:20px;text-align:center;}
+    .success-icon{font-size:36px;margin-bottom:10px;}
+    .success-text{font-size:15px;color:var(--accent);font-weight:600;}
+  </style>
+</head>
+<body>
+<header class="top-bar">
+  <a href="/index.html" class="logo">GAME<span>RATE</span></a>
+  <div class="search-wrap">
+    <svg class="ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Pesquisar jogos..."/>
+  </div>
+  <nav class="nav-links">
+    <a href="/pages/catalogo.html">Jogos</a>
+    <a href="/pages/login.html"    class="guest-only">Login</a>
+    <a href="/pages/cadastro.html" class="guest-only btn-accent">Registrar</a>
+    <a href="/pages/perfil.html"   class="auth-only" style="display:none"><span class="nav-username"></span></a>
+    <a href="#" onclick="logout()" class="auth-only" style="display:none">Sair</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+  <div class="contato-wrap">
+    <div class="contato-title">FALE <span>CONOSCO</span></div>
+    <p class="contato-sub">Tem uma dúvida, encontrou um erro ou quer fazer uma denúncia? Preencha o formulário abaixo e nossa equipe responderá em breve.</p>
+
+    <div class="contato-card" id="contatoCard">
+      <div class="form-group">
+        <label>E-mail para contato</label>
+        <input type="email" id="email" placeholder="seu@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="tipo">
+          <option value="">Selecione...</option>
+          <option value="Dúvida">Dúvida</option>
+          <option value="Denúncia">Denúncia</option>
+          <option value="Erro">Erro no site</option>
+          <option value="Sugestão">Sugestão</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mensagem</label>
+        <textarea id="mensagem" rows="5" placeholder="Descreva detalhadamente..."></textarea>
+      </div>
+      <div id="errMsg" class="form-error" style="margin-bottom:12px"></div>
+      <button class="btn btn-accent btn-full" id="btnEnviar">Enviar mensagem</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
+  <div class="footer-links"><a href="/index.html">← Início</a></div>
+  <div class="footer-copy">© 2025 GameRate</div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+setupNav();
+
+document.getElementById('searchInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
+});
+
+const user = getUser();
+if (user) {
+  api.get('/usuarios/me').then(u => {
+    document.getElementById('email').value = u.email;
+  }).catch(() => {});
+}
+
+document.getElementById('btnEnviar').addEventListener('click', async () => {
+  const email_contato = document.getElementById('email').value.trim();
+  const tipo    = document.getElementById('tipo').value;
+  const mensagem= document.getElementById('mensagem').value.trim();
+  const err     = document.getElementById('errMsg');
+  err.textContent = '';
+
+  if (!email_contato || !tipo || !mensagem) { err.textContent = 'Preencha todos os campos'; return; }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.textContent = 'Enviando...'; btn.disabled = true;
+
+  try {
+    await api.post('/contato', { email_contato, tipo, mensagem });
+    document.getElementById('contatoCard').innerHTML = `
+      <div class="success-box">
+        <div class="success-icon">✅</div>
+        <div class="success-text">Mensagem enviada com sucesso!</div>
+        <p style="color:var(--muted);font-size:13px;margin-top:8px">Nossa equipe responderá no e-mail informado.</p>
+      </div>
+      <div style="margin-top:20px;text-align:center">
+        <a href="/index.html" class="btn btn-ghost">← Voltar ao início</a>
+      </div>`;
+  } catch(e) {
+    err.textContent = e.message;
+    btn.textContent = 'Enviar mensagem'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
