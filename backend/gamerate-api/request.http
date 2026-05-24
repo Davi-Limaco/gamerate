@@ -1,0 +1,323 @@
+# =============================================================
+#  GameRate API — Testes das Rotas (REST Client / VSCode)
+#  Servidor: http://localhost:3000
+#  Extensão: REST Client (humao.rest-client)
+#  OBS: execute `npm run db:load` antes de usar os testes para criar e popular o banco SQLite.
+# =============================================================
+
+@base = http://localhost:3000/api
+
+# =============================================================
+#  AUTH — Login e Cadastro
+# =============================================================
+
+### [AUTH] Cadastrar novo usuário
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "João Testador",
+  "email": "joao@teste.com",
+  "senha": "senha123"
+}
+
+###
+
+### [AUTH] Login (retorna id, nome e perfil)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gamerate.com",
+  "senha": "admin123"
+}
+
+###
+
+# =============================================================
+#  JOGOS — CRUD completo
+# =============================================================
+
+### [JOGOS] Listar todos
+GET {{base}}/jogos
+
+###
+
+### [JOGOS] Buscar por nome
+GET {{base}}/jogos?search=Elden
+
+###
+
+### [JOGOS] Filtrar por gênero
+GET {{base}}/jogos?genero=RPG
+
+###
+
+### [JOGOS] Filtrar por plataforma
+GET {{base}}/jogos?plataforma=PC
+
+###
+
+### [JOGOS] Buscar por ID
+GET {{base}}/jogos/1
+
+###
+
+### [JOGOS] Criar novo jogo (CREATE)
+POST {{base}}/jogos
+Content-Type: application/json
+
+{
+  "nome_jogo": "Celeste",
+  "desenvolvedora": "Maddy Thorson",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Um platformer desafiador sobre uma garota escalando a montanha Celeste, premiado pela narrativa sobre saúde mental.",
+  "capa": "https://via.placeholder.com/300x450?text=Celeste",
+  "generos": [9, 11],
+  "plataformas": [1, 6]
+}
+
+###
+
+### [JOGOS] Atualizar jogo (UPDATE)
+PUT {{base}}/jogos/9
+Content-Type: application/json
+
+{
+  "nome_jogo": "Celeste (Atualizado)",
+  "desenvolvedora": "Maddy Thorson & Noel Berry",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Platformer aclamado com narrativa sobre saúde mental e mecânicas de movimento únicas.",
+  "capa": "https://via.placeholder.com/300x450?text=Celeste"
+}
+
+###
+
+### [JOGOS] Excluir jogo (DELETE)
+DELETE {{base}}/jogos/9
+
+###
+
+### [JOGOS] Estatísticas do catálogo
+GET {{base}}/jogos/stats
+
+###
+
+### [JOGOS] Jogos em destaque
+GET {{base}}/jogos/destaques
+
+###
+
+# =============================================================
+#  AVALIAÇÕES — CRUD completo
+# =============================================================
+
+### [AVALIAÇÕES] Listar todas
+GET {{base}}/avaliacoes
+
+###
+
+### [AVALIAÇÕES] Filtrar por jogo
+GET {{base}}/avaliacoes?jogo_id=1
+
+###
+
+### [AVALIAÇÕES] Avaliações em destaque (maior nota)
+GET {{base}}/avaliacoes/destaque
+
+###
+
+### [AVALIAÇÕES] Buscar por ID
+GET {{base}}/avaliacoes/1
+
+###
+
+### [AVALIAÇÕES] Criar avaliação (CREATE)
+# Use o id_usuario retornado pelo login em id_usuario_fk
+POST {{base}}/avaliacoes
+Content-Type: application/json
+
+{
+  "id_usuario_fk": 1,
+  "id_jogo_fk": 1,
+  "nota": 4.5,
+  "titulo": "Obra-prima do RPG de ação",
+  "texto": "Elden Ring redefine o gênero. A liberdade de exploração combinada com o desafio característico da FromSoftware cria uma experiência inesquecível."
+}
+
+###
+
+### [AVALIAÇÕES] Atualizar avaliação (UPDATE)
+PUT {{base}}/avaliacoes/1
+Content-Type: application/json
+
+{
+  "nota": 5,
+  "titulo": "A melhor experiência dos jogos modernos",
+  "texto": "Após zerado, posso dizer com certeza: Elden Ring é uma das maiores conquistas do medium."
+}
+
+###
+
+### [AVALIAÇÕES] Excluir avaliação (DELETE)
+DELETE {{base}}/avaliacoes/1
+
+###
+
+# =============================================================
+#  USUÁRIOS — CRUD completo
+# =============================================================
+
+### [USUÁRIOS] Listar todos
+GET {{base}}/usuarios
+
+###
+
+### [USUÁRIOS] Buscar por ID
+GET {{base}}/usuarios/1
+
+###
+
+### [USUÁRIOS] Avaliações de um usuário
+GET {{base}}/usuarios/1/avaliacoes
+
+###
+
+### [USUÁRIOS] Criar usuário (CREATE)
+POST {{base}}/usuarios
+Content-Type: application/json
+
+{
+  "nome_usuario": "Maria Silva",
+  "email": "maria@exemplo.com",
+  "senha": "senha456",
+  "id_perfil_fk": 1
+}
+
+###
+
+### [USUÁRIOS] Atualizar usuário (UPDATE)
+PUT {{base}}/usuarios/2
+Content-Type: application/json
+
+{
+  "nome_usuario": "Maria Silva Atualizada",
+  "email": "maria.nova@exemplo.com"
+}
+
+###
+
+### [USUÁRIOS] Alterar perfil do usuário
+PUT {{base}}/usuarios/2/perfil
+Content-Type: application/json
+
+{
+  "id_perfil_fk": 2
+}
+
+###
+
+### [USUÁRIOS] Excluir usuário (DELETE)
+DELETE {{base}}/usuarios/2
+
+###
+
+# =============================================================
+#  CATÁLOGO — Gêneros, Plataformas e Perfis
+# =============================================================
+
+### [GÊNEROS] Listar todos
+GET {{base}}/generos
+
+###
+
+### [GÊNEROS] Criar (CREATE)
+POST {{base}}/generos
+Content-Type: application/json
+
+{
+  "nome_genero": "Soulslike"
+}
+
+###
+
+### [GÊNEROS] Excluir (DELETE)
+DELETE {{base}}/generos/16
+
+###
+
+### [PLATAFORMAS] Listar todas
+GET {{base}}/plataformas
+
+###
+
+### [PLATAFORMAS] Criar (CREATE)
+POST {{base}}/plataformas
+Content-Type: application/json
+
+{
+  "nome_plataforma": "PlayStation Portable"
+}
+
+###
+
+### [PLATAFORMAS] Excluir (DELETE)
+DELETE {{base}}/plataformas/11
+
+###
+
+### [PERFIS] Listar todos
+GET {{base}}/perfis
+
+###
+
+### [PERFIS] Criar (CREATE)
+POST {{base}}/perfis
+Content-Type: application/json
+
+{
+  "nome_perfil": "Moderador"
+}
+
+###
+
+### [PERFIS] Atualizar (UPDATE)
+PUT {{base}}/perfis/4
+Content-Type: application/json
+
+{
+  "nome_perfil": "Moderador Sênior"
+}
+
+###
+
+### [PERFIS] Excluir (DELETE)
+DELETE {{base}}/perfis/4
+
+###
+
+# =============================================================
+#  CONTATO — Formulário público
+# =============================================================
+
+### [CONTATO] Listar todas as mensagens
+GET {{base}}/contato
+
+###
+
+### [CONTATO] Enviar mensagem (CREATE)
+POST {{base}}/contato
+Content-Type: application/json
+
+{
+  "email_contato": "usuario@email.com",
+  "tipo": "Dúvida",
+  "mensagem": "Gostaria de saber como funciona o sistema de avaliações do GameRate."
+}
+
+###
+
+### [CONTATO] Excluir mensagem (DELETE)
+DELETE {{base}}/contato/1
+
+###
