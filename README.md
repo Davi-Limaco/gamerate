@@ -20,11 +20,9 @@ GameRate allows players to discover, evaluate and discuss games in a centralized
 ## 🛠️ Tech Stack
 
 **Backend**
-- Node.js + Express (CommonJS)
-- PostgreSQL via Supabase
-- `pg` driver
-- JWT authentication (jsonwebtoken)
-- Password hashing (bcryptjs)
+- Node.js + Express
+- SQLite database
+- `morgan` request logging
 
 **Frontend**
 - Vanilla HTML, CSS and JavaScript
@@ -36,122 +34,87 @@ GameRate allows players to discover, evaluate and discuss games in a centralized
 
 ### Prerequisites
 - Node.js 18+
-- Supabase account (free)
 
-### 1. Supabase Setup
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run `backend/db/schema.sql`
-3. Then run `backend/db/seed.sql`
-4. Go to **Project Settings → Database → Connection string → URI** and copy the URL
-
-### 2. Local Setup
+### 1. Local Setup
 
 ```bash
-cd backend
-cp .env.example .env
-# Edit .env with your Supabase DATABASE_URL
+cd backend/gamerate-api
 npm install
 npm run dev
-# Server at http://localhost:3001
 ```
 
-### 3. Deploy on Render
+The API will be available at `http://localhost:3000`.
 
-1. Push to GitHub (make sure `.env` is NOT committed)
-2. Create a **Web Service** on [render.com](https://render.com)
-3. Connect your GitHub repository
-4. Configure:
+### 2. Database Setup
 
-| Field | Value |
-|---|---|
-| Root Directory | `backend` |
-| Build Command | `npm install` |
-| Start Command | `node server.js` |
+The project uses a local SQLite database file at `backend/gamerate-api/src/database/db.sqlite`.
 
-5. Add **Environment Variables**:
+To reset and reload the database with seeded data:
 
-| Variable | Value |
-|---|---|
-| `DATABASE_URL` | Your Supabase Session Pooler URI |
-| `JWT_SECRET` | A secure random string |
-
-6. Click **Create Web Service**
-
-### 4. Elevate Admin Account
-
-After registering your account, run in Supabase SQL Editor:
-
-```sql
-UPDATE usuario 
-SET id_perfil_fk = 3 
-WHERE email = 'seu@email.com';
+```bash
+npm run db:drop
+npm run db:load
 ```
-
-Then log out and log back in. Access the admin panel at `/pages/admin.html`.
 
 ## 📁 Project Structure
 
 ```
 gamerate/
 ├── backend/
-│   ├── db/
-│   │   ├── connection.js        # PostgreSQL connection pool
-│   │   ├── schema.sql           # Table definitions
-│   │   └── seed.sql             # Initial data (profiles, platforms, genres, games)
-│   ├── middleware/
-│   │   └── auth.js              # JWT validation middleware
-│   ├── models/
-│   │   ├── JogoModel.js         # Game queries (list, detail, create, update, delete)
-│   │   ├── AvaliacaoModel.js    # Review queries + likes + comments
-│   │   ├── UsuarioModel.js      # User queries + follow system + notifications
-│   │   └── MiscModel.js         # Genre, platform and contact queries
-│   ├── routes/
-│   │   ├── auth.js              # POST /api/auth/login, /api/auth/cadastro
-│   │   ├── jogos.js             # GET|POST|PUT|DELETE /api/jogos
-│   │   ├── avaliacoes.js        # GET|POST|PUT|DELETE /api/avaliacoes
-│   │   ├── usuarios.js          # GET|PUT /api/usuarios
-│   │   └── misc.js              # /api/generos, /api/plataformas, /api/contato
-│   ├── .env.example             # Environment variables template
-│   ├── .gitignore
-│   ├── package.json
-│   └── server.js                # Express entry point
+│   └── gamerate-api/
+│       ├── docs/                   # Project documentation and ERD
+│       ├── public/                 # Static frontend assets served by the API
+│       │   ├── assets/
+│       │   ├── css/
+│       │   ├── js/
+│       │   └── pages/
+│       ├── src/
+│       │   ├── controllers/        # Request handlers for each route group
+│       │   ├── database/           # SQLite setup, migration and seed scripts
+│       │   ├── models/             # Data access and SQL logic
+│       │   ├── routes/             # Route definitions
+│       │   ├── index.js            # Express entry point
+│       │   └── routes.js           # Central API router
+│       ├── package.json
+│       └── package-lock.json
 └── frontend/
+    ├── assets/
     ├── css/
-    │   └── shared.css           # Global design system (CSS Variables, components)
+    │   └── shared.css              # Global design system
     ├── js/
-    │   └── api.js               # HTTP client + auth helpers + global utilities
+    │   └── api.js                  # HTTP client + auth helpers + utilities
     ├── pages/
-    │   ├── login.html           # Login page
-    │   ├── cadastro.html        # Register page
-    │   ├── catalogo.html        # Game catalog with filters and pagination
-    │   ├── jogo.html            # Game detail + reviews
-    │   ├── avaliacao.html       # Review detail + comments + likes
-    │   ├── perfil.html          # User profile + history + settings
-    │   ├── contato.html         # Contact form
-    │   └── admin.html           # Admin dashboard
-    └── index.html               # Home page
+    │   ├── admin.html
+    │   ├── avaliacao.html
+    │   ├── cadastro.html
+    │   ├── catalogo.html
+    │   ├── contato.html
+    │   ├── jogo.html
+    │   ├── login.html
+    │   └── perfil.html
+    └── index.html
 ```
 
 ## 🏗️ Architecture
 
 The backend follows a **Route → Model** pattern to separate HTTP concerns from database logic:
 
-- **Routes** handle HTTP requests, validate inputs and return responses
-- **Models** contain all database queries and business logic
+- **Routes** handle HTTP requests and delegate to controllers
+- **Controllers** validate the request and call models
+- **Models** execute SQL and return data
 
 ```
-Request → Route (auth, validation) → Model (SQL query) → Response
+Request → Route → Controller → Model → Response
 ```
 
 ### Models Overview
 
 | Model | Responsibilities |
 |---|---|
-| `JogoModel` | List games with filters/pagination, game detail, stats, featured games, CRUD |
-| `AvaliacaoModel` | List/create/edit/delete reviews, toggle likes, add comments, update game rating |
-| `UsuarioModel` | Register, login lookup, profile CRUD, follow system, notifications, admin ops |
-| `MiscModel` | List genres and platforms with game counts, contact message CRUD |
+| `Jogo` | Game queries, filtering, detail, stats, featured games, CRUD |
+| `Avaliacao` | Review queries, likes, comments, rating updates |
+| `Usuario` | User authentication, profile, follow system, notifications |
+| `Categoria` / `Perfil` / `Contato` | Auxiliary data and contact handling |
 
 ## 🔌 API Endpoints
 
@@ -190,7 +153,7 @@ Request → Route (auth, validation) → Model (SQL query) → Response
 
 ## 🔑 Default Admin
 
-After running `seed.sql`:
+After running the seed script:
 - **Email:** admin@gamerate.com
 - **Password:** admin123
 
