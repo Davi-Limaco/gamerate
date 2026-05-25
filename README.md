@@ -4,18 +4,16 @@ A full-stack web platform for rating and reviewing electronic games, built as an
 
 ## 📖 About
 
-GameRate allows players to discover, evaluate and discuss games in a centralized and structured way. Users can write detailed reviews with scores, comment on other players' analyses, like their favorite reviews, and follow other users.
+GameRate permite que jogadores descubram jogos, postem avaliações e consultem informações em um único lugar. A aplicação oferece catálogo de jogos, cadastro e login de usuários, gestão de avaliações, e gestão de catálogo de gêneros, plataformas e perfis.
 
 ## ✨ Features
 
-- 🏠 **Home** — Featured releases, top-rated games, highlighted reviews, trailer section and genre browsing
-- 🎮 **Game Catalog** — Filter and sort games by genre, platform, rating and release date with pagination
-- 📝 **Reviews** — Write, edit and delete detailed game reviews with a score from 1 to 5
-- ❤️ **Likes & Comments** — Interact with other users' reviews
-- 👤 **User Profile** — View review history, manage followers and edit personal info
-- 🔔 **Notifications** — Get notified about new likes, comments and followers
-- 📬 **Contact Form** — Send questions, reports or bug reports
-- 🛠️ **Admin Panel** — Full dashboard to manage games, users, reviews and contact messages
+- 🏠 **Home** — Exibição de jogos em destaque, estatísticas e descoberta de títulos
+- 🎮 **Game Catalog** — Busca e filtragem por gênero e plataforma
+- 📝 **Reviews** — Criação, edição e exclusão de avaliações de jogos
+- 👤 **Usuários** — Cadastro, login e gerenciamento de perfis de usuário
+- 📬 **Contact Form** — Envio de mensagens de contato pelo site
+- 🛠️ **Admin Panel** — Dashboard para gerenciar jogos, usuários, categorias e contatos
 
 ## 🛠️ Tech Stack
 
@@ -25,10 +23,9 @@ GameRate allows players to discover, evaluate and discuss games in a centralized
 - `morgan` request logging
 
 **Frontend**
-- Vanilla HTML, CSS and JavaScript
-- Custom design system with CSS Variables
-- Dynamic rendering via Fetch API
-- Fully responsive
+- Vanilla HTML, CSS e JavaScript
+- Design responsivo com CSS customizado
+- Consumo de API via Fetch
 
 ## 🚀 Getting Started
 
@@ -43,17 +40,23 @@ npm install
 npm run dev
 ```
 
-The API will be available at `http://localhost:3000`.
+A API ficará disponível em `http://localhost:3000`.
 
 ### 2. Database Setup
 
-The project uses a local SQLite database file at `backend/gamerate-api/src/database/db.sqlite`.
+O projeto usa um arquivo SQLite local em `backend/gamerate-api/src/database/db.sqlite`.
 
-To reset and reload the database with seeded data:
+Para recriar o banco de dados com dados de seed:
 
 ```bash
 npm run db:drop
 npm run db:load
+```
+
+Também existe um comando combinado:
+
+```bash
+npm run db:reload
 ```
 
 ## 📁 Project Structure
@@ -62,27 +65,27 @@ npm run db:load
 gamerate/
 ├── backend/
 │   └── gamerate-api/
-│       ├── docs/                   # Project documentation and ERD
-│       ├── public/                 # Static frontend assets served by the API
+│       ├── docs/                   # Documentação e ERD
+│       ├── public/                 # Frontend estático servido pela API
 │       │   ├── assets/
 │       │   ├── css/
 │       │   ├── js/
 │       │   └── pages/
 │       ├── src/
-│       │   ├── controllers/        # Request handlers for each route group
-│       │   ├── database/           # SQLite setup, migration and seed scripts
-│       │   ├── models/             # Data access and SQL logic
-│       │   ├── routes/             # Route definitions
-│       │   ├── index.js            # Express entry point
-│       │   └── routes.js           # Central API router
+│       │   ├── controllers/        # Handlers de requisição
+│       │   ├── database/           # Configuração SQLite e seeds
+│       │   ├── models/             # Lógica SQL e acesso a dados
+│       │   ├── routes/             # Definição de endpoints
+│       │   ├── index.js            # Entrada do servidor Express
+│       │   └── routes.js           # Router central da API
 │       ├── package.json
 │       └── package-lock.json
 └── frontend/
     ├── assets/
     ├── css/
-    │   └── shared.css              # Global design system
+    │   └── shared.css              # Design system global
     ├── js/
-    │   └── api.js                  # HTTP client + auth helpers + utilities
+    │   └── api.js                  # Cliente HTTP + utilitários
     ├── pages/
     │   ├── admin.html
     │   ├── avaliacao.html
@@ -97,11 +100,11 @@ gamerate/
 
 ## 🏗️ Architecture
 
-The backend follows a **Route → Model** pattern to separate HTTP concerns from database logic:
+A arquitetura do backend segue o padrão **Route → Controller → Model**:
 
-- **Routes** handle HTTP requests and delegate to controllers
-- **Controllers** validate the request and call models
-- **Models** execute SQL and return data
+- **Routes** definem os endpoints e delegam para o Controller
+- **Controllers** tratam validações e chamam os models
+- **Models** executam SQL e retornam dados
 
 ```
 Request → Route → Controller → Model → Response
@@ -111,53 +114,58 @@ Request → Route → Controller → Model → Response
 
 | Model | Responsibilities |
 |---|---|
-| `Jogo` | Game queries, filtering, detail, stats, featured games, CRUD |
-| `Avaliacao` | Review queries, likes, comments, rating updates |
-| `Usuario` | User authentication, profile, follow system, notifications |
-| `Categoria` / `Perfil` / `Contato` | Auxiliary data and contact handling |
+| `Jogo` | Consultas de jogos, filtros, detalhes, estatísticas e CRUD |
+| `Avaliacao` | Consultas de avaliações, criação, edição e remoção |
+| `Usuario` | Autenticação, cadastro, leitura e atualização de usuários |
+| `Categoria` / `Perfil` / `Contato` | Dados auxiliares para gêneros, plataformas, perfis e mensagens |
 
 ## 🔌 API Endpoints
 
-| Method | Route | Description | Auth |
-|---|---|---|---|
-| POST | `/api/auth/cadastro` | Register | — |
-| POST | `/api/auth/login` | Login | — |
-| GET | `/api/jogos` | List games (filters + pagination) | — |
-| GET | `/api/jogos/stats` | Dashboard counters | — |
-| GET | `/api/jogos/destaques` | Featured releases + top rated | — |
-| GET | `/api/jogos/:id` | Game detail + genres + platforms | — |
-| POST | `/api/jogos` | Create game | Admin |
-| PUT | `/api/jogos/:id` | Edit game | Admin |
-| DELETE | `/api/jogos/:id` | Delete game | Admin |
-| GET | `/api/avaliacoes` | List reviews | — |
-| GET | `/api/avaliacoes/destaque` | Top liked reviews | — |
-| GET | `/api/avaliacoes/:id` | Review detail + comments | — |
-| POST | `/api/avaliacoes` | Create review | Auth |
-| PUT | `/api/avaliacoes/:id` | Edit review | Owner/Admin |
-| DELETE | `/api/avaliacoes/:id` | Delete review | Owner/Admin |
-| POST | `/api/avaliacoes/:id/curtir` | Toggle like | Auth |
-| POST | `/api/avaliacoes/:id/comentar` | Add comment | Auth |
-| GET | `/api/usuarios/me` | My profile | Auth |
-| PUT | `/api/usuarios/me` | Edit profile | Auth |
-| GET | `/api/usuarios/me/avaliacoes` | My reviews | Auth |
-| GET | `/api/usuarios/me/notificacoes` | My notifications | Auth |
-| POST | `/api/usuarios/:id/seguir` | Toggle follow | Auth |
-| GET | `/api/usuarios` | List all users | Admin |
-| DELETE | `/api/usuarios/:id` | Delete user | Admin |
-| GET | `/api/generos` | List genres | — |
-| GET | `/api/plataformas` | List platforms | — |
-| POST | `/api/contato` | Send contact message | — |
-| GET | `/api/contato` | List contact messages | Admin |
-| GET | `/api/ping` | Health check | — |
-| GET | `/api/diagnostico` | Connection diagnostics | — |
+| Method | Route | Description |
+|---|---|---|
+| POST | `/api/auth/cadastro` | Registrar novo usuário |
+| POST | `/api/auth/login` | Autenticar usuário |
+| GET | `/api/jogos` | Listar jogos (filtros por `search`, `genero`, `plataforma`) |
+| GET | `/api/jogos/stats` | Estatísticas do catálogo |
+| GET | `/api/jogos/destaques` | Jogos em destaque |
+| GET | `/api/jogos/:id` | Detalhes de um jogo |
+| POST | `/api/jogos` | Criar jogo |
+| PUT | `/api/jogos/:id` | Editar jogo |
+| DELETE | `/api/jogos/:id` | Excluir jogo |
+| GET | `/api/avaliacoes` | Listar avaliações |
+| GET | `/api/avaliacoes/destaque` | Avaliações em destaque |
+| GET | `/api/avaliacoes/:id` | Detalhe de avaliação |
+| POST | `/api/avaliacoes` | Criar avaliação |
+| PUT | `/api/avaliacoes/:id` | Atualizar avaliação |
+| DELETE | `/api/avaliacoes/:id` | Excluir avaliação |
+| GET | `/api/usuarios` | Listar usuários |
+| GET | `/api/usuarios/:id` | Obter usuário por id |
+| GET | `/api/usuarios/:id/avaliacoes` | Avaliações de um usuário |
+| POST | `/api/usuarios` | Criar usuário |
+| PUT | `/api/usuarios/:id` | Atualizar usuário |
+| PUT | `/api/usuarios/:id/perfil` | Alterar perfil do usuário |
+| DELETE | `/api/usuarios/:id` | Excluir usuário |
+| GET | `/api/generos` | Listar gêneros |
+| POST | `/api/generos` | Criar gênero |
+| DELETE | `/api/generos/:id` | Excluir gênero |
+| GET | `/api/plataformas` | Listar plataformas |
+| POST | `/api/plataformas` | Criar plataforma |
+| DELETE | `/api/plataformas/:id` | Excluir plataforma |
+| GET | `/api/perfis` | Listar perfis |
+| POST | `/api/perfis` | Criar perfil |
+| PUT | `/api/perfis/:id` | Atualizar perfil |
+| DELETE | `/api/perfis/:id` | Excluir perfil |
+| GET | `/api/contato` | Listar contatos |
+| POST | `/api/contato` | Enviar mensagem de contato |
+| DELETE | `/api/contato/:id` | Excluir mensagem de contato |
 
 ## 🔑 Default Admin
 
-After running the seed script:
+Após rodar os seeds:
 - **Email:** admin@gamerate.com
 - **Password:** admin123
 
-> ⚠️ Change the password after first login.
+> ⚠️ Altere a senha após o primeiro login.
 
 ## 👥 Team
 
