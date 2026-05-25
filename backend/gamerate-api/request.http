@@ -70,7 +70,7 @@ Content-Type: application/json
   "desenvolvedora": "Maddy Thorson",
   "data_lancamento": "2018-01-25",
   "descricao": "Um platformer desafiador sobre uma garota escalando a montanha Celeste, premiado pela narrativa sobre saúde mental.",
-  "capa": "backend/gamerate-api/public/assets/celeste.jpg",
+  "capa": "/assets/celeste.jpg",
   "generos": [9, 11],
   "plataformas": [1, 6]
 }
@@ -86,7 +86,7 @@ Content-Type: application/json
   "desenvolvedora": "Maddy Thorson & Noel Berry",
   "data_lancamento": "2018-01-25",
   "descricao": "Platformer aclamado com narrativa sobre saúde mental e mecânicas de movimento únicas.",
-  "capa": "backend/gamerate-api/public/assets/celeste.jpg"
+  "capa": "/assets/celeste.jpg"
 }
 
 ###

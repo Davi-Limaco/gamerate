@@ -31,7 +31,7 @@ router.use((req, res) => {
 // Handler global de erros
 router.use((err, req, res, next) => {
   console.error(err.message);
-  const status = err.code || 500;
+  const status = Number.isInteger(err.status) ? err.status : 500;
   res.status(status).json({ message: err.message || 'Erro interno no servidor.' });
 });
 

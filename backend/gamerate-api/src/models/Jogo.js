@@ -92,8 +92,10 @@ async function update({ id, nome_jogo, desenvolvedora, data_lancamento, descrica
 async function remove(id) {
   const db = await Database.connect();
 
-  const { changes } = await db.run(`DELETE FROM jogo WHERE id_jogo = ?`, [id]);
+  await db.run(`DELETE FROM jogo_genero    WHERE id_jogo_fk = ?`, [id]);
+  await db.run(`DELETE FROM jogo_plataforma WHERE id_jogo_fk = ?`, [id]);
 
+  const { changes } = await db.run(`DELETE FROM jogo WHERE id_jogo = ?`, [id]);
   if (changes === 1) return true;
 
   throw new Error('Jogo não encontrado');
