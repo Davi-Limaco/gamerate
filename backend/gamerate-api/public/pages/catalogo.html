@@ -59,22 +59,6 @@
         <label>Plataforma</label>
         <select id="fPlat"><option value="">Todas</option></select>
       </div>
-      <div class="filter-group">
-        <label>Ordenar por</label>
-        <select id="fOrdem">
-          <option value="nome_jogo">Nome A-Z</option>
-          <option value="nota_media">Melhor avaliados</option>
-          <option value="total_avaliacoes">Mais avaliados</option>
-          <option value="data_lancamento">Mais recentes</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Direção</label>
-        <select id="fDir">
-          <option value="ASC">Crescente</option>
-          <option value="DESC">Decrescente</option>
-        </select>
-      </div>
       <button class="btn btn-ghost filter-reset btn-sm" onclick="resetFiltros()">Limpar filtros</button>
     </aside>
 
@@ -116,7 +100,7 @@ document.getElementById('searchInput').addEventListener('keyup', e => {
 
 // Adiciona listeners APÓS loadFiltros terminar (ver abaixo)
 function addFilterListeners() {
-  ['fGenero','fPlat','fOrdem','fDir'].forEach(id =>
+  ['fGenero','fPlat'].forEach(id =>
     document.getElementById(id).addEventListener('change', () => {
       page = 1;
       loadJogos();
@@ -127,8 +111,6 @@ function addFilterListeners() {
 function resetFiltros() {
   document.getElementById('fGenero').value = '';
   document.getElementById('fPlat').value   = '';
-  document.getElementById('fOrdem').value  = 'nome_jogo';
-  document.getElementById('fDir').value    = 'ASC';
   document.getElementById('searchInput').value = '';
   page = 1;
   loadJogos();
@@ -174,8 +156,6 @@ async function loadJogos() {
     search:    document.getElementById('searchInput').value.trim(),
     genero:    document.getElementById('fGenero').value,
     plataforma:document.getElementById('fPlat').value,
-    ordem:     document.getElementById('fOrdem').value,
-    dir:       document.getElementById('fDir').value,
     page:      page,
     limit:     LIMIT
   });

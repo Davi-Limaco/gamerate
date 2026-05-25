@@ -1,14 +1,6 @@
 /**
  * routes.js — Ponto central de registro de todas as rotas da API
- *
- * Cada grupo de rotas é definido em src/routes/ e tratado pelo
- * seu respectivo Controller em src/controllers/.
- *
- * Estrutura MVC:
- *   Routes  → define os endpoints e delega para o Controller
- *   Controller → valida a requisição e chama o Model
- *   Model   → executa o SQL e retorna os dados
- */
+**/
 
 import { Router } from 'express';
 
