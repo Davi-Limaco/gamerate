@@ -1,0 +1,12 @@
+import express from 'express';
+import morgan from 'morgan';
+import route from '@/routes';
+import { errorHandler } from '@/middlewares/errorHandler';
+import { requireJson } from '@/middlewares/requireJson';
+const app = express();
+app.use(morgan('dev'));
+app.use(express.static('public'));
+app.use(express.json());
+app.use('/api', requireJson, route);
+app.use(errorHandler);
+app.listen(3000, () => console.log('GameRate API listening on port 3000'));

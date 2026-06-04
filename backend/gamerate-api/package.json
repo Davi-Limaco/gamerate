@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "check": "tsc --noEmit",
     "db:reload": "npm run db:drop && npm run db:load",
-    "db:load": "node src/database/load.js",
-    "db:drop": "node src/database/drop.js"
+    "db:load": "tsx src/database/load.ts",
+    "db:drop": "tsx src/database/drop.ts"
   },
   "dependencies": {
     "express": "^5.2.1",
     "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
   }
 }
