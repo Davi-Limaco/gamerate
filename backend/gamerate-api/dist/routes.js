@@ -1,24 +1,15 @@
-/**
- * routes.ts — Ponto central de registro de todas as rotas da API
-**/
 import { Router } from 'express';
-import jogoRoutes from '@/routes/jogoRoutes';
-import avaliacaoRoutes from '@/routes/avaliacaoRoutes';
-import usuarioRoutes from '@/routes/usuarioRoutes';
-import authRoutes from '@/routes/authRoutes';
-import catalogRoutes from '@/routes/catalogRoutes';
-import contatoRoutes from '@/routes/contatoRoutes';
+import jogosRoutes from './routes/jogos.routes.js';
+import avaliacoesRoutes from './routes/avaliacoes.routes.js';
+import usuariosRoutes from './routes/usuarios.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import catalogRoutes from './routes/catalog.routes.js';
+import contatoRoutes from './routes/contato.routes.js';
 const router = Router();
-router.use('/jogos', jogoRoutes);
-router.use('/avaliacoes', avaliacaoRoutes);
-router.use('/usuarios', usuarioRoutes);
-router.use('/auth', authRoutes);
-router.use('/contato', contatoRoutes);
-// Gêneros, Plataformas e Perfis são montados na raiz do router
-// pois cada um tem seu próprio prefixo definido dentro de catalogRoutes
-router.use('/', catalogRoutes);
-// 404 — rota não encontrada
-router.use((req, res) => {
-    res.status(404).json({ error: 'Rota não encontrada.' });
-});
+router.use(jogosRoutes);
+router.use(avaliacoesRoutes);
+router.use(usuariosRoutes);
+router.use(authRoutes);
+router.use(catalogRoutes);
+router.use(contatoRoutes);
 export default router;

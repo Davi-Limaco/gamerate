@@ -1,36 +1,28 @@
-import { resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
-import Perfil from '@/models/Perfil';
-import Usuario from '@/models/Usuario';
-import { Genero, Plataforma } from '@/models/Categoria';
-import Jogo from '@/models/Jogo';
+import Perfil from '../models/perfil.model.js';
+import Usuario from '../models/usuario.model.js';
+import { Genero, Plataforma } from '../models/categoria.model.js';
+import Jogo from '../models/jogo.model.js';
+import seedersData from '../database/seeders.json' with { type: 'json' };
 async function up() {
-    const file = resolve('src', 'database', 'seeders.json');
-    const seed = JSON.parse(readFileSync(file, 'utf-8'));
-    try {
-        for (const perfil of seed.perfis)
-            await Perfil.create(perfil);
-        for (const usuario of seed.usuarios)
-            await Usuario.create(usuario);
-        for (const plataforma of seed.plataformas)
-            await Plataforma.create(plataforma);
-        for (const genero of seed.generos)
-            await Genero.create(genero);
-        for (const j of seed.jogos) {
-            await Jogo.create({
-                nome_jogo: j.nome_jogo,
-                desenvolvedora: j.desenvolvedora,
-                data_lancamento: j.data_lancamento,
-                descricao: j.descricao,
-                capa: j.capa,
-                generos: j.generos || [],
-                plataformas: j.plataformas || [],
-            });
-        }
-        console.log('Seed concluído com sucesso.');
+    for (const data of seedersData.perfis)
+        await Perfil.create(data);
+    for (const data of seedersData.usuarios)
+        await Usuario.create(data);
+    for (const data of seedersData.plataformas)
+        await Plataforma.create(data);
+    for (const data of seedersData.generos)
+        await Genero.create(data);
+    for (const j of seedersData.jogos) {
+        await Jogo.create({
+            nome_jogo: j.nome_jogo,
+            desenvolvedora: j.desenvolvedora,
+            data_lancamento: j.data_lancamento,
+            descricao: j.descricao,
+            capa: j.capa ?? null,
+            generos: j.generos ?? [],
+            plataformas: j.plataformas ?? [],
+        });
     }
-    catch (error) {
-        console.error('Erro durante seed:', error instanceof Error ? error.message : String(error));
-    }
+    console.log('Seed concluído com sucesso.');
 }
 export default { up };

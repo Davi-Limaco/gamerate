@@ -1,11 +1,7 @@
-/**
- * database/load.ts — Script para carregar migration e seeders
- */
+import Migration from '@/database/migration.js';
+import Seed from '@/database/seeders.js';
 
-import Migration from './migration.js';
-import Seed from './seeders.js';
-
-async function load(): Promise<void> {
+async function load() {
   await Migration.up();
   await Seed.up();
 }

@@ -1,27 +1,20 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
+    "outDir": "./dist",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "esnext",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "strict": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

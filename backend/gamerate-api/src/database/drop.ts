@@ -1,7 +1,3 @@
-/**
- * database/drop.ts — Script para remover banco de dados
- */
-
 import { existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 

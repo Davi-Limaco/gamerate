@@ -9,7 +9,7 @@ async function apiFetch(path, options = {}) {
 
   const res  = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.erro || `Erro ${res.status}`);
+  if (!res.ok) throw new Error(data.error || `Erro ${res.status}`);
   return data;
 }
 

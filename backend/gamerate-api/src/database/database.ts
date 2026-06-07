@@ -1,57 +1,42 @@
-/**
- * database/database.ts — Gerenciador de conexão SQLite com abstração Promise
- */
-
 import { resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 const dbFile = resolve('src', 'database', 'db.sqlite');
 
-interface RunResult {
-  changes: number;
-  lastID: number;
-}
+type DbParam = string | number | null;
 
-interface Database {
-  run(sql: string, params?: any[]): Promise<RunResult>;
-  get<T = any>(sql: string, params?: any[]): Promise<T | undefined>;
-  all<T = any>(sql: string, params?: any[]): Promise<T[]>;
-  close(): Promise<void>;
-}
-
-function parseParams(params: any[] = []): any[] {
+function parseParams(params: DbParam[] = []): DbParam[] {
   return Array.isArray(params) ? params : [params];
 }
 
-function parseRow<T = any>(row: any): T {
-  return row ? { ...row } : row;
+function parseRow(row: unknown): Record<string, unknown> | undefined {
+  return row != null && typeof row === 'object'
+    ? { ...(row as Record<string, unknown>) }
+    : undefined;
 }
 
-function createPromiseDatabase(database: DatabaseSync): Database {
+function createPromiseDatabase(database: DatabaseSync) {
   return {
-    async run(sql: string, params?: any[]): Promise<RunResult> {
+    async run(sql: string, params?: DbParam[]) {
       const result = database.prepare(sql).run(...parseParams(params));
-      return {
-        changes: result.changes,
-        lastID: Number(result.lastInsertRowid),
-      };
+      return { changes: result.changes, lastID: Number(result.lastInsertRowid) };
     },
 
-    async get<T = any>(sql: string, params?: any[]): Promise<T | undefined> {
-      return parseRow<T>(database.prepare(sql).get(...parseParams(params)));
+    async get(sql: string, params?: DbParam[]) {
+      return parseRow(database.prepare(sql).get(...parseParams(params)));
     },
 
-    async all<T = any>(sql: string, params?: any[]): Promise<T[]> {
-      return database.prepare(sql).all(...parseParams(params)).map(parseRow<T>);
+    async all(sql: string, params?: DbParam[]) {
+      return database.prepare(sql).all(...parseParams(params)).map(parseRow) as Record<string, unknown>[];
     },
 
-    async close(): Promise<void> {
+    async close() {
       database.close();
     },
   };
 }
 
-async function connect(): Promise<Database> {
+async function connect() {
   return createPromiseDatabase(new DatabaseSync(dbFile));
 }
 
