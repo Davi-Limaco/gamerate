@@ -1,7 +1,7 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 import type { Avaliacao, AvaliacaoInput, AvaliacaoFilter } from '@/types/Avaliacao.d.ts';
-import HttpError from '@/errors/HttpError.js';
-import Jogo from '@/models/jogo.model.js';
+import HttpError from '@/errors/HttpError.ts';
+import Jogo from '@/models/jogo.model.ts';
 
 function mapAvaliacao(row: Record<string, unknown>): Avaliacao {
   return {

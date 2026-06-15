@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
 
-import { Genero, Plataforma } from '@/models/categoria.model.js';
-import Perfil from '@/models/perfil.model.js';
-import HttpError from '@/errors/HttpError.js';
+import { Genero, Plataforma } from '@/models/categoria.model.ts';
+import Perfil from '@/models/perfil.model.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { GeneroInput, PlataformaInput } from '@/types/Jogo.d.ts';
 import type { PerfilInput } from '@/types/Perfil.d.ts';
 

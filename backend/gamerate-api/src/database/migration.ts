@@ -1,4 +1,4 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 
 async function up() {
   const db = await Database.connect();

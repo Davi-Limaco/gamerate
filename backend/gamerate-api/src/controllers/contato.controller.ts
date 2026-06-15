@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
-import Contato from '@/models/contato.model.js';
-import HttpError from '@/errors/HttpError.js';
+import Contato from '@/models/contato.model.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { ContatoInput } from '@/types/Contato.d.ts';
 
 async function read(req: Request, res: Response) {

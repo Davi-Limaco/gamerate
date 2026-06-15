@@ -1,6 +1,6 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 import type { Perfil, PerfilInput } from '@/types/Perfil.d.ts';
-import HttpError from '@/errors/HttpError.js';
+import HttpError from '@/errors/HttpError.ts';
 
 function mapPerfil(row: Record<string, unknown>): Perfil {
   return {

@@ -18,16 +18,24 @@ function parseRow(row: unknown): Record<string, unknown> | undefined {
 function createPromiseDatabase(database: DatabaseSync) {
   return {
     async run(sql: string, params?: DbParam[]) {
-      const result = database.prepare(sql).run(...parseParams(params));
+      const result = database
+        .prepare(sql)
+        .run(...(parseParams(params) as any[])); // 👈 as any[]
+
       return { changes: result.changes, lastID: Number(result.lastInsertRowid) };
     },
 
     async get(sql: string, params?: DbParam[]) {
-      return parseRow(database.prepare(sql).get(...parseParams(params)));
+      return parseRow(
+        database.prepare(sql).get(...(parseParams(params) as any[])) // 👈 as any[]
+      );
     },
 
     async all(sql: string, params?: DbParam[]) {
-      return database.prepare(sql).all(...parseParams(params)).map(parseRow) as Record<string, unknown>[];
+      return database
+        .prepare(sql)
+        .all(...(parseParams(params) as any[])) // 👈 as any[]
+        .map(parseRow) as Record<string, unknown>[];
     },
 
     async close() {

@@ -1,13 +1,13 @@
-import { errorHandler, notFoundHandler } from '@/middlewares/errorHandlers.js';
+import { errorHandler, notFoundHandler } from '@/middlewares/errorHandlers.ts';
 import express from 'express';
 import morgan from 'morgan';
 
-import jogosRoutes      from '@/routes/jogos.routes.js';
-import avaliacoesRoutes from '@/routes/avaliacoes.routes.js';
-import usuariosRoutes   from '@/routes/usuarios.routes.js';
-import authRoutes       from '@/routes/auth.routes.js';
-import catalogRoutes    from '@/routes/catalog.routes.js';
-import contatoRoutes    from '@/routes/contato.routes.js';
+import jogosRoutes      from '@/routes/jogos.routes.ts';
+import avaliacoesRoutes from '@/routes/avaliacoes.routes.ts';
+import usuariosRoutes   from '@/routes/usuarios.routes.ts';
+import authRoutes       from '@/routes/auth.routes.ts';
+import catalogRoutes    from '@/routes/catalog.routes.ts';
+import contatoRoutes    from '@/routes/contato.routes.ts';
 
 const app = express();
 

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
-import Avaliacao from '@/models/avaliacao.model.js';
-import HttpError from '@/errors/HttpError.js';
+import Avaliacao from '@/models/avaliacao.model.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { AvaliacaoFilter, AvaliacaoInput } from '@/types/Avaliacao.d.ts';
 
 async function read(req: Request, res: Response) {

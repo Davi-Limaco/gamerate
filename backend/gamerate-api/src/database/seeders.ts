@@ -1,7 +1,7 @@
-import Perfil    from '@/models/perfil.model.js';
-import Usuario   from '@/models/usuario.model.js';
-import { Genero, Plataforma } from '@/models/categoria.model.js';
-import Jogo      from '@/models/jogo.model.js';
+import Perfil    from '@/models/perfil.model.ts';
+import Usuario   from '@/models/usuario.model.ts';
+import { Genero, Plataforma } from '@/models/categoria.model.ts';
+import Jogo      from '@/models/jogo.model.ts';
 import seedersData from '@/database/seeders.json' with { type: 'json' };
 
 async function up() {

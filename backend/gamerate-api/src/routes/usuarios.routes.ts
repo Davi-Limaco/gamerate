@@ -1,6 +1,6 @@
-import { requireJsonContentType as requireJson } from '@/middlewares/requireJsonContentType.js';
 import { Router } from 'express';
-import UsuariosController from '@/controllers/usuarios.controller.js';
+import { requireJsonContentType as requireJson } from '@/middlewares/requireJsonContentType.ts';
+import UsuariosController from '@/controllers/usuarios.controller.ts';
 
 const router = Router();
 

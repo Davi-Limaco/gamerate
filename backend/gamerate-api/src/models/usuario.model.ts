@@ -1,7 +1,7 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
 import type { Avaliacao } from '@/types/Avaliacao.d.ts';
-import HttpError from '@/errors/HttpError.js';
+import HttpError from '@/errors/HttpError.ts';
 
 function mapUsuario(row: Record<string, unknown>): Usuario {
   return {

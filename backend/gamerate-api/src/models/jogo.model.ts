@@ -1,6 +1,6 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 import type { Jogo, JogoInput, JogoResumo, JogoFilter, Genero, Plataforma } from '@/types/Jogo.d.ts';
-import HttpError from '@/errors/HttpError.js';
+import HttpError from '@/errors/HttpError.ts';
 
 function mapJogoResumo(row: Record<string, unknown>): JogoResumo {
   return {

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
-import Jogo from '@/models/jogo.model.js';
-import HttpError from '@/errors/HttpError.js';
+import Jogo from '@/models/jogo.model.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { JogoFilter, JogoInput } from '@/types/Jogo.d.ts';
 
 async function getStats(req: Request, res: Response) {

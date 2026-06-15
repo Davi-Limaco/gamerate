@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import HttpError from '@/errors/HttpError.js';
+import HttpError from '@/errors/HttpError.ts';
 
 export const notFoundHandler = (
   _req: Request,

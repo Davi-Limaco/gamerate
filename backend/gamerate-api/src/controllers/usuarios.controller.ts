@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
-import Usuario from '@/models/usuario.model.js';
-import HttpError from '@/errors/HttpError.js';
+import Usuario from '@/models/usuario.model.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { LoginInput, UsuarioInput } from '@/types/Usuario.d.ts';
 
 async function read(req: Request, res: Response) {

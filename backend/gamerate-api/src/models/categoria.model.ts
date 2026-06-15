@@ -1,5 +1,5 @@
-import Database from '@/database/database.js';
-import HttpError from '@/errors/HttpError.js';
+import Database from '@/database/database.ts';
+import HttpError from '@/errors/HttpError.ts';
 import type { Genero as GeneroType, Plataforma as PlataformaType, GeneroInput, PlataformaInput } from '@/types/Jogo.d.ts';
 
 function mapGenero(row: Record<string, unknown>): GeneroType {

@@ -1,6 +1,6 @@
-import Database from '@/database/database.js';
+import Database from '@/database/database.ts';
 import type { Contato, ContatoInput } from '@/types/Contato.d.ts';
-import HttpError from '@/errors/HttpError.js';
+import HttpError from '@/errors/HttpError.ts';
 
 function mapContato(row: Record<string, unknown>): Contato {
   return {
