@@ -1,51 +1,35 @@
-import Database from '@/database/database.ts';
+import { prisma } from '@/database/prisma.ts';
 import HttpError from '@/errors/HttpError.ts';
 import type { Plataforma, PlataformaInput } from '@/types/Plataforma.d.ts';
 
-function mapPlataforma(row: Record<string, unknown>): Plataforma {
-  return {
-    id_plataforma: row.id_plataforma as number,
-    nome_plataforma: row.nome_plataforma as string,
-    total_jogos: row.total_jogos as number | undefined,
-  };
-}
-
 async function readAll(): Promise<Plataforma[]> {
-  const db = await Database.connect();
-  const rows = await db.all(
-    `SELECT p.id_plataforma, p.nome_plataforma, COUNT(DISTINCT jp.id_jogo_fk) AS total_jogos
-     FROM plataforma p
-     LEFT JOIN jogo_plataforma jp ON jp.id_plataforma_fk = p.id_plataforma
-     GROUP BY p.id_plataforma, p.nome_plataforma
-     ORDER BY p.nome_plataforma`,
-  );
-  return rows.map(mapPlataforma);
+  const rows = await prisma.plataforma.findMany({
+    orderBy: { nome_plataforma: 'asc' },
+    include: { _count: { select: { jogo_plataforma: true } } },
+  });
+  return rows.map(r => ({ id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma, total_jogos: r._count?.jogo_plataforma }));
 }
 
 async function readById(id: number): Promise<Plataforma> {
-  const db = await Database.connect();
-  const row = await db.get(`SELECT id_plataforma, nome_plataforma FROM plataforma WHERE id_plataforma = ?`, [id]);
-
-  if (row) return mapPlataforma(row);
-  throw new HttpError('Plataforma não encontrada', 404);
+  const r = await prisma.plataforma.findUnique({ where: { id_plataforma: id } });
+  if (!r) throw new HttpError('Plataforma não encontrada', 404);
+  return { id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma };
 }
 
 async function create(data: PlataformaInput): Promise<Plataforma> {
-  const db = await Database.connect();
   const { nome_plataforma } = data;
-
   if (!nome_plataforma) throw new HttpError('O campo nome_plataforma é obrigatório');
-
-  const { lastID } = await db.run(`INSERT INTO plataforma (nome_plataforma) VALUES (?)`, [nome_plataforma]);
-  return await readById(lastID);
+  const r = await prisma.plataforma.create({ data: { nome_plataforma } });
+  return { id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma };
 }
 
 async function remove(id: number): Promise<boolean> {
-  const db = await Database.connect();
-  const { changes } = await db.run(`DELETE FROM plataforma WHERE id_plataforma = ?`, [id]);
-
-  if (changes === 1) return true;
-  throw new HttpError('Plataforma não encontrada', 404);
+  try {
+    await prisma.plataforma.delete({ where: { id_plataforma: id } });
+    return true;
+  } catch (e) {
+    throw new HttpError('Plataforma não encontrada', 404);
+  }
 }
 
 export default { readAll, readById, create, remove };

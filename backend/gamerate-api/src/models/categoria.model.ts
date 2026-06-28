@@ -1,83 +1,50 @@
-import Database from '@/database/database.ts';
+import { prisma } from '@/database/prisma.ts';
 import HttpError from '@/errors/HttpError.ts';
 import type { Genero as GeneroType, Plataforma as PlataformaType, GeneroInput, PlataformaInput } from '@/types/Jogo.d.ts';
 
-function mapGenero(row: Record<string, unknown>): GeneroType {
-  return {
-    id_genero: row.id_genero as number,
-    nome_genero: row.nome_genero as string,
-    total_jogos: row.total_jogos as number | undefined,
-  };
+async function generoReadAll(): Promise<GeneroType[]> {
+  const rows = await prisma.genero.findMany({ orderBy: { nome_genero: 'asc' }, include: { _count: { select: { jogo_genero: true } } } });
+  return rows.map(r => ({ id_genero: r.id_genero, nome_genero: r.nome_genero, total_jogos: r._count?.jogo_genero }));
 }
 
-function mapPlataforma(row: Record<string, unknown>): PlataformaType {
-  return {
-    id_plataforma: row.id_plataforma as number,
-    nome_plataforma: row.nome_plataforma as string,
-    total_jogos: row.total_jogos as number | undefined,
-  };
+async function generoReadById(id: number): Promise<GeneroType> {
+  const r = await prisma.genero.findUnique({ where: { id_genero: id } });
+  if (!r) throw new HttpError('genero não encontrado', 404);
+  return { id_genero: r.id_genero, nome_genero: r.nome_genero };
 }
 
-function Categoria<T extends GeneroType | PlataformaType>(
-  tabela: 'genero' | 'plataforma',
-  colId: string,
-  colNome: string,
-  mapRow: (row: Record<string, unknown>) => T,
-) {
-  async function readAll(): Promise<T[]> {
-    const db = await Database.connect();
-
-    if (tabela === 'genero') {
-      const rows = await db.all(
-        `SELECT g.${colId}, g.${colNome}, COUNT(DISTINCT jg.id_jogo_fk) AS total_jogos
-         FROM ${tabela} g
-         LEFT JOIN jogo_genero jg ON jg.id_genero_fk = g.${colId}
-         GROUP BY g.${colId}, g.${colNome}
-         ORDER BY g.${colNome}`,
-      );
-      return rows.map(mapRow);
-    }
-
-    const rows = await db.all(
-      `SELECT p.${colId}, p.${colNome}, COUNT(DISTINCT jp.id_jogo_fk) AS total_jogos
-       FROM ${tabela} p
-       LEFT JOIN jogo_plataforma jp ON jp.id_plataforma_fk = p.${colId}
-       GROUP BY p.${colId}, p.${colNome}
-       ORDER BY p.${colNome}`,
-    );
-    return rows.map(mapRow);
-  }
-
-  async function readById(id: number): Promise<T> {
-    const db = await Database.connect();
-    const row = await db.get(`SELECT ${colId}, ${colNome} FROM ${tabela} WHERE ${colId} = ?`, [id]);
-
-    if (row) return mapRow(row);
-    throw new HttpError(`${tabela} não encontrado`, 404);
-  }
-
-  async function create(data: GeneroInput | PlataformaInput): Promise<T> {
-    const db = await Database.connect();
-    const nome = tabela === 'genero'
-      ? (data as GeneroInput).nome_genero
-      : (data as PlataformaInput).nome_plataforma;
-
-    if (!nome) throw new HttpError(`O campo ${colNome} é obrigatório`);
-
-    const { lastID } = await db.run(`INSERT INTO ${tabela} (${colNome}) VALUES (?)`, [nome]);
-    return await readById(lastID);
-  }
-
-  async function remove(id: number): Promise<boolean> {
-    const db = await Database.connect();
-    const { changes } = await db.run(`DELETE FROM ${tabela} WHERE ${colId} = ?`, [id]);
-
-    if (changes === 1) return true;
-    throw new HttpError(`${tabela} não encontrado`, 404);
-  }
-
-  return { readAll, readById, create, remove };
+async function generoCreate(data: GeneroInput): Promise<GeneroType> {
+  const { nome_genero } = data;
+  if (!nome_genero) throw new HttpError('O campo nome_genero é obrigatório');
+  const r = await prisma.genero.create({ data: { nome_genero } });
+  return { id_genero: r.id_genero, nome_genero: r.nome_genero };
 }
 
-export const Genero     = Categoria('genero',     'id_genero',    'nome_genero',    mapGenero);
-export const Plataforma = Categoria('plataforma', 'id_plataforma', 'nome_plataforma', mapPlataforma);
+async function generoRemove(id: number): Promise<boolean> {
+  try { await prisma.genero.delete({ where: { id_genero: id } }); return true; } catch (e) { throw new HttpError('genero não encontrado', 404); }
+}
+
+async function plataformaReadAll(): Promise<PlataformaType[]> {
+  const rows = await prisma.plataforma.findMany({ orderBy: { nome_plataforma: 'asc' }, include: { _count: { select: { jogo_plataforma: true } } } });
+  return rows.map(r => ({ id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma, total_jogos: r._count?.jogo_plataforma }));
+}
+
+async function plataformaReadById(id: number): Promise<PlataformaType> {
+  const r = await prisma.plataforma.findUnique({ where: { id_plataforma: id } });
+  if (!r) throw new HttpError('plataforma não encontrado', 404);
+  return { id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma };
+}
+
+async function plataformaCreate(data: PlataformaInput): Promise<PlataformaType> {
+  const { nome_plataforma } = data;
+  if (!nome_plataforma) throw new HttpError('O campo nome_plataforma é obrigatório');
+  const r = await prisma.plataforma.create({ data: { nome_plataforma } });
+  return { id_plataforma: r.id_plataforma, nome_plataforma: r.nome_plataforma };
+}
+
+async function plataformaRemove(id: number): Promise<boolean> {
+  try { await prisma.plataforma.delete({ where: { id_plataforma: id } }); return true; } catch (e) { throw new HttpError('plataforma não encontrado', 404); }
+}
+
+export const Genero     = { readAll: generoReadAll, readById: generoReadById, create: generoCreate, remove: generoRemove };
+export const Plataforma = { readAll: plataformaReadAll, readById: plataformaReadById, create: plataformaCreate, remove: plataformaRemove };

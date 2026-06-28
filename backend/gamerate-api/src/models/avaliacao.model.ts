@@ -1,65 +1,23 @@
-import Database from '@/database/database.ts';
+import { prisma } from '@/database/prisma.ts';
 import type { Avaliacao, AvaliacaoInput, AvaliacaoFilter } from '@/types/Avaliacao.d.ts';
 import HttpError from '@/errors/HttpError.ts';
 import Jogo from '@/models/jogo.model.ts';
 
-function mapAvaliacao(row: Record<string, unknown>): Avaliacao {
-  return {
-    id_avaliacao: row.id_avaliacao as number,
-    id_usuario_fk: row.id_usuario_fk as number,
-    id_jogo_fk: row.id_jogo_fk as number,
-    nota: row.nota as number,
-    titulo: row.titulo as string,
-    texto: row.texto as string,
-    data_publicacao: row.data_publicacao as string,
-    nome_usuario: row.nome_usuario as string | undefined,
-    nome_jogo: row.nome_jogo as string | undefined,
-    capa: row.capa as string | null | undefined,
-    id_usuario: row.id_usuario as number | undefined,
-    id_jogo: row.id_jogo as number | undefined,
-  };
-}
+function dateToString(d?: Date | null) { if (!d) return undefined; return d.toISOString().split('T')[0]; }
 
 async function readAll(filter?: AvaliacaoFilter): Promise<Avaliacao[]> {
-  const db = await Database.connect();
-
-  const where  = filter?.jogo_id ? 'WHERE a.id_jogo_fk = ?' : '';
-  const params = filter?.jogo_id ? [filter.jogo_id] : [];
-
-  const rows = await db.all(
-    `SELECT a.id_avaliacao, a.titulo, a.texto, a.nota, a.data_publicacao,
-            u.id_usuario, u.nome_usuario,
-            j.id_jogo, j.nome_jogo, j.capa
-     FROM avaliacao a
-     JOIN usuario u ON u.id_usuario = a.id_usuario_fk
-     JOIN jogo    j ON j.id_jogo    = a.id_jogo_fk
-     ${where}
-     ORDER BY a.data_publicacao DESC`,
-    params,
-  );
-
-  return rows.map(mapAvaliacao);
+  const where = filter?.jogo_id ? { id_jogo_fk: filter.jogo_id } : undefined;
+  const rows = await prisma.avaliacao.findMany({ where, include: { usuario: { select: { id_usuario: true, nome_usuario: true } }, jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } }, orderBy: { data_publicacao: 'desc' } });
+  return rows.map(r => ({ id_avaliacao: r.id_avaliacao, id_usuario_fk: r.id_usuario_fk, id_jogo_fk: r.id_jogo_fk, nota: r.nota, titulo: r.titulo, texto: r.texto, data_publicacao: dateToString(r.data_publicacao)!, nome_usuario: r.usuario?.nome_usuario, nome_jogo: r.jogo?.nome_jogo, capa: r.jogo?.capa ?? null, id_usuario: r.usuario?.id_usuario, id_jogo: r.jogo?.id_jogo }));
 }
 
 async function readById(id: number): Promise<Avaliacao> {
-  const db = await Database.connect();
-
-  const avaliacao = await db.get(
-    `SELECT a.*, u.nome_usuario, j.nome_jogo, j.capa, j.id_jogo
-     FROM avaliacao a
-     JOIN usuario u ON u.id_usuario = a.id_usuario_fk
-     JOIN jogo    j ON j.id_jogo    = a.id_jogo_fk
-     WHERE a.id_avaliacao = ?`,
-    [id],
-  );
-
-  if (!avaliacao) throw new HttpError('Avaliação não encontrada', 404);
-  return mapAvaliacao(avaliacao);
+  const r = await prisma.avaliacao.findUnique({ where: { id_avaliacao: id }, include: { usuario: { select: { nome_usuario: true, id_usuario: true } }, jogo: { select: { nome_jogo: true, capa: true, id_jogo: true } } } });
+  if (!r) throw new HttpError('Avaliação não encontrada', 404);
+  return { id_avaliacao: r.id_avaliacao, id_usuario_fk: r.id_usuario_fk, id_jogo_fk: r.id_jogo_fk, nota: r.nota, titulo: r.titulo, texto: r.texto, data_publicacao: dateToString(r.data_publicacao)!, nome_usuario: r.usuario?.nome_usuario, nome_jogo: r.jogo?.nome_jogo, capa: r.jogo?.capa ?? null, id_usuario: r.usuario?.id_usuario, id_jogo: r.jogo?.id_jogo };
 }
 
 async function create({ id_usuario_fk, id_jogo_fk, nota, titulo, texto }: AvaliacaoInput): Promise<Avaliacao> {
-  const db = await Database.connect();
-
   if (!id_usuario_fk || !id_jogo_fk || nota === undefined || !titulo || !texto) {
     throw new HttpError('Campos obrigatórios: id_usuario_fk, id_jogo_fk, nota, titulo, texto');
   }
@@ -69,21 +27,15 @@ async function create({ id_usuario_fk, id_jogo_fk, nota, titulo, texto }: Avalia
     throw new HttpError('A nota deve ser um número entre 1 e 5');
   }
 
-  const jaAvaliou = await db.get(`SELECT 1 FROM avaliacao WHERE id_usuario_fk = ? AND id_jogo_fk = ?`, [id_usuario_fk, id_jogo_fk]);
-  if (jaAvaliou) throw new HttpError('Você já avaliou este jogo', 409);
+  const exists = await prisma.avaliacao.findFirst({ where: { id_usuario_fk, id_jogo_fk } });
+  if (exists) throw new HttpError('Você já avaliou este jogo', 409);
 
-  const { lastID } = await db.run(
-    `INSERT INTO avaliacao (id_usuario_fk, id_jogo_fk, nota, titulo, texto) VALUES (?, ?, ?, ?, ?)`,
-    [id_usuario_fk, id_jogo_fk, notaNum, titulo, texto],
-  );
-
+  const r = await prisma.avaliacao.create({ data: { id_usuario_fk, id_jogo_fk, nota: notaNum, titulo, texto } });
   await Jogo.atualizarNota(id_jogo_fk);
-  return await readById(lastID);
+  return readById(r.id_avaliacao);
 }
 
 async function update({ id, nota, titulo, texto }: AvaliacaoInput & { id?: number }): Promise<Avaliacao> {
-  const db = await Database.connect();
-
   if (!id || nota === undefined || !titulo || !texto) {
     throw new HttpError('Campos obrigatórios: nota, titulo, texto');
   }
@@ -93,47 +45,30 @@ async function update({ id, nota, titulo, texto }: AvaliacaoInput & { id?: numbe
     throw new HttpError('A nota deve ser um número entre 1 e 5');
   }
 
-  const { changes } = await db.run(
-    `UPDATE avaliacao SET nota = ?, titulo = ?, texto = ? WHERE id_avaliacao = ?`,
-    [notaNum, titulo, texto, id],
-  );
-
-  if (changes === 1) {
+  try {
+    await prisma.avaliacao.update({ where: { id_avaliacao: id }, data: { nota: notaNum, titulo, texto } });
     const av = await readById(id);
     await Jogo.atualizarNota(av.id_jogo_fk);
     return av;
+  } catch (e) {
+    throw new HttpError('Avaliação não encontrada', 404);
   }
-
-  throw new HttpError('Avaliação não encontrada', 404);
 }
 
 async function remove(id: number): Promise<boolean> {
-  const db = await Database.connect();
   const av = await readById(id);
-
-  const { changes } = await db.run(`DELETE FROM avaliacao WHERE id_avaliacao = ?`, [id]);
-
-  if (changes === 1) {
+  try {
+    await prisma.avaliacao.delete({ where: { id_avaliacao: id } });
     await Jogo.atualizarNota(av.id_jogo_fk);
     return true;
+  } catch (e) {
+    throw new HttpError('Avaliação não encontrada', 404);
   }
-
-  throw new HttpError('Avaliação não encontrada', 404);
 }
 
 async function getDestaque(): Promise<Avaliacao[]> {
-  const db = await Database.connect();
-  const rows = await db.all(
-    `SELECT a.id_avaliacao, a.titulo, a.texto, a.nota, a.data_publicacao,
-            u.id_usuario, u.nome_usuario,
-            j.id_jogo, j.nome_jogo, j.capa
-     FROM avaliacao a
-     JOIN usuario u ON u.id_usuario = a.id_usuario_fk
-     JOIN jogo    j ON j.id_jogo    = a.id_jogo_fk
-     ORDER BY a.nota DESC, a.data_publicacao DESC LIMIT 6`,
-  );
-
-  return rows.map(mapAvaliacao);
+  const rows = await prisma.avaliacao.findMany({ include: { usuario: { select: { id_usuario: true, nome_usuario: true } }, jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } }, orderBy: [{ nota: 'desc' }, { data_publicacao: 'desc' }], take: 6 });
+  return rows.map(r => ({ id_avaliacao: r.id_avaliacao, id_usuario_fk: r.id_usuario_fk, id_jogo_fk: r.id_jogo_fk, nota: r.nota, titulo: r.titulo, texto: r.texto, data_publicacao: dateToString(r.data_publicacao)!, nome_usuario: r.usuario?.nome_usuario, nome_jogo: r.jogo?.nome_jogo, capa: r.jogo?.capa ?? null, id_usuario: r.usuario?.id_usuario, id_jogo: r.jogo?.id_jogo }));
 }
 
 export default { readAll, readById, create, update, remove, getDestaque };
