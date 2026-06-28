@@ -1,9 +1,11 @@
 import type { Request, Response } from 'express';
 
-import { Genero, Plataforma } from '@/models/categoria.model.ts';
+import Genero from '@/models/genero.model.ts';
+import Plataforma from '@/models/plataforma.model.ts';
 import Perfil from '@/models/perfil.model.ts';
 import HttpError from '@/errors/HttpError.ts';
-import type { GeneroInput, PlataformaInput } from '@/types/Jogo.d.ts';
+import type { GeneroInput } from '@/types/Genero.d.ts';
+import type { PlataformaInput } from '@/types/Plataforma.d.ts';
 import type { PerfilInput } from '@/types/Perfil.d.ts';
 
 async function readGeneros(_req: Request, res: Response) {

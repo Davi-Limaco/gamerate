@@ -1,6 +1,7 @@
 import Perfil    from '@/models/perfil.model.ts';
 import Usuario   from '@/models/usuario.model.ts';
-import { Genero, Plataforma } from '@/models/categoria.model.ts';
+import Genero    from '@/models/genero.model.ts';
+import Plataforma from '@/models/plataforma.model.ts';
 import Jogo      from '@/models/jogo.model.ts';
 import seedersData from '@/database/seeders.json' with { type: 'json' };
 

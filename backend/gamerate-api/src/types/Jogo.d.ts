@@ -1,22 +1,9 @@
-export interface Genero {
-  id_genero: number;
-  nome_genero: string;
-  total_jogos?: number;
-}
+import type { Genero } from '@/types/Genero.d.ts';
+import type { Plataforma } from '@/types/Plataforma.d.ts';
 
-export interface Plataforma {
-  id_plataforma: number;
-  nome_plataforma: string;
-  total_jogos?: number;
-}
-
-export interface GeneroInput {
-  nome_genero?: string;
-}
-
-export interface PlataformaInput {
-  nome_plataforma?: string;
-}
+export type { Genero, Plataforma } from '@/types/Genero.d.ts';
+export type { PlataformaInput } from '@/types/Plataforma.d.ts';
+export type { GeneroInput } from '@/types/Genero.d.ts';
 
 export interface Jogo {
   id_jogo: number;
