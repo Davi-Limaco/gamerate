@@ -1,4 +1,6 @@
-node_modules/
-dist/
-src/database/db.sqlite
+node_modules
+*.sqlite
+*.db
 .env
+dist
+/src/generated/prisma

@@ -3,21 +3,30 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev":       "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit",
-    "db:reload": "npm run db:drop && npm run db:load",
-    "db:load":   "tsx src/database/load.ts",
-    "db:drop":   "tsx src/database/drop.ts"
+    "dev":        "tsx watch src/index.ts",
+    "typecheck":  "tsc --noEmit",
+    "db:generate":"npx prisma generate",
+    "db:migrate": "npx prisma migrate dev",
+    "db:seed":    "npx prisma db seed",
+    "db:load":    "npm run db:migrate && npm run db:seed",
+    "db:drop":    "npx prisma migrate reset --force",
+    "db:reload":  "npm run db:drop && npm run db:seed",
+    "db:studio":  "npx -p better-sqlite3 -p prisma prisma studio --url file:./dev.db"
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "morgan": "^1.10.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.6",
-    "@types/morgan":  "^1.9.10",
-    "@types/node":    "^22.0.0",
-    "tsx":            "^4.22.3",
-    "typescript":     "^5.8.3"
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.20.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.8.3"
   }
 }

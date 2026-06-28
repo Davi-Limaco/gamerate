@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Perfil {
+  id_perfil   Int      @id @default(autoincrement())
+  nome_perfil String   @unique
+
+  usuario     Usuario[]
+
+  @@map("perfil")
+}
+
+model Usuario {
+  id_usuario    Int        @id @default(autoincrement())
+  nome_usuario  String
+  email         String     @unique
+  senha         String
+  id_perfil_fk  Int
+  data_criacao  DateTime   @default(now())
+
+  perfil        Perfil     @relation(fields: [id_perfil_fk], references: [id_perfil])
+  avaliacao     Avaliacao[]
+
+  @@map("usuario")
+}
+
+model Jogo {
+  id_jogo          Int                @id @default(autoincrement())
+  nome_jogo        String
+  desenvolvedora   String
+  data_lancamento  DateTime
+  descricao        String
+  nota_media       Float?
+  total_avaliacoes Int                @default(0)
+  capa             String?
+
+  jogo_plataforma  JogoPlataforma[]
+  jogo_genero      JogoGenero[]
+  avaliacao        Avaliacao[]
+
+  @@map("jogo")
+}
+
+model Plataforma {
+  id_plataforma   Int                @id @default(autoincrement())
+  nome_plataforma String             @unique
+
+  jogo_plataforma JogoPlataforma[]
+
+  @@map("plataforma")
+}
+
+model JogoPlataforma {
+  id_jogo_fk       Int
+  id_plataforma_fk Int
+
+  jogo             Jogo      @relation(fields: [id_jogo_fk], references: [id_jogo])
+  plataforma       Plataforma @relation(fields: [id_plataforma_fk], references: [id_plataforma])
+
+  @@id([id_jogo_fk, id_plataforma_fk])
+  @@map("jogo_plataforma")
+}
+
+model Genero {
+  id_genero   Int          @id @default(autoincrement())
+  nome_genero String       @unique
+
+  jogo_genero JogoGenero[]
+
+  @@map("genero")
+}
+
+model JogoGenero {
+  id_jogo_fk   Int
+  id_genero_fk Int
+
+  jogo         Jogo    @relation(fields: [id_jogo_fk], references: [id_jogo])
+  genero       Genero  @relation(fields: [id_genero_fk], references: [id_genero])
+
+  @@id([id_jogo_fk, id_genero_fk])
+  @@map("jogo_genero")
+}
+
+model Avaliacao {
+  id_avaliacao    Int      @id @default(autoincrement())
+  id_usuario_fk   Int
+  id_jogo_fk      Int
+  nota            Float
+  titulo          String
+  texto           String
+  data_publicacao DateTime @default(now())
+
+  usuario         Usuario  @relation(fields: [id_usuario_fk], references: [id_usuario])
+  jogo            Jogo     @relation(fields: [id_jogo_fk], references: [id_jogo])
+
+  @@unique([id_usuario_fk, id_jogo_fk])
+  @@map("avaliacao")
+}
+
+model Comunicacao_site {
+  id_comunicacao   Int      @id @default(autoincrement())
+  email_contato    String
+  tipo             String
+  mensagem         String
+  data_comunicacao DateTime @default(now())
+
+  @@map("comunicacao_site")
+}
+

@@ -1,21 +1,22 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "target": "esnext",
+    "moduleResolution": "bundler",
+    "target": "ES2023",
     "types": ["node"],
     "strict": true,
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "prisma.config.ts"]
 }
