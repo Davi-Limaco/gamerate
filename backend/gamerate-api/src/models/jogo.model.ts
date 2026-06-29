@@ -8,7 +8,7 @@ function dateToString(d?: Date | null) { if (!d) return undefined; return d.toIS
 
 async function readAll(filter?: JogoFilter): Promise<JogoResumo[]> {
   const where: any = {};
-  if (filter?.search) where.nome_jogo = { contains: filter.search, mode: 'insensitive' };
+  if (filter?.search) where.nome_jogo = { contains: filter.search };
   if (filter?.genero) where.jogo_genero = { some: { genero: { nome_genero: filter.genero } } };
   if (filter?.plataforma) where.jogo_plataforma = { some: { plataforma: { nome_plataforma: filter.plataforma } } };
 

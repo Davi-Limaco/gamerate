@@ -322,3 +322,89 @@ DELETE {{base}}/contato/1
 
 ### [CONTATO] Listar mensagens (GET)
 GET http://localhost:3000/api/contato
+
+# =============================================================
+#  CASOS INVÁLIDOS — Validação e tratamento de erros
+# =============================================================
+
+### [AUTH] Login com senha incorreta (esperado: 401)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gamerate.com",
+  "senha": "senhaerrada"
+}
+
+###
+
+### [AUTH] Cadastro com e-mail já existente (esperado: 400)
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "Admin Duplicado",
+  "email": "admin@gamerate.com",
+  "senha": "senha123"
+}
+
+###
+
+### [JOGOS] Buscar jogo com ID inexistente (esperado: 404)
+GET {{base}}/jogos/99999
+
+###
+
+### [JOGOS] Criar jogo sem campos obrigatórios (esperado: 400)
+POST {{base}}/jogos
+Content-Type: application/json
+
+{
+  "nome_jogo": "Jogo Incompleto"
+}
+
+###
+
+### [AVALIAÇÕES] Criar avaliação duplicada no mesmo jogo (esperado: 409)
+# Requer que o usuário 1 já tenha avaliado o jogo 1
+POST {{base}}/avaliacoes
+Content-Type: application/json
+
+{
+  "id_usuario_fk": 1,
+  "id_jogo_fk": 1,
+  "nota": 3,
+  "titulo": "Tentativa duplicada",
+  "texto": "Esta avaliação deve falhar pois o usuário já avaliou este jogo."
+}
+
+###
+
+### [AVALIAÇÕES] Criar avaliação com nota fora do intervalo (esperado: 400)
+POST {{base}}/avaliacoes
+Content-Type: application/json
+
+{
+  "id_usuario_fk": 2,
+  "id_jogo_fk": 2,
+  "nota": 10,
+  "titulo": "Nota inválida",
+  "texto": "A nota 10 está fora do intervalo permitido de 1 a 5."
+}
+
+###
+
+### [USUÁRIOS] Buscar usuário com ID inexistente (esperado: 404)
+GET {{base}}/usuarios/99999
+
+###
+
+### [CONTATO] Enviar contato sem campos obrigatórios (esperado: 400)
+POST {{base}}/contato
+Content-Type: application/json
+
+{
+  "email_contato": "teste@email.com"
+}
+
+###
