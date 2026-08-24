@@ -33,9 +33,18 @@ async function readById(req: Request<{ id: string }>, res: Response) {
 
 async function create(req: Request, res: Response) {
   try {
-    const avaliacao = req.body as AvaliacaoInput;
-    res.status(201).json(await Avaliacao.create(avaliacao));
+    if (!req.userId) throw new HttpError('Usuário não autenticado', 401);
+
+    const { id_jogo_fk, nota, titulo, texto } = req.body as AvaliacaoInput;
+    res.status(201).json(await Avaliacao.create({
+      id_usuario_fk: req.userId,
+      id_jogo_fk,
+      nota,
+      titulo,
+      texto,
+    }));
   } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw new HttpError('Erro ao criar avaliação', 400);
   }
 }
@@ -47,6 +56,7 @@ async function update(req: Request<{ id: string }>, res: Response) {
 
     res.json(await Avaliacao.update({ ...avaliacao, id: Number(id) }));
   } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw new HttpError('Erro ao atualizar avaliação', 400);
   }
 }
@@ -56,6 +66,7 @@ async function remove(req: Request<{ id: string }>, res: Response) {
     if (await Avaliacao.remove(Number(req.params.id))) return res.sendStatus(204);
     throw new HttpError('Avaliação não encontrada', 404);
   } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw new HttpError('Erro ao remover avaliação', 400);
   }
 }

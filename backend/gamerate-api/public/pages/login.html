@@ -59,9 +59,8 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 
   try {
     const data = await api.post('/auth/login', { email, senha });
-    saveSession(data.nome, data.perfil, data.id);
-    const dest = new URLSearchParams(location.search).get('next') || '/index.html';
-    window.location.href = dest;
+    saveSession(data.token);
+    window.location.href = '/index.html';
   } catch (e) {
     err.textContent = e.message;
     btn.textContent = 'Entrar'; btn.disabled = false;

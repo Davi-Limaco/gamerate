@@ -1,15 +1,70 @@
 const API_BASE = '/api';
+const TOKEN_STORAGE_KEY = 'gamerate_token';
 
-function getUser()  {
-  try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
+function decodeBase64Url(value) {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+  return atob(base64 + padding);
+}
+
+function decodeJwtPayload(token) {
+  try {
+    const [, payloadPart] = token.split('.');
+    if (!payloadPart) return null;
+    return JSON.parse(decodeBase64Url(payloadPart));
+  } catch {
+    return null;
+  }
+}
+
+function getToken() {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+}
+
+function getUser() {
+  const token = getToken();
+  if (!token) {
+    clearSession();
+    return null;
+  }
+
+  const payload = decodeJwtPayload(token);
+  const now = Math.floor(Date.now() / 1000);
+
+  if (!payload || !payload.userId || !payload.exp || payload.exp < now) {
+    clearSession();
+    return null;
+  }
+
+  return {
+    id: payload.userId,
+    nome: payload.nome || null,
+    email: payload.email || null,
+    perfil: payload.perfil || null,
+  };
 }
 
 async function apiFetch(path, options = {}) {
+  const token = getToken();
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
 
-  const res  = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Erro ${res.status}`);
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      clearSession();
+      if (!path.startsWith('/auth/') && !location.pathname.endsWith('/login.html')) {
+        window.location.replace('/pages/login.html');
+      }
+    }
+    throw new Error(data.error || data.message || `Erro ${res.status}`);
+  }
+
   return data;
 }
 
@@ -20,13 +75,24 @@ const api = {
   delete: (path)       => apiFetch(path, { method: 'DELETE' }),
 };
 
-function saveSession(nome, perfil, id) {
-  localStorage.setItem('user', JSON.stringify({ id, nome, perfil }));
+function saveSession(token) {
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
+
 function clearSession() {
-  localStorage.removeItem('user');
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
+
 function isLoggedIn() { return !!getUser(); }
+
+function requireAuth() {
+  const user = getUser();
+  if (!user) {
+    window.location.replace('/pages/login.html');
+    return null;
+  }
+  return user;
+}
 
 function setupNav() {
   const user = getUser();
@@ -37,7 +103,7 @@ function setupNav() {
     el.style.display = user ? 'inline-flex' : 'none'
   );
   const nomeEl = document.querySelector('.nav-username');
-  if (nomeEl && user) nomeEl.textContent = user.nome;
+  if (nomeEl && user) nomeEl.textContent = user.nome || 'Perfil';
 }
 
 function logout() {

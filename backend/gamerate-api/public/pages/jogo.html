@@ -234,7 +234,7 @@ async function loadAvaliacoes() {
 
 function abrirModal() {
   if (!isLoggedIn()) {
-    window.location.href = `/pages/login.html?next=/pages/jogo.html?id=${jogoId}`;
+    window.location.href = '/pages/login.html';
     return;
   }
   document.getElementById('modalBg').classList.add('open');

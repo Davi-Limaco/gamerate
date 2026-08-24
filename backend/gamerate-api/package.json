@@ -2,16 +2,22 @@
   "name": "gamerate-api",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=23.4.0"
+  },
   "scripts": {
-    "dev":        "tsx watch src/index.ts",
-    "typecheck":  "tsc --noEmit",
-    "db:generate":"npx prisma generate",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev",
-    "db:seed":    "npx prisma db seed",
-    "db:load":    "npm run db:migrate && npm run db:seed",
-    "db:drop":    "npx prisma migrate reset --force",
-    "db:reload":  "npm run db:drop && npm run db:seed",
-    "db:studio":  "npx -p better-sqlite3 -p prisma prisma studio --url file:./dev.db"
+    "db:seed": "npx prisma db seed",
+    "db:load": "npm run db:migrate && npm run db:seed",
+    "db:drop": "npx prisma migrate reset --force",
+    "db:reload": "npm run db:drop && npm run db:seed",
+    "db:studio": "npx -p better-sqlite3 -p prisma prisma studio --url file:./dev.db"
+  },
+  "prisma": {
+    "seed": "tsx src/database/seeders.ts"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.8.0",

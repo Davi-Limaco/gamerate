@@ -45,11 +45,11 @@ async function create({ nome_jogo, desenvolvedora, data_lancamento, descricao, c
   const jogo = await prisma.jogo.create({ data: { nome_jogo, desenvolvedora, data_lancamento: new Date(data_lancamento as string), descricao, nota_media: null, total_avaliacoes: 0, capa: capa ?? null } });
 
   if (generos.length) {
-    await prisma.jogoGenero.createMany({ data: generos.map(gId => ({ id_jogo_fk: jogo.id_jogo, id_genero_fk: gId })), skipDuplicates: true });
+    await prisma.jogoGenero.createMany({ data: generos.map(gId => ({ id_jogo_fk: jogo.id_jogo, id_genero_fk: gId })) });
   }
 
   if (plataformas.length) {
-    await prisma.jogoPlataforma.createMany({ data: plataformas.map(pId => ({ id_jogo_fk: jogo.id_jogo, id_plataforma_fk: pId })), skipDuplicates: true });
+    await prisma.jogoPlataforma.createMany({ data: plataformas.map(pId => ({ id_jogo_fk: jogo.id_jogo, id_plataforma_fk: pId })) });
   }
 
   return readById(jogo.id_jogo);

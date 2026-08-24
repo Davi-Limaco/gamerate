@@ -80,7 +80,8 @@
 setupNav();
 
 // Redireciona para login se não estiver autenticado
-if (!isLoggedIn()) window.location.href = '/pages/login.html?next=/pages/perfil.html';
+const currentUser = requireAuth();
+if (!currentUser) throw new Error('Usuário não autenticado');
 
 document.getElementById('searchInput').addEventListener('keyup', e => {
   if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
@@ -89,9 +90,7 @@ document.getElementById('searchInput').addEventListener('keyup', e => {
 // Carrega os dados do perfil usando o id salvo no localStorage
 async function loadPerfil() {
   try {
-    const user = getUser();
-    // Busca os dados do usuário pelo seu id na API
-    const u = await api.get(`/usuarios/${user.id}`);
+    const u = await api.get('/usuarios/me');
 
     document.getElementById('perfilCard').innerHTML = `
       <div class="perfil-avatar">${u.nome_usuario.slice(0,2).toUpperCase()}</div>
@@ -118,9 +117,7 @@ async function loadPerfil() {
 // Carrega o histórico de avaliações do usuário
 async function loadHistorico() {
   try {
-    const user = getUser();
-    // Busca as avaliações do usuário pelo seu id na API
-    const rows = await api.get(`/usuarios/${user.id}/avaliacoes`);
+    const rows = await api.get(`/usuarios/${currentUser.id}/avaliacoes`);
 
     if (!rows.length) {
       document.getElementById('histList').innerHTML =

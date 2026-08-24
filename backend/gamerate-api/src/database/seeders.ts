@@ -1,5 +1,6 @@
 import { prisma } from '@/database/prisma.ts';
 import seedersData from '@/database/seeders.json' with { type: 'json' };
+import { hashPassword } from '@/utils/password.ts';
 
 async function up() {
   await prisma.avaliacao.deleteMany();
@@ -20,7 +21,7 @@ async function up() {
   const usuarioIds: number[] = [];
   for (const data of seedersData.usuarios) {
     const id_perfil_fk = perfilIds[(data.id_perfil_fk as number) - 1];
-    const u = await prisma.usuario.create({ data: { nome_usuario: data.nome_usuario, email: data.email, senha: data.senha, id_perfil_fk } });
+    const u = await prisma.usuario.create({ data: { nome_usuario: data.nome_usuario, email: data.email, senha: hashPassword(data.senha), id_perfil_fk } });
     usuarioIds.push(u.id_usuario);
   }
 

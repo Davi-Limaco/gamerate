@@ -61,8 +61,7 @@ document.getElementById('btnCadastro').addEventListener('click', async () => {
 
   try {
     const data = await api.post('/auth/cadastro', { nome_usuario, email, senha });
-    saveSession(data.nome, data.perfil, data.id);
-    window.location.href = '/index.html';
+    window.location.href = '/pages/login.html';
   } catch (e) {
     err.textContent = e.message;
     btn.textContent = 'Criar Conta'; btn.disabled = false;

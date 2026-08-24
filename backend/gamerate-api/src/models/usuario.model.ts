@@ -2,6 +2,7 @@ import { prisma } from '@/database/prisma.ts';
 import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
 import type { Avaliacao } from '@/types/Avaliacao.d.ts';
 import HttpError from '@/errors/HttpError.ts';
+import { hashPassword } from '@/utils/password.ts';
 
 function dateToString(d?: Date | null) {
   if (!d) return undefined;
@@ -51,6 +52,21 @@ async function readByEmail(email: string): Promise<Usuario | undefined> {
     id_usuario: r.id_usuario,
     nome_usuario: r.nome_usuario,
     email: r.email,
+    senha: undefined,
+    id_perfil_fk: r.id_perfil_fk,
+    nome_perfil: r.perfil?.nome_perfil,
+    data_criacao: dateToString(r.data_criacao),
+    total_avaliacoes: undefined,
+  };
+}
+
+async function readByEmailWithPassword(email: string): Promise<Usuario | undefined> {
+  const r = await prisma.usuario.findFirst({ where: { email }, include: { perfil: { select: { nome_perfil: true } } } });
+  if (!r) return undefined;
+  return {
+    id_usuario: r.id_usuario,
+    nome_usuario: r.nome_usuario,
+    email: r.email,
     senha: r.senha,
     id_perfil_fk: r.id_perfil_fk,
     nome_perfil: r.perfil?.nome_perfil,
@@ -64,7 +80,7 @@ async function create({ nome_usuario, email, senha, id_perfil_fk = 1 }: UsuarioI
     throw new HttpError('Campos obrigatórios: nome_usuario, email, senha');
   }
 
-  const r = await prisma.usuario.create({ data: { nome_usuario, email, senha, id_perfil_fk } });
+  const r = await prisma.usuario.create({ data: { nome_usuario, email, senha: hashPassword(senha), id_perfil_fk } });
   return readById(r.id_usuario);
 }
 
@@ -74,7 +90,9 @@ async function update({ id, nome_usuario, email, senha }: UsuarioInput & { id?: 
   const data: any = {};
   if (nome_usuario) data.nome_usuario = nome_usuario;
   if (email) data.email = email;
-  if (senha) data.senha = senha;
+  if (senha) {
+    data.senha = hashPassword(senha);
+  }
 
   if (Object.keys(data).length === 0) throw new HttpError('Nenhum campo para atualizar');
 
@@ -131,4 +149,4 @@ async function readAvaliacoes(id: number): Promise<Avaliacao[]> {
   }));
 }
 
-export default { readAll, readById, readByEmail, create, update, updatePerfil, remove, readAvaliacoes };
+export default { readAll, readById, readByEmail, readByEmailWithPassword, create, update, updatePerfil, remove, readAvaliacoes };

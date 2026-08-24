@@ -4,6 +4,8 @@
 # =============================================================
 
 @base = http://localhost:3000/api
+@token = {{login.response.body.$.token}}
+@invalidToken = invalid.jwt.token
 
 # =============================================================
 #  AUTH — Login e Cadastro
@@ -21,7 +23,8 @@ Content-Type: application/json
 
 ###
 
-### [AUTH] Login (retorna id, nome e perfil)
+### [AUTH] Login válido (captura o JWT para as requisições seguintes)
+# @name login
 POST {{base}}/auth/login
 Content-Type: application/json
 
@@ -29,6 +32,23 @@ Content-Type: application/json
   "email": "admin@gamerate.com",
   "senha": "admin123"
 }
+
+###
+
+### [AUTH] Acesso protegido sem token (esperado: 401)
+GET {{base}}/usuarios/me
+
+###
+
+### [AUTH] Acesso protegido com token válido (esperado: 200)
+GET {{base}}/usuarios/me
+Authorization: Bearer {{token}}
+
+###
+
+### [AUTH] Acesso protegido com token inválido (esperado: 401)
+GET {{base}}/usuarios/me
+Authorization: Bearer {{invalidToken}}
 
 ###
 
@@ -63,6 +83,7 @@ GET {{base}}/jogos/1
 
 ### [JOGOS] Criar novo jogo (CREATE)
 POST {{base}}/jogos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -79,6 +100,7 @@ Content-Type: application/json
 
 ### [JOGOS] Atualizar jogo (UPDATE)
 PUT {{base}}/jogos/9
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -93,6 +115,7 @@ Content-Type: application/json
 
 ### [JOGOS] Excluir jogo (DELETE)
 DELETE {{base}}/jogos/9
+Authorization: Bearer {{token}}
 
 ###
 
@@ -131,12 +154,12 @@ GET {{base}}/avaliacoes/1
 ###
 
 ### [AVALIAÇÕES] Criar avaliação (CREATE)
-# Use o id_usuario retornado pelo login em id_usuario_fk
+# O autor e obtido do JWT; nao envie id_usuario_fk no corpo
 POST {{base}}/avaliacoes
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "id_usuario_fk": 1,
   "id_jogo_fk": 1,
   "nota": 4.5,
   "titulo": "Obra-prima do RPG de ação",
@@ -147,6 +170,7 @@ Content-Type: application/json
 
 ### [AVALIAÇÕES] Atualizar avaliação (UPDATE)
 PUT {{base}}/avaliacoes/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -159,6 +183,7 @@ Content-Type: application/json
 
 ### [AVALIAÇÕES] Excluir avaliação (DELETE)
 DELETE {{base}}/avaliacoes/1
+Authorization: Bearer {{token}}
 
 ###
 
@@ -168,21 +193,25 @@ DELETE {{base}}/avaliacoes/1
 
 ### [USUÁRIOS] Listar todos
 GET {{base}}/usuarios
+Authorization: Bearer {{token}}
 
 ###
 
 ### [USUÁRIOS] Buscar por ID
 GET {{base}}/usuarios/1
+Authorization: Bearer {{token}}
 
 ###
 
 ### [USUÁRIOS] Avaliações de um usuário
 GET {{base}}/usuarios/1/avaliacoes
+Authorization: Bearer {{token}}
 
 ###
 
 ### [USUÁRIOS] Criar usuário (CREATE)
 POST {{base}}/usuarios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -196,6 +225,7 @@ Content-Type: application/json
 
 ### [USUÁRIOS] Atualizar usuário (UPDATE)
 PUT {{base}}/usuarios/2
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -207,6 +237,7 @@ Content-Type: application/json
 
 ### [USUÁRIOS] Alterar perfil do usuário
 PUT {{base}}/usuarios/2/perfil
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -217,6 +248,7 @@ Content-Type: application/json
 
 ### [USUÁRIOS] Excluir usuário (DELETE)
 DELETE {{base}}/usuarios/2
+Authorization: Bearer {{token}}
 
 ###
 
@@ -231,6 +263,7 @@ GET {{base}}/generos
 
 ### [GÊNEROS] Criar (CREATE)
 POST {{base}}/generos
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -241,6 +274,7 @@ Content-Type: application/json
 
 ### [GÊNEROS] Excluir (DELETE)
 DELETE {{base}}/generos/16
+Authorization: Bearer {{token}}
 
 ###
 
@@ -251,6 +285,7 @@ GET {{base}}/plataformas
 
 ### [PLATAFORMAS] Criar (CREATE)
 POST {{base}}/plataformas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -261,6 +296,7 @@ Content-Type: application/json
 
 ### [PLATAFORMAS] Excluir (DELETE)
 DELETE {{base}}/plataformas/11
+Authorization: Bearer {{token}}
 
 ###
 
@@ -271,6 +307,7 @@ GET {{base}}/perfis
 
 ### [PERFIS] Criar (CREATE)
 POST {{base}}/perfis
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -281,6 +318,7 @@ Content-Type: application/json
 
 ### [PERFIS] Atualizar (UPDATE)
 PUT {{base}}/perfis/4
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -291,6 +329,7 @@ Content-Type: application/json
 
 ### [PERFIS] Excluir (DELETE)
 DELETE {{base}}/perfis/4
+Authorization: Bearer {{token}}
 
 ###
 
@@ -300,6 +339,7 @@ DELETE {{base}}/perfis/4
 
 ### [CONTATO] Listar todas as mensagens
 GET {{base}}/contato
+Authorization: Bearer {{token}}
 
 ###
 
@@ -317,11 +357,13 @@ Content-Type: application/json
 
 ### [CONTATO] Excluir mensagem (DELETE)
 DELETE {{base}}/contato/1
+Authorization: Bearer {{token}}
 
 ###
 
 ### [CONTATO] Listar mensagens (GET)
 GET http://localhost:3000/api/contato
+Authorization: Bearer {{token}}
 
 # =============================================================
 #  CASOS INVÁLIDOS — Validação e tratamento de erros
