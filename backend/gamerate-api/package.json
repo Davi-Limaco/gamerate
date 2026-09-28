@@ -1,0 +1,37 @@
+{
+  "name": "gamerate-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "prepare:env": "node -e \"const fs=require('fs'); const path=require('path'); const env=path.resolve('.env'); const example=path.resolve('.env.example'); if (!fs.existsSync(env) && fs.existsSync(example)) fs.copyFileSync(example, env);\"",
+    "dev": "npm run prepare:env && tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:reload": "npm run prepare:env && npm run db:deploy && npm run db:seed",
+    "db:load": "npm run prepare:env && npm run db:seed",
+    "prisma:generate": "npm run prepare:env && prisma generate",
+    "db:migrate": "npm run prepare:env && prisma migrate dev",
+    "db:deploy": "npm run prepare:env && prisma migrate deploy",
+    "db:seed": "npm run prepare:env && tsx prisma/seed.ts",
+    "db:setup": "npm run prepare:env && npm run prisma:generate && npm run db:deploy && npm run db:seed"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.45.1",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "nodemailer": "^6.9.16",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^6.4.17",
+    "prisma": "^6.0.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "perfis": [
+    { "nome_perfil": "Jogador" },
+    { "nome_perfil": "Crítico Especializado" },
+    { "nome_perfil": "Administrador" }
+  ],
+  "usuarios": [
+    {
+      "nome_usuario": "Admin",
+      "email": "admin@gamerate.com",
+      "senha": "admin123",
+      "id_perfil_fk": 3
+    }
+  ],
+  "plataformas": [
+    { "nome_plataforma": "PC" },
+    { "nome_plataforma": "PlayStation 5" },
+    { "nome_plataforma": "PlayStation 4" },
+    { "nome_plataforma": "Xbox Series X" },
+    { "nome_plataforma": "Xbox One" },
+    { "nome_plataforma": "Nintendo Switch" },
+    { "nome_plataforma": "Android" },
+    { "nome_plataforma": "iOS" },
+    { "nome_plataforma": "PlayStation 3" },
+    { "nome_plataforma": "Xbox 360" }
+  ],
+  "generos": [
+    { "nome_genero": "Ação" },
+    { "nome_genero": "RPG" },
+    { "nome_genero": "Aventura" },
+    { "nome_genero": "Terror" },
+    { "nome_genero": "Estratégia" },
+    { "nome_genero": "Simulação" },
+    { "nome_genero": "Esportes" },
+    { "nome_genero": "Luta" },
+    { "nome_genero": "Plataforma" },
+    { "nome_genero": "Corrida" },
+    { "nome_genero": "Puzzle" },
+    { "nome_genero": "Tiro" },
+    { "nome_genero": "Roguelike" },
+    { "nome_genero": "Metroidvania" },
+    { "nome_genero": "Survival Horror" }
+  ],
+  "jogos": [
+    {
+      "nome_jogo": "Elden Ring",
+      "desenvolvedora": "FromSoftware",
+      "data_lancamento": "2022-02-25",
+      "descricao": "Um RPG de ação ambientado nas Terras Intermédias, criado em colaboração com George R.R. Martin. Explore um vasto mundo aberto repleto de masmorras, chefes e segredos.",
+      "nota_media": 4.8,
+      "total_avaliacoes": 0,
+      "capa": "/assets/eldenring.jpg",
+      "generos": [1, 2],
+      "plataformas": [1, 2, 3, 4, 5]
+    },
+    {
+      "nome_jogo": "God of War Ragnarök",
+      "desenvolvedora": "Santa Monica Studio",
+      "data_lancamento": "2022-11-09",
+      "descricao": "Kratos e Atreus embarcam em uma épica jornada pelos reinos nórdicos enquanto o Ragnarök se aproxima. Uma sequência que supera o original em emoção e escala.",
+      "nota_media": 4.9,
+      "total_avaliacoes": 0,
+      "capa": "/assets/gowragnarok.jpg",
+      "generos": [1, 3],
+      "plataformas": [2, 3]
+    },
+    {
+      "nome_jogo": "Baldur's Gate 3",
+      "desenvolvedora": "Larian Studios",
+      "data_lancamento": "2023-08-03",
+      "descricao": "O mais completo RPG de mesa digital já criado. Com roteiro ramificado, personagens profundos e combate tático, define um novo padrão para o gênero.",
+      "nota_media": 5.0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/baldursgate3.jpg",
+      "generos": [2, 3],
+      "plataformas": [1, 2]
+    },
+    {
+      "nome_jogo": "Cyberpunk 2077",
+      "desenvolvedora": "CD Projekt RED",
+      "data_lancamento": "2020-12-10",
+      "descricao": "Uma epopeia cyberpunk em Night City, uma megalópole obcecada por poder e modificações corporais. Jogue como V em uma história de redenção e identidade.",
+      "nota_media": 4.5,
+      "total_avaliacoes": 0,
+      "capa": "/assets/cyberpunk2077.jpg",
+      "generos": [2, 1],
+      "plataformas": [1, 2, 3, 4, 5]
+    },
+    {
+      "nome_jogo": "Hollow Knight",
+      "desenvolvedora": "Team Cherry",
+      "data_lancamento": "2017-02-24",
+      "descricao": "Um metroidvania desafiador e belíssimo ambientado em Hallownest, um reino subterrâneo de insetos. Arte manual, trilha sonora magistral e gameplay impecável.",
+      "nota_media": 4.7,
+      "total_avaliacoes": 0,
+      "capa": "/assets/hollowknight.jpg",
+      "generos": [2, 1],
+      "plataformas": [1, 6]
+    },
+    {
+      "nome_jogo": "Red Dead Redemption 2",
+      "desenvolvedora": "Rockstar Games",
+      "data_lancamento": "2018-10-26",
+      "descricao": "Uma obra-prima ambientada no Velho Oeste americano. Arthur Morgan e o bando Van der Linde enfrentam o fim de uma era em uma das histórias mais emocionantes dos jogos.",
+      "nota_media": 4.9,
+      "total_avaliacoes": 0,
+      "capa": "/assets/reddeadredemption2.jpg",
+      "generos": [3, 1],
+      "plataformas": [1, 2, 3, 4, 5]
+    },
+    {
+      "nome_jogo": "Hades",
+      "desenvolvedora": "Supergiant Games",
+      "data_lancamento": "2020-09-17",
+      "descricao": "Um roguelike de ação sobre Zagreus, filho de Hades, tentando escapar do submundo grego. Narrativa integrada ao gameplay de forma nunca vista no gênero.",
+      "nota_media": 4.8,
+      "total_avaliacoes": 0,
+      "capa": "/assets/hades.jpg",
+      "generos": [1, 2],
+      "plataformas": [1, 2, 6]
+    },
+    {
+      "nome_jogo": "The Witcher 3: Wild Hunt",
+      "desenvolvedora": "CD Projekt RED",
+      "data_lancamento": "2015-05-19",
+      "descricao": "Geralt de Rívia em sua aventura mais épica, buscando sua filha adotiva Ciri. Um dos maiores RPGs de mundo aberto já criados, com quests memoráveis.",
+      "nota_media": 4.9,
+      "total_avaliacoes": 0,
+      "capa": "/assets/thewitcher3.jpg",
+      "generos": [2, 3],
+      "plataformas": [1, 2, 3, 4, 5, 6]
+    }
+  ]
+}

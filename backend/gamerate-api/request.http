@@ -1,0 +1,721 @@
+# =============================================================
+#  GameRate API — Testes das Rotas (REST Client / VSCode)
+#  Servidor: http://localhost:3000
+#
+#  Como usar o encadeamento de token: cada requisição de login/cadastro tem
+#  um "@name" (ex.: "# @name adminLogin"). As requisições seguintes reusam o
+#  token da resposta com a sintaxe {{adminLogin.response.body.token}} no
+#  header "Authorization: Bearer ...". Execute os requests em ordem, de cima
+#  para baixo, para que os nomes já estejam resolvidos quando forem usados.
+# =============================================================
+
+@base = http://localhost:3000/api
+
+# =============================================================
+#  AUTH — Cadastro, Login e sessão (rota /auth/me)
+# =============================================================
+
+### [AUTH] Cadastrar novo usuário (válido) -> 201 + token + dispara e-mail de
+### boas-vindas (veja no terminal do "npm run dev" a URL de prévia Ethereal)
+# @name cadastroTeste
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "Teste",
+  "email": "teste{{$guid}}@example.test",
+  "senha": "senha123"
+}
+
+###
+
+### [AUTH] Cadastro com corpo inválido -> 400 com "issues" por campo
+### (nome_usuario curto demais, email sem formato válido, senha curta)
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "ab",
+  "email": "nao-e-um-email",
+  "senha": "123"
+}
+
+###
+
+### [AUTH] Cadastro com e-mail já cadastrado -> 409 Conflict
+### Usa o admin criado pelo seed; nenhum e-mail de boas-vindas é enviado.
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "Teste Duplicado",
+  "email": "admin@gamerate.com",
+  "senha": "senha123"
+}
+
+###
+
+### [AUTH] Login válido (Administrador) -> 200 + { token, usuario }
+### Guarda o token em "adminLogin" para as seções protegidas mais abaixo.
+# @name adminLogin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gamerate.com",
+  "senha": "admin123"
+}
+
+###
+
+### [AUTH] Login válido (usuário comum, perfil "Jogador", criado pelo seed)
+### Guarda o token em "jogadorLogin" para os testes de "dono vs. terceiro".
+# @name jogadorLogin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.martins@gamerate.dev",
+  "senha": "avaliador123"
+}
+
+###
+
+### [AUTH] Login com senha incorreta -> 401 Credenciais inválidas
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gamerate.com",
+  "senha": "senha-totalmente-errada"
+}
+
+###
+
+### [AUTH] Login com e-mail inexistente -> 401 Credenciais inválidas
+### (mesma mensagem do caso de senha errada, de propósito — evita enumeração
+### de e-mails cadastrados)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ninguem-com-esse-email@example.test",
+  "senha": "qualquer-coisa"
+}
+
+###
+
+### [AUTH] Login com corpo inválido (e-mail mal formatado) -> 400 com issues
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nao-e-um-email",
+  "senha": ""
+}
+
+###
+
+### [AUTH] GET /auth/me SEM token -> 401 Não autenticado (token ausente)
+GET {{base}}/auth/me
+
+###
+
+### [AUTH] GET /auth/me com token INVÁLIDO/adulterado -> 401
+GET {{base}}/auth/me
+Authorization: Bearer token.invalido.adulterado
+
+###
+
+### [AUTH] GET /auth/me COM token válido -> 200 com os dados do usuário logado
+### Demonstra o token do login sendo reenviado em requisições subsequentes.
+GET {{base}}/auth/me
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+# =============================================================
+#  ROTAS PROTEGIDAS — sem token vs. com token (middleware authenticate)
+# =============================================================
+
+### [PROTEGIDA] Publicar avaliação SEM token -> 401 (não chega a gravar nada)
+POST {{base}}/avaliacoes
+Content-Type: application/json
+
+{
+  "id_jogo_fk": 2,
+  "nota": 4.5,
+  "titulo": "Tentativa sem login",
+  "texto": "Essa requisição não deve ser aceita: falta o header Authorization."
+}
+
+###
+
+### [PROTEGIDA] Publicar avaliação COM token válido -> 201 Created
+### O autor (id_usuario_fk) é extraído do token pelo back-end, não deste corpo.
+# @name novaAvaliacao
+POST {{base}}/avaliacoes
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "id_jogo_fk": 2,
+  "nota": 4.5,
+  "titulo": "Obra-prima do RPG de ação",
+  "texto": "Elden Ring redefine o gênero. A liberdade de exploração combinada com o desafio característico da FromSoftware cria uma experiência inesquecível."
+}
+
+###
+
+### [PROTEGIDA] Editar avaliação de OUTRO usuário -> 403 Forbidden
+### O admin tenta editar a avaliação que "jogadorLogin" acabou de criar.
+PUT {{base}}/avaliacoes/{{novaAvaliacao.response.body.id_avaliacao}}
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "titulo": "Tentando editar avaliação alheia"
+}
+
+###
+
+### [PROTEGIDA] Editar a PRÓPRIA avaliação -> 200 OK
+PUT {{base}}/avaliacoes/{{novaAvaliacao.response.body.id_avaliacao}}
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "titulo": "A melhor experiência dos jogos modernos"
+}
+
+###
+
+### [PROTEGIDA] GET /usuarios (listagem geral) SEM token -> 401
+GET {{base}}/usuarios
+
+###
+
+### [PROTEGIDA] GET /usuarios com token de usuário comum -> 403 Forbidden
+### (rota exige perfil "Administrador"; middleware authorize barra o acesso)
+GET {{base}}/usuarios
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [PROTEGIDA] GET /usuarios com token de Administrador -> 200 OK
+GET {{base}}/usuarios
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [PROTEGIDA] Consultar perfil de OUTRO usuário -> 403 Forbidden
+### "jogadorLogin" tenta acessar os dados do usuário recém-cadastrado.
+GET {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [PROTEGIDA] Consultar o PRÓPRIO perfil -> 200 OK
+GET {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}
+Authorization: Bearer {{cadastroTeste.response.body.token}}
+
+###
+
+# =============================================================
+#  JOGOS — CRUD completo (leitura pública, escrita restrita a Administrador)
+# =============================================================
+
+### [JOGOS] Listar todos (público)
+GET {{base}}/jogos
+
+###
+
+### [JOGOS] Buscar por nome (público)
+GET {{base}}/jogos?search=Elden
+
+###
+
+### [JOGOS] Filtrar por gênero (público)
+GET {{base}}/jogos?genero=RPG
+
+###
+
+### [JOGOS] Filtrar por plataforma (público)
+GET {{base}}/jogos?plataforma=PC
+
+###
+
+### [JOGOS] Buscar por ID (público)
+GET {{base}}/jogos/1
+
+###
+
+### [JOGOS] Registro inexistente -> 404
+GET {{base}}/jogos/999999
+
+###
+
+### [JOGOS] Parâmetro de rota inválido (id não numérico) -> 400 com issues
+GET {{base}}/jogos/abc
+
+###
+
+### [JOGOS] Query inválida (search vazio) -> 400 com issues
+GET {{base}}/jogos?search=
+
+###
+
+### [JOGOS] Criar jogo SEM token -> 401 (rota de administração de catálogo)
+POST {{base}}/jogos
+Content-Type: application/json
+
+{
+  "nome_jogo": "Celeste",
+  "desenvolvedora": "Maddy Thorson",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Um platformer desafiador sobre uma garota escalando a montanha Celeste, premiado pela narrativa sobre saúde mental.",
+  "capa": "/assets/celeste.jpg",
+  "generos": [9, 11],
+  "plataformas": [1, 6]
+}
+
+###
+
+### [JOGOS] Criar jogo com token de usuário comum -> 403 (não é Administrador)
+POST {{base}}/jogos
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "nome_jogo": "Celeste",
+  "desenvolvedora": "Maddy Thorson",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Um platformer desafiador.",
+  "capa": "/assets/celeste.jpg"
+}
+
+###
+
+### [JOGOS] Criar novo jogo (CREATE) com token de Administrador -> 201
+POST {{base}}/jogos
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_jogo": "Celeste",
+  "desenvolvedora": "Maddy Thorson",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Um platformer desafiador sobre uma garota escalando a montanha Celeste, premiado pela narrativa sobre saúde mental.",
+  "capa": "/assets/celeste.jpg",
+  "generos": [9, 11],
+  "plataformas": [1, 6]
+}
+
+###
+
+### [JOGOS] Criar jogo com corpo inválido -> 400 com issues
+### (nome_jogo vazio, data_lancamento fora do formato e inexistente no calendário)
+POST {{base}}/jogos
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_jogo": "",
+  "desenvolvedora": "Estúdio Teste",
+  "data_lancamento": "2024-02-31",
+  "descricao": "Jogo de teste para validar o schema."
+}
+
+###
+
+### [JOGOS] Atualizar jogo (UPDATE) com token de Administrador
+PUT {{base}}/jogos/9
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_jogo": "Celeste (Atualizado)",
+  "desenvolvedora": "Maddy Thorson & Noel Berry",
+  "data_lancamento": "2018-01-25",
+  "descricao": "Platformer aclamado com narrativa sobre saúde mental e mecânicas de movimento únicas.",
+  "capa": "/assets/celeste.jpg"
+}
+
+###
+
+### [JOGOS] Atualizar registro inexistente -> 404
+PUT {{base}}/jogos/999999
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_jogo": "Jogo inexistente"
+}
+
+###
+
+### [JOGOS] Atualização inválida -> 400
+PUT {{base}}/jogos/999999
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_jogo": ""
+}
+
+###
+
+### [JOGOS] Excluir jogo (DELETE) com token de Administrador
+DELETE {{base}}/jogos/9
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [JOGOS] Excluir registro inexistente -> 404
+DELETE {{base}}/jogos/999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [JOGOS] Estatísticas do catálogo (público)
+GET {{base}}/jogos/stats
+
+###
+
+### [JOGOS] Jogos em destaque (público)
+GET {{base}}/jogos/destaques
+
+###
+
+# =============================================================
+#  AVALIAÇÕES — CRUD completo (leitura pública, escrita autenticada)
+# =============================================================
+
+### [AVALIAÇÕES] Listar todas (público)
+GET {{base}}/avaliacoes
+
+###
+
+### [AVALIAÇÕES] Filtrar por jogo (público)
+GET {{base}}/avaliacoes?jogo_id=1
+
+###
+
+### [AVALIAÇÕES] Avaliações em destaque, maior nota (público)
+GET {{base}}/avaliacoes/destaque
+
+###
+
+### [AVALIAÇÕES] Buscar por ID (público)
+GET {{base}}/avaliacoes/1
+
+###
+
+### [AVALIAÇÕES] Registro inexistente -> 404
+GET {{base}}/avaliacoes/999999
+
+###
+
+### [AVALIAÇÕES] Parâmetro de rota inválido (id não numérico) -> 400 com issues
+GET {{base}}/avaliacoes/abc
+
+###
+
+### [AVALIAÇÕES] Query inválida (jogo_id não numérico) -> 400 com issues
+GET {{base}}/avaliacoes?jogo_id=abc
+
+###
+
+### [AVALIAÇÕES] Criar SEM token -> 401 (ver seção "ROTAS PROTEGIDAS" acima
+### para o fluxo completo de criação autenticada)
+POST {{base}}/avaliacoes
+Content-Type: application/json
+
+{
+  "id_jogo_fk": 1,
+  "nota": 4,
+  "titulo": "Sem autenticação",
+  "texto": "Deve ser recusada com 401 antes de tocar no banco de dados."
+}
+
+###
+
+### [AVALIAÇÕES] Corpo inválido (nota fora do intervalo 0–5) -> 400 com issues
+POST {{base}}/avaliacoes
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "id_jogo_fk": 1,
+  "nota": 9,
+  "titulo": "Nota inválida",
+  "texto": "Essa avaliação não deve passar da validação."
+}
+
+###
+
+### [AVALIAÇÕES] Avaliação duplicada -> 409 Conflict
+### (o "jogadorLogin" - Ana Martins - já tem avaliação no jogo 1 via seed)
+POST {{base}}/avaliacoes
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "id_jogo_fk": 1,
+  "nota": 4,
+  "titulo": "Repetindo avaliação do mesmo jogo",
+  "texto": "Essa segunda avaliação para o mesmo jogo/usuário deve retornar 409."
+}
+
+###
+
+### [AVALIAÇÕES] Atualizar com dados inválidos -> 400
+PUT {{base}}/avaliacoes/{{novaAvaliacao.response.body.id_avaliacao}}
+Content-Type: application/json
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+{
+  "nota": 8
+}
+
+###
+
+### [AVALIAÇÕES] Remover avaliação de OUTRO usuário -> 403 Forbidden
+DELETE {{base}}/avaliacoes/{{novaAvaliacao.response.body.id_avaliacao}}
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [AVALIAÇÕES] Remover a PRÓPRIA avaliação (DELETE) -> 204 No Content
+DELETE {{base}}/avaliacoes/{{novaAvaliacao.response.body.id_avaliacao}}
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [AVALIAÇÕES] Excluir registro inexistente -> 404
+DELETE {{base}}/avaliacoes/999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+# =============================================================
+#  USUÁRIOS — CRUD (protegido: dono do recurso ou Administrador)
+# =============================================================
+
+### [USUÁRIOS] Listar todos -> só Administrador (ver seção protegida acima)
+GET {{base}}/usuarios
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [USUÁRIOS] Buscar o PRÓPRIO usuário por ID -> 200
+GET {{base}}/usuarios/{{jogadorLogin.response.body.usuario.id_usuario}}
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [USUÁRIOS] Registro inexistente (como admin) -> 404
+GET {{base}}/usuarios/999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [USUÁRIOS] Avaliações do PRÓPRIO usuário -> 200
+GET {{base}}/usuarios/{{jogadorLogin.response.body.usuario.id_usuario}}/avaliacoes
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [USUÁRIOS] Criar usuário diretamente (perfil arbitrário) -> só Administrador
+POST {{base}}/usuarios
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_usuario": "Teste2",
+  "email": "teste2@teste.com",
+  "senha": "senha456",
+  "id_perfil_fk": 1
+}
+
+###
+
+### [USUÁRIOS] Atualizar o PRÓPRIO usuário (UPDATE) -> 200
+### Se "senha" for enviada, é re-hasheada com Argon2 antes de salvar.
+PUT {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}
+Content-Type: application/json
+Authorization: Bearer {{cadastroTeste.response.body.token}}
+
+{
+  "nome_usuario": "Teste Atualizado",
+  "email": "{{cadastroTeste.response.body.usuario.email}}"
+}
+
+###
+
+### [USUÁRIOS] Atualizar registro inexistente (como admin) -> 404
+PUT {{base}}/usuarios/999999
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_usuario": "Usuário inexistente"
+}
+
+###
+
+### [USUÁRIOS] Atualização inválida -> 400
+PUT {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}
+Content-Type: application/json
+Authorization: Bearer {{cadastroTeste.response.body.token}}
+
+{
+  "email": "email-inválido"
+}
+
+###
+
+### [USUÁRIOS] Alterar perfil/role de um usuário -> só Administrador
+PUT {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}/perfil
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "id_perfil_fk": 2
+}
+
+###
+
+### [USUÁRIOS] Excluir o PRÓPRIO usuário (DELETE) -> 204
+DELETE {{base}}/usuarios/{{cadastroTeste.response.body.usuario.id_usuario}}
+Authorization: Bearer {{cadastroTeste.response.body.token}}
+
+###
+
+### [USUÁRIOS] Excluir registro inexistente (como admin) -> 404
+DELETE {{base}}/usuarios/999999
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+# =============================================================
+#  CATÁLOGO — Gêneros, Plataformas e Perfis (leitura pública, gestão admin)
+# =============================================================
+
+### [GÊNEROS] Listar todos (público)
+GET {{base}}/generos
+
+###
+
+### [GÊNEROS] Criar SEM token -> 401
+POST {{base}}/generos
+Content-Type: application/json
+
+{
+  "nome_genero": "Soulslike"
+}
+
+###
+
+### [GÊNEROS] Criar (CREATE) com token de Administrador
+POST {{base}}/generos
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_genero": "Soulslike"
+}
+
+###
+
+### [GÊNEROS] Excluir (DELETE) com token de Administrador
+DELETE {{base}}/generos/16
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [PLATAFORMAS] Listar todas (público)
+GET {{base}}/plataformas
+
+###
+
+### [PLATAFORMAS] Criar (CREATE) com token de Administrador
+POST {{base}}/plataformas
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_plataforma": "PlayStation Portable"
+}
+
+###
+
+### [PLATAFORMAS] Excluir (DELETE) com token de Administrador
+DELETE {{base}}/plataformas/11
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [PERFIS] Listar todos (público)
+GET {{base}}/perfis
+
+###
+
+### [PERFIS] Criar (CREATE) com token de Administrador
+POST {{base}}/perfis
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_perfil": "Moderador"
+}
+
+###
+
+### [PERFIS] Atualizar (UPDATE) com token de Administrador
+PUT {{base}}/perfis/4
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+{
+  "nome_perfil": "Moderador Sênior"
+}
+
+###
+
+### [PERFIS] Excluir (DELETE) com token de Administrador
+DELETE {{base}}/perfis/4
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+# =============================================================
+#  CONTATO — Envio público, moderação restrita a Administrador
+# =============================================================
+
+### [CONTATO] Enviar mensagem (CREATE) — público, sem login
+POST {{base}}/contato
+Content-Type: application/json
+
+{
+  "email_contato": "usuario@email.com",
+  "tipo": "Dúvida",
+  "mensagem": "Gostaria de saber como funciona o sistema de avaliações do GameRate."
+}
+
+###
+
+### [CONTATO] Listar mensagens SEM token -> 401
+GET {{base}}/contato
+
+###
+
+### [CONTATO] Listar mensagens com token de Administrador -> 200
+GET {{base}}/contato
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+###
+
+### [CONTATO] Excluir mensagem (DELETE) com token de Administrador
+DELETE {{base}}/contato/1
+Authorization: Bearer {{adminLogin.response.body.token}}
