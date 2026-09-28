@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
-const dbFile = resolve('src', 'database', 'db.sqlite');
+const dbFile = resolve('dev.db');
 
 type DbParam = string | number | null;
 

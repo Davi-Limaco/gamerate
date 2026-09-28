@@ -1,7 +1,7 @@
 import { existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const dbFile = resolve('src', 'database', 'db.sqlite');
+const dbFile = resolve('dev.db');
 
 if (existsSync(dbFile)) {
   unlinkSync(dbFile);

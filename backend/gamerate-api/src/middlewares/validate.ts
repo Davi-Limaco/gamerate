@@ -14,14 +14,6 @@ export function validate<T extends ZodTypeAny>(schema: T) {
         req.body = result.body;
       }
 
-      if (result.params !== undefined) {
-        req.params = result.params;
-      }
-
-      if (result.query !== undefined) {
-        req.query = result.query;
-      }
-
       return next();
     } catch (error) {
       if (error instanceof z.ZodError) {
