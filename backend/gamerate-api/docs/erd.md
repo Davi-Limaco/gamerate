@@ -1,110 +1,96 @@
-# Diagrama ERD — GameRate API
+# ERD — GameRate
 
-Diagrama de Entidade-Relacionamento do banco de dados SQLite da aplicação GameRate.
+Este diagrama corresponde aos nove models e às tabelas `@@map` de
+`prisma/schema.prisma`. Os tipos representam os tipos Prisma; campos `?` são
+nullable no SQLite. `PK`, `FK` e `UK` indicam chave primária, estrangeira e
+unicidade.
 
 ```mermaid
 erDiagram
-    PERFIL ||--o{ USUARIO : "possui"
-    USUARIO ||--o{ AVALIACAO : "faz"
-    JOGO ||--o{ AVALIACAO : "recebe"
-    JOGO }o--|| JOGO_GENERO : "tem"
-    GENERO }o--|| JOGO_GENERO : "classifica"
-    JOGO }o--|| JOGO_PLATAFORMA : "disponivel_em"
-    PLATAFORMA }o--|| JOGO_PLATAFORMA : "hospeda"
+    PERFIL ||--o{ USUARIO : possui
+    USUARIO ||--o{ AVALIACAO : escreve
+    JOGO ||--o{ AVALIACAO : recebe
+    JOGO ||--o{ JOGO_GENERO : classificado_por
+    GENERO ||--o{ JOGO_GENERO : classifica
+    JOGO ||--o{ JOGO_PLATAFORMA : disponivel_em
+    PLATAFORMA ||--o{ JOGO_PLATAFORMA : recebe
 
     PERFIL {
-        int id_perfil PK
-        string nome_perfil UK
+        Int id_perfil PK "autoincrement"
+        String nome_perfil UK "NOT NULL"
     }
-
     USUARIO {
-        int id_usuario PK
-        string nome_usuario
-        string email UK
-        string senha
-        int id_perfil_fk FK
-        date data_criacao
+        Int id_usuario PK "autoincrement"
+        String nome_usuario "NOT NULL"
+        String email UK "NOT NULL"
+        String senha "NOT NULL"
+        Int id_perfil_fk FK "NOT NULL"
+        DateTime data_criacao "NOT NULL DEFAULT CURRENT_DATE"
     }
-
     JOGO {
-        int id_jogo PK
-        string nome_jogo
-        string desenvolvedora
-        date data_lancamento
-        string descricao
-        real nota_media
-        int total_avaliacoes
-        string capa
+        Int id_jogo PK "autoincrement"
+        String nome_jogo "NOT NULL"
+        String desenvolvedora "NOT NULL"
+        DateTime data_lancamento "NOT NULL"
+        String descricao "NOT NULL"
+        Float nota_media "nullable"
+        Int total_avaliacoes "NOT NULL DEFAULT 0"
+        String capa "nullable"
     }
-
     AVALIACAO {
-        int id_avaliacao PK
-        int id_usuario_fk FK
-        int id_jogo_fk FK
-        real nota
-        string titulo
-        string texto
-        date data_publicacao
+        Int id_avaliacao PK "autoincrement"
+        Int id_usuario_fk FK "NOT NULL; UNIQUE with id_jogo_fk"
+        Int id_jogo_fk FK "NOT NULL; UNIQUE with id_usuario_fk"
+        Float nota "NOT NULL"
+        String titulo "NOT NULL"
+        String texto "NOT NULL"
+        DateTime data_publicacao "NOT NULL DEFAULT CURRENT_DATE"
     }
-
     GENERO {
-        int id_genero PK
-        string nome_genero UK
+        Int id_genero PK "autoincrement"
+        String nome_genero UK "NOT NULL"
     }
-
     JOGO_GENERO {
-        int id_jogo_fk FK
-        int id_genero_fk FK
+        Int id_jogo_fk PK "FK"
+        Int id_genero_fk PK "FK"
     }
-
     PLATAFORMA {
-        int id_plataforma PK
-        string nome_plataforma UK
+        Int id_plataforma PK "autoincrement"
+        String nome_plataforma UK "NOT NULL"
     }
-
     JOGO_PLATAFORMA {
-        int id_jogo_fk FK
-        int id_plataforma_fk FK
+        Int id_jogo_fk PK "FK"
+        Int id_plataforma_fk PK "FK"
     }
-
     COMUNICACAO_SITE {
-        int id_comunicacao PK
-        string email_contato
-        string tipo
-        string mensagem
-        date data_comunicacao
+        Int id_comunicacao PK "autoincrement"
+        String email_contato "NOT NULL"
+        String tipo "NOT NULL"
+        String mensagem "NOT NULL"
+        DateTime data_comunicacao "NOT NULL DEFAULT CURRENT_DATE"
     }
 ```
 
-## Explicação dos Relacionamentos
+## Cardinalidade
 
-### Relacionamentos 1:N (Um-para-Muitos)
-- **PERFIL → USUARIO** (1:N): Um perfil pode estar associado a vários usuários.
-- **USUARIO → AVALIACAO** (1:N): Um usuário pode fazer várias avaliações.
-- **JOGO → AVALIACAO** (1:N): Um jogo pode receber várias avaliações.
+- `Perfil 1:N Usuario`: cada usuário referencia exatamente um perfil; um perfil pode pertencer a zero ou muitos usuários.
+- `Usuario 1:N Avaliacao` e `Jogo 1:N Avaliacao`: cada avaliação tem exatamente um autor e um jogo.
+- `Jogo N:N Genero`, implementado por `JogoGenero` com PK composta (`id_jogo_fk`, `id_genero_fk`).
+- `Jogo N:N Plataforma`, implementado por `JogoPlataforma` com PK composta (`id_jogo_fk`, `id_plataforma_fk`).
+- Cada registro de junção aponta para exatamente um jogo e um gênero/plataforma; `ComunicacaoSite` não possui relacionamento.
 
-### Relacionamentos N:N (Muitos-para-Muitos)
-- **JOGO ↔ GENERO** (N:N via JOGO_GENERO): Um jogo pode ter vários gêneros; um gênero pode classificar vários jogos.
-- **JOGO ↔ PLATAFORMA** (N:N via JOGO_PLATAFORMA): Um jogo pode estar disponível em várias plataformas; uma plataforma pode hospedar vários jogos.
+## Constraints e Defaults
 
-### Entidade Independente
-- **COMUNICACAO_SITE**: Formulário de contato público, sem relacionamentos com outras tabelas.
+- Campos são obrigatórios por padrão no Prisma; somente `Jogo.nota_media` e `Jogo.capa` são opcionais.
+- `Usuario.email`, `Perfil.nome_perfil`, `Genero.nome_genero` e `Plataforma.nome_plataforma` são únicos.
+- `Avaliacao` possui unicidade composta por usuário e jogo, impedindo avaliações duplicadas.
+- IDs simples usam `autoincrement()`; as tabelas de junção usam chave primária composta.
+- `Usuario.data_criacao`, `Avaliacao.data_publicacao` e `ComunicacaoSite.data_comunicacao` usam `CURRENT_DATE`; `Jogo.total_avaliacoes` usa `0`.
+- `Jogo.data_lancamento` é obrigatório e não tem default.
 
-## Restrições de Integridade
+## Apresentação
 
-- **Chaves Primárias (PK)**: Identificam unicamente cada registro.
-- **Chaves Estrangeiras (FK)**: Garantem referência a registros existentes em outras tabelas.
-- **Unique (UK)**: Impedem duplicação de certos campos (`email`, `nome_perfil`, `nome_genero`, `nome_plataforma`).
-
-### Restrições Compostas (implementadas no banco, não renderizadas aqui)
-
-- **AVALIACAO**: `UNIQUE (id_usuario_fk, id_jogo_fk)` — garante uma única avaliação por par usuário/jogo.
-- **JOGO_GENERO**: `PRIMARY KEY (id_jogo_fk, id_genero_fk)` — chave primária composta (tabela de junção).
-- **JOGO_PLATAFORMA**: `PRIMARY KEY (id_jogo_fk, id_plataforma_fk)` — chave primária composta (tabela de junção).
-
-## Notação da Cardinalidade
-
-No diagrama Mermaid ERD:
-- `||` = exatamente um
-- `}o` = zero ou muitos
-- `--` = relacionamento simples
+Mostre este ERD ao lado de `prisma/schema.prisma`, depois consulte os mesmos
+registros no Prisma Studio. Para provar a persistência, crie um jogo pelo
+front-end ou por `request.http`, atualize e consulte-o pela API, e confirme o
+registro e suas relações em `npx prisma studio`.

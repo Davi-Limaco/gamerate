@@ -249,7 +249,6 @@ function fecharModalBg(e) {
 }
 
 document.getElementById('btnEnviarAval').addEventListener('click', async () => {
-  const user   = getUser();
   const nota   = parseFloat(document.getElementById('modalNota').value);
   const titulo = document.getElementById('modalTitulo').value.trim();
   const texto  = document.getElementById('modalTexto').value.trim();
@@ -260,12 +259,14 @@ document.getElementById('btnEnviarAval').addEventListener('click', async () => {
   const btn = document.getElementById('btnEnviarAval');
   btn.textContent = 'Publicando...'; btn.disabled = true;
   try {
-    await api.post('/avaliacoes', { 
-      id_usuario_fk: parseInt(user.id), 
-      id_jogo_fk: parseInt(jogoId), 
-      nota, 
-      titulo, 
-      texto 
+    // id_usuario_fk não é mais enviado pelo cliente: o back-end identifica o
+    // autor da avaliação a partir do JWT (header Authorization), nunca de um
+    // valor recebido no corpo da requisição.
+    await api.post('/avaliacoes', {
+      id_jogo_fk: parseInt(jogoId),
+      nota,
+      titulo,
+      texto
     });
     fecharModal();
     toast('Avaliação publicada!', 'success');

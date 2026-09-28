@@ -1,24 +1,24 @@
 import { Router } from 'express';
 import { requireJsonContentType as requireJson } from '@/middlewares/requireJsonContentType.ts';
-import { isAuthenticated } from '@/middlewares/auth.ts';
 import { validate } from '@/middlewares/validate.ts';
-import {
-  readJogoSchema,
-  readJogoByIdSchema,
-  createJogoSchema,
-  updateJogoSchema,
-  idSchema,
-} from '@/schemas/index.ts';
+import { authenticate } from '@/middlewares/authenticate.ts';
+import { authorize } from '@/middlewares/authorize.ts';
 import JogosController from '@/controllers/jogos.controller.ts';
+import { idParamSchema } from '@/schemas/id-param.schema.ts';
+import { jogoBodySchema, jogoUpdateBodySchema, jogoQuerySchema } from '@/schemas/jogo.schema.ts';
 
 const router = Router();
 
+// Catálogo de jogos é público (qualquer visitante navega e pesquisa).
 router.get('/jogos/stats', JogosController.getStats);
 router.get('/jogos/destaques', JogosController.getDestaques);
-router.get('/jogos', validate(readJogoSchema), JogosController.read);
-router.get('/jogos/:id', validate(readJogoByIdSchema), JogosController.readById);
-router.post('/jogos', isAuthenticated, requireJson, validate(createJogoSchema), JogosController.create);
-router.put('/jogos/:id', isAuthenticated, requireJson, validate(updateJogoSchema), JogosController.update);
-router.delete('/jogos/:id', isAuthenticated, validate(idSchema), JogosController.remove);
+router.get('/jogos', validate({ query: jogoQuerySchema }), JogosController.read);
+router.get('/jogos/:id', validate({ params: idParamSchema }), JogosController.readById);
+
+// Cadastrar/editar/remover jogos é uma ação de gestão de catálogo, restrita
+// a administradores (usada pelo painel admin.html).
+router.post('/jogos', authenticate, authorize('Administrador'), requireJson, validate({ body: jogoBodySchema }), JogosController.create);
+router.put('/jogos/:id', authenticate, authorize('Administrador'), requireJson, validate({ params: idParamSchema, body: jogoUpdateBodySchema }), JogosController.update);
+router.delete('/jogos/:id', authenticate, authorize('Administrador'), validate({ params: idParamSchema }), JogosController.remove);
 
 export default router;

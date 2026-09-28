@@ -152,16 +152,17 @@ async function loadJogos() {
   grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>';
   document.getElementById('pagination').innerHTML = '';
 
-  const q = new URLSearchParams({
-    search:    document.getElementById('searchInput').value.trim(),
-    genero:    document.getElementById('fGenero').value,
-    plataforma:document.getElementById('fPlat').value,
-    page:      page,
-    limit:     LIMIT
-  });
+  const q = new URLSearchParams();
+  const search = document.getElementById('searchInput').value.trim();
+  const genero = document.getElementById('fGenero').value;
+  const plataforma = document.getElementById('fPlat').value;
+  if (search) q.set('search', search);
+  if (genero) q.set('genero', genero);
+  if (plataforma) q.set('plataforma', plataforma);
 
   try {
-    const data = await api.get(`/jogos?${q}`);
+    const query = q.toString();
+    const data = await api.get(`/jogos${query ? `?${query}` : ''}`);
     document.getElementById('totalLabel').textContent = `${data.total} jogos encontrados`;
 
     if (!data.jogos.length) {

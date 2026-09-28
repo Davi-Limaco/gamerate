@@ -41,11 +41,11 @@
     <div class="contato-card" id="contatoCard">
       <div class="form-group">
         <label>E-mail para contato</label>
-        <input type="email" id="email" placeholder="seu@email.com" required/>
+        <input type="email" id="email" placeholder="seu@email.com"/>
       </div>
       <div class="form-group">
         <label>Tipo</label>
-        <select id="tipo" required>
+        <select id="tipo">
           <option value="">Selecione...</option>
           <option value="Dúvida">Dúvida</option>
           <option value="Denúncia">Denúncia</option>
@@ -55,7 +55,7 @@
       </div>
       <div class="form-group">
         <label>Mensagem</label>
-        <textarea id="mensagem" rows="5" placeholder="Descreva detalhadamente..." required minlength="10"></textarea>
+        <textarea id="mensagem" rows="5" placeholder="Descreva detalhadamente..."></textarea>
       </div>
       <div id="errMsg" class="form-error" style="margin-bottom:12px"></div>
       <button class="btn btn-accent btn-full" id="btnEnviar">Enviar mensagem</button>
@@ -85,36 +85,13 @@ if (user) {
 }
 
 document.getElementById('btnEnviar').addEventListener('click', async () => {
-  const emailField = document.getElementById('email');
-  const tipoField = document.getElementById('tipo');
-  const mensagemField = document.getElementById('mensagem');
-  const email_contato = emailField.value.trim();
-  const tipo = tipoField.value;
-  const mensagem = mensagemField.value.trim();
-  const err = document.getElementById('errMsg');
+  const email_contato = document.getElementById('email').value.trim();
+  const tipo    = document.getElementById('tipo').value;
+  const mensagem= document.getElementById('mensagem').value.trim();
+  const err     = document.getElementById('errMsg');
   err.textContent = '';
 
-  emailField.setCustomValidity('');
-  tipoField.setCustomValidity('');
-  mensagemField.setCustomValidity('');
-
-  if (!email_contato || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_contato)) {
-    emailField.setCustomValidity('Informe um e-mail válido');
-    emailField.reportValidity();
-    return;
-  }
-
-  if (!tipo) {
-    tipoField.setCustomValidity('Selecione um tipo de mensagem');
-    tipoField.reportValidity();
-    return;
-  }
-
-  if (!mensagem || mensagem.length < 10) {
-    mensagemField.setCustomValidity('A mensagem deve ter pelo menos 10 caracteres');
-    mensagemField.reportValidity();
-    return;
-  }
+  if (!email_contato || !tipo || !mensagem) { err.textContent = 'Preencha todos os campos'; return; }
 
   const btn = document.getElementById('btnEnviar');
   btn.textContent = 'Enviando...'; btn.disabled = true;

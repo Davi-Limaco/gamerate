@@ -1,167 +1,155 @@
-import { prisma } from '@/database/prisma.ts';
-import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
-import type { Avaliacao } from '@/types/Avaliacao.d.ts';
-import HttpError from '@/errors/HttpError.ts';
-import { hashPassword } from '@/utils/password.ts';
+import { Prisma } from '@prisma/client';
 
-function dateToString(d?: Date | null) {
-  if (!d) return undefined;
-  return d.toISOString().split('T')[0];
+import HttpError from '@/errors/HttpError.ts';
+import { throwPrismaError } from '@/errors/prismaErrors.ts';
+import prisma from '@/database/prisma.ts';
+import { toDateOnly } from '@/utils/dates.ts';
+import { hashPassword } from '@/utils/password.ts';
+import type { Avaliacao } from '@/types/Avaliacao.d.ts';
+import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
+
+function mapUsuario(usuario: {
+  id_usuario: number;
+  nome_usuario: string;
+  email: string;
+  senha?: string;
+  id_perfil_fk: number;
+  data_criacao: Date;
+  perfil: { nome_perfil: string };
+  _count?: { avaliacoes: number };
+}, includeSenha = false): Usuario {
+  return {
+    id_usuario: usuario.id_usuario,
+    nome_usuario: usuario.nome_usuario,
+    email: usuario.email,
+    ...(includeSenha && usuario.senha !== undefined ? { senha: usuario.senha } : {}),
+    id_perfil_fk: usuario.id_perfil_fk,
+    nome_perfil: usuario.perfil.nome_perfil,
+    data_criacao: toDateOnly(usuario.data_criacao),
+    total_avaliacoes: usuario._count?.avaliacoes,
+  };
 }
 
 async function readAll(): Promise<Usuario[]> {
-  const rows = await prisma.usuario.findMany({
+  const usuarios = await prisma.usuario.findMany({
     orderBy: { id_usuario: 'asc' },
-    include: { perfil: { select: { nome_perfil: true } }, _count: { select: { avaliacao: true } } },
+    include: { perfil: { select: { nome_perfil: true } } },
   });
-
-  return rows.map(r => ({
-    id_usuario: r.id_usuario,
-    nome_usuario: r.nome_usuario,
-    email: r.email,
-    senha: undefined,
-    id_perfil_fk: r.id_perfil_fk,
-    nome_perfil: r.perfil?.nome_perfil,
-    data_criacao: dateToString(r.data_criacao),
-    total_avaliacoes: r._count?.avaliacao ?? 0,
-  }));
+  return usuarios.map((usuario) => mapUsuario(usuario));
 }
 
 async function readById(id: number): Promise<Usuario> {
-  const r = await prisma.usuario.findUnique({
+  const usuario = await prisma.usuario.findUnique({
     where: { id_usuario: id },
-    include: { perfil: { select: { nome_perfil: true } }, _count: { select: { avaliacao: true } } },
+    include: { perfil: { select: { nome_perfil: true } }, _count: { select: { avaliacoes: true } } },
   });
-  if (!r) throw new HttpError('Usuário não encontrado', 404);
-  return {
-    id_usuario: r.id_usuario,
-    nome_usuario: r.nome_usuario,
-    email: r.email,
-    senha: undefined,
-    id_perfil_fk: r.id_perfil_fk,
-    nome_perfil: r.perfil?.nome_perfil,
-    data_criacao: dateToString(r.data_criacao),
-    total_avaliacoes: r._count?.avaliacao ?? 0,
-  };
+  if (!usuario) throw new HttpError('Usuário não encontrado', 404);
+  return mapUsuario(usuario);
 }
 
+// includeSenha=true aqui é intencional: é a única leitura de usuário que
+// devolve o campo `senha` (contendo o HASH Argon2id, nunca a senha em texto
+// puro) — usado exclusivamente pelo fluxo de login (auth.controller) para
+// comparação via argon2.verify. Todas as demais leituras (readAll, readById)
+// omitem esse campo por padrão.
 async function readByEmail(email: string): Promise<Usuario | undefined> {
-  const r = await prisma.usuario.findFirst({ where: { email }, include: { perfil: { select: { nome_perfil: true } } } });
-  if (!r) return undefined;
-  return {
-    id_usuario: r.id_usuario,
-    nome_usuario: r.nome_usuario,
-    email: r.email,
-    senha: undefined,
-    id_perfil_fk: r.id_perfil_fk,
-    nome_perfil: r.perfil?.nome_perfil,
-    data_criacao: dateToString(r.data_criacao),
-    total_avaliacoes: undefined,
-  };
-}
-
-async function readByEmailWithPassword(email: string): Promise<Usuario | undefined> {
-  const r = await prisma.usuario.findFirst({ where: { email }, include: { perfil: { select: { nome_perfil: true } } } });
-  if (!r) return undefined;
-  return {
-    id_usuario: r.id_usuario,
-    nome_usuario: r.nome_usuario,
-    email: r.email,
-    senha: r.senha,
-    id_perfil_fk: r.id_perfil_fk,
-    nome_perfil: r.perfil?.nome_perfil,
-    data_criacao: dateToString(r.data_criacao),
-    total_avaliacoes: undefined,
-  };
-}
-
-async function create({ nome_usuario, email, senha, id_perfil_fk = 1 }: UsuarioInput): Promise<Usuario> {
-  if (!nome_usuario || !email || !senha) {
-    throw new HttpError('Campos obrigatórios: nome_usuario, email, senha');
-  }
-
-  const emailNormalizado = email.trim().toLowerCase();
-  const usuarioExistente = await prisma.usuario.findFirst({ where: { email: emailNormalizado } });
-
-  if (usuarioExistente) {
-    throw new HttpError('E-mail já cadastrado', 409);
-  }
-
-  const r = await prisma.usuario.create({
-    data: {
-      nome_usuario: nome_usuario.trim(),
-      email: emailNormalizado,
-      senha: hashPassword(senha),
-      id_perfil_fk,
-    },
+  const usuario = await prisma.usuario.findUnique({
+    where: { email },
+    include: { perfil: { select: { nome_perfil: true } } },
   });
-
-  return readById(r.id_usuario);
+  return usuario ? mapUsuario(usuario, true) : undefined;
 }
 
-async function update({ id, nome_usuario, email, senha }: UsuarioInput & { id?: number }): Promise<Usuario> {
-  if (!id) throw new HttpError('Usuário não encontrado', 404);
-
-  const data: any = {};
-  if (nome_usuario) data.nome_usuario = nome_usuario;
-  if (email) data.email = email;
-  if (senha) {
-    data.senha = hashPassword(senha);
-  }
-
-  if (Object.keys(data).length === 0) throw new HttpError('Nenhum campo para atualizar');
-
+async function create(input: UsuarioInput): Promise<Usuario> {
   try {
-    await prisma.usuario.update({ where: { id_usuario: id }, data });
-    return readById(id);
-  } catch (e) {
-    throw new HttpError('Usuário não encontrado', 404);
+    // A senha em texto puro nunca chega ao banco: é sempre transformada em
+    // hash Argon2id antes do INSERT. A unicidade do e-mail é garantida pela
+    // constraint `@unique` do schema Prisma — uma tentativa de duplicata
+    // dispara um erro P2002, convertido abaixo em HttpError 409.
+    const senhaHash = await hashPassword(input.senha!);
+
+    const usuario = await prisma.usuario.create({
+      data: {
+        nome_usuario: input.nome_usuario!,
+        email: input.email!,
+        senha: senhaHash,
+        id_perfil_fk: input.id_perfil_fk ?? 1,
+        data_criacao: new Date(),
+      },
+      include: { perfil: { select: { nome_perfil: true } } },
+    });
+    return mapUsuario(usuario);
+  } catch (error) {
+    throwPrismaError(error, 'Usuário');
   }
 }
 
-async function updatePerfil({ id, id_perfil_fk }: { id?: number; id_perfil_fk?: number }): Promise<Usuario> {
-  if (!id || id_perfil_fk === undefined) {
-    throw new HttpError('Os campos id e id_perfil_fk são obrigatórios');
-  }
+async function update(input: UsuarioInput & { id?: number }): Promise<Usuario> {
+  if (input.id === undefined) throw new HttpError('ID do usuário inválido', 400);
+
+  const data: Prisma.UsuarioUpdateInput = {};
+  if (input.nome_usuario !== undefined) data.nome_usuario = input.nome_usuario;
+  if (input.email !== undefined) data.email = input.email;
+  // Assim como no cadastro, uma nova senha enviada na atualização de perfil
+  // também passa por hashPassword antes de ser persistida.
+  if (input.senha !== undefined) data.senha = await hashPassword(input.senha);
 
   try {
-    await prisma.usuario.update({ where: { id_usuario: id }, data: { id_perfil_fk } });
-    return readById(id);
-  } catch (e) {
-    throw new HttpError('Usuário não encontrado', 404);
+    const usuario = await prisma.usuario.update({
+      where: { id_usuario: input.id },
+      data,
+      include: { perfil: { select: { nome_perfil: true } } },
+    });
+    return mapUsuario(usuario);
+  } catch (error) {
+    throwPrismaError(error, 'Usuário');
+  }
+}
+
+async function updatePerfil(input: { id?: number; id_perfil_fk?: number }): Promise<Usuario> {
+  if (input.id === undefined || input.id_perfil_fk === undefined) throw new HttpError('ID ou perfil inválido', 400);
+  try {
+    const usuario = await prisma.usuario.update({
+      where: { id_usuario: input.id },
+      data: { id_perfil_fk: input.id_perfil_fk },
+      include: { perfil: { select: { nome_perfil: true } } },
+    });
+    return mapUsuario(usuario);
+  } catch (error) {
+    throwPrismaError(error, 'Usuário');
   }
 }
 
 async function remove(id: number): Promise<boolean> {
-  try {
-    await prisma.usuario.delete({ where: { id_usuario: id } });
+  return prisma.$transaction(async (tx) => {
+    const usuario = await tx.usuario.findUnique({ where: { id_usuario: id }, select: { id_usuario: true } });
+    if (!usuario) throw new HttpError('Usuário não encontrado', 404);
+    if (await tx.avaliacao.count({ where: { id_usuario_fk: id } })) {
+      throw new HttpError('Exclua as avaliações deste usuário antes de removê-lo', 409);
+    }
+    await tx.usuario.delete({ where: { id_usuario: id } });
     return true;
-  } catch (e) {
-    throw new HttpError('Usuário não encontrado', 404);
-  }
+  });
 }
 
 async function readAvaliacoes(id: number): Promise<Avaliacao[]> {
   const rows = await prisma.avaliacao.findMany({
     where: { id_usuario_fk: id },
-    include: { jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } },
     orderBy: { data_publicacao: 'desc' },
+    include: { jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } },
   });
-
-  return rows.map(r => ({
-    id_avaliacao: r.id_avaliacao,
-    id_usuario_fk: r.id_usuario_fk,
-    id_jogo_fk: r.id_jogo_fk,
-    nota: r.nota,
-    titulo: r.titulo,
-    texto: r.texto,
-    data_publicacao: dateToString(r.data_publicacao)!,
-    nome_usuario: undefined,
-    nome_jogo: r.jogo?.nome_jogo,
-    capa: r.jogo?.capa ?? null,
-    id_usuario: undefined,
-    id_jogo: r.jogo?.id_jogo,
+  return rows.map((row) => ({
+    id_avaliacao: row.id_avaliacao,
+    id_usuario_fk: row.id_usuario_fk,
+    id_jogo_fk: row.id_jogo_fk,
+    id_jogo: row.jogo.id_jogo,
+    nome_jogo: row.jogo.nome_jogo,
+    capa: row.jogo.capa,
+    nota: row.nota,
+    titulo: row.titulo,
+    texto: row.texto,
+    data_publicacao: toDateOnly(row.data_publicacao),
   }));
 }
 
-export default { readAll, readById, readByEmail, readByEmailWithPassword, create, update, updatePerfil, remove, readAvaliacoes };
+export default { readAll, readById, readByEmail, create, update, updatePerfil, remove, readAvaliacoes };

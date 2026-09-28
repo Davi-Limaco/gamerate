@@ -1,6 +1,0 @@
-node_modules
-*.sqlite
-*.db
-.env
-dist
-/src/generated/prisma

@@ -30,6 +30,10 @@
     .hist-game{font-size:14px;font-weight:600;}
     .hist-titulo{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .hist-nota{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;margin-bottom:20px;}
 
     @media(max-width:600px){
       .perfil-wrap{padding:24px 16px;}
@@ -70,6 +74,22 @@
   </div>
 </div>
 
+<div class="modal-bg" id="editPerfilModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="editPerfilTitle">
+    <h2 class="modal-title" id="editPerfilTitle">EDITAR PERFIL</h2>
+    <form id="editPerfilForm">
+      <div class="form-group"><label for="perfilNome">Nome</label><input id="perfilNome" required minlength="3" maxlength="150"/></div>
+      <div class="form-group"><label for="perfilEmail">E-mail</label><input id="perfilEmail" type="email" required/></div>
+      <div class="form-group"><label for="perfilSenha">Nova senha (opcional)</label><input id="perfilSenha" type="password" minlength="6" maxlength="200" autocomplete="new-password"/></div>
+      <div id="perfilEditError" class="form-error" role="alert"></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-accent" id="savePerfilButton" type="submit">Salvar alterações</button>
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('editPerfilModal').classList.remove('open')">Cancelar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
 <footer class="footer">
   <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
   <div class="footer-copy">© 2025 GameRate</div>
@@ -80,8 +100,7 @@
 setupNav();
 
 // Redireciona para login se não estiver autenticado
-const currentUser = requireAuth();
-if (!currentUser) throw new Error('Usuário não autenticado');
+if (!isLoggedIn()) window.location.href = '/pages/login.html?next=/pages/perfil.html';
 
 document.getElementById('searchInput').addEventListener('keyup', e => {
   if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
@@ -90,7 +109,9 @@ document.getElementById('searchInput').addEventListener('keyup', e => {
 // Carrega os dados do perfil usando o id salvo no localStorage
 async function loadPerfil() {
   try {
-    const u = await api.get('/usuarios/me');
+    const user = getUser();
+    // Busca os dados do usuário pelo seu id na API
+    const u = await api.get(`/usuarios/${user.id}`);
 
     document.getElementById('perfilCard').innerHTML = `
       <div class="perfil-avatar">${u.nome_usuario.slice(0,2).toUpperCase()}</div>
@@ -98,6 +119,7 @@ async function loadPerfil() {
         <div class="perfil-name">${u.nome_usuario}</div>
         <div class="perfil-email">${u.email}</div>
         <span class="perfil-badge">${u.nome_perfil}</span>
+        <div style="margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="abrirEdicaoPerfil()">Editar perfil</button></div>
       </div>
       <div class="perfil-stats">
         <div class="perfil-stat">
@@ -117,7 +139,9 @@ async function loadPerfil() {
 // Carrega o histórico de avaliações do usuário
 async function loadHistorico() {
   try {
-    const rows = await api.get(`/usuarios/${currentUser.id}/avaliacoes`);
+    const user = getUser();
+    // Busca as avaliações do usuário pelo seu id na API
+    const rows = await api.get(`/usuarios/${user.id}/avaliacoes`);
 
     if (!rows.length) {
       document.getElementById('histList').innerHTML =
@@ -139,6 +163,52 @@ async function loadHistorico() {
     document.getElementById('histList').innerHTML = `<div class="empty-state"><p>Erro ao carregar avaliações.</p></div>`;
   }
 }
+
+async function abrirEdicaoPerfil() {
+  try {
+    const user = getUser();
+    const usuario = await api.get(`/usuarios/${user.id}`);
+    document.getElementById('perfilNome').value = usuario.nome_usuario;
+    document.getElementById('perfilEmail').value = usuario.email;
+    document.getElementById('perfilSenha').value = '';
+    document.getElementById('perfilEditError').textContent = '';
+    document.getElementById('editPerfilModal').classList.add('open');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+document.getElementById('editPerfilForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = document.getElementById('savePerfilButton');
+  const error = document.getElementById('perfilEditError');
+  const user = getUser();
+  const payload = {
+    nome_usuario: document.getElementById('perfilNome').value.trim(),
+    email: document.getElementById('perfilEmail').value.trim(),
+  };
+  const senha = document.getElementById('perfilSenha').value;
+  if (senha) payload.senha = senha;
+
+  button.disabled = true;
+  button.textContent = 'Salvando...';
+  error.textContent = '';
+  try {
+    const usuario = await api.put(`/usuarios/${user.id}`, payload);
+    // Atualiza só os dados exibidos (nome/perfil/id); o token de sessão em si
+    // não muda numa edição de perfil, então é preservado com getToken().
+    saveSession(getToken(), usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario);
+    document.getElementById('editPerfilModal').classList.remove('open');
+    toast('Perfil atualizado', 'success');
+    await loadPerfil();
+    setupNav();
+  } catch (err) {
+    error.textContent = err.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Salvar alterações';
+  }
+});
 
 loadPerfil();
 loadHistorico();

@@ -17,7 +17,13 @@ export const errorHandler = (
   _next: NextFunction,
 ) => {
   if (err instanceof HttpError) {
-    return res.status(err.code).json({ error: err.message });
+    // Quando o erro vem do middleware de validação (validate + Zod), issues
+    // traz a lista de campos que falharam ({ path, message }) para o cliente
+    // saber exatamente o que corrigir.
+    return res.status(err.code).json({
+      error: err.message,
+      ...(err.issues ? { issues: err.issues } : {}),
+    });
   }
 
   console.error(err.stack);

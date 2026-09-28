@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { errorHandler, notFoundHandler } from '@/middlewares/errorHandlers.ts';
 import express from 'express';
 import morgan from 'morgan';
@@ -28,4 +30,6 @@ app.use(notFoundHandler);
 
 app.use(errorHandler);
 
-app.listen(3000, () => console.log('GameRate API listening on port 3000'));
+const PORT = Number(process.env.PORT) || 3000;
+
+app.listen(PORT, () => console.log(`GameRate API listening on port ${PORT}`));

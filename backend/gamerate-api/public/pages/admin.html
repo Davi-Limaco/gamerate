@@ -123,15 +123,18 @@
 
 <div class="modal-bg" id="modalJogoBg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
-    <div class="modal-title">CADASTRAR JOGO</div>
-    <div class="form-group"><label>Nome do jogo</label><input type="text" id="jNome"/></div>
-    <div class="form-group"><label>Desenvolvedora</label><input type="text" id="jDev"/></div>
-    <div class="form-group"><label>Data de lançamento</label><input type="date" id="jData"/></div>
-    <div class="form-group"><label>Descrição</label><textarea id="jDesc" rows="4"></textarea></div>
-    <div class="form-group"><label>URL da capa</label><input type="text" id="jCapa" placeholder="https://..."/></div>
+    <div class="modal-title" id="jogoModalTitle">CADASTRAR JOGO</div>
+    <input type="hidden" id="jogoId"/>
+    <div class="form-group"><label for="jNome">Nome do jogo</label><input type="text" id="jNome" required maxlength="200"/></div>
+    <div class="form-group"><label for="jDev">Desenvolvedora</label><input type="text" id="jDev" required/></div>
+    <div class="form-group"><label for="jData">Data de lançamento</label><input type="date" id="jData" required/></div>
+    <div class="form-group"><label for="jDesc">Descrição</label><textarea id="jDesc" rows="4" required></textarea></div>
+    <div class="form-group"><label for="jCapa">URL da capa</label><input type="text" id="jCapa" placeholder="https://..."/></div>
+    <div class="form-group"><label for="jGeneros">Gêneros</label><select id="jGeneros" multiple size="4"></select></div>
+    <div class="form-group"><label for="jPlataformas">Plataformas</label><select id="jPlataformas" multiple size="4"></select></div>
     <div id="jogoErr" class="form-error" style="margin-bottom:12px"></div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-accent" id="btnSalvarJogo">Cadastrar</button>
+      <button class="btn btn-accent" id="btnSalvarJogo" type="button">Cadastrar</button>
       <button class="btn btn-ghost" onclick="document.getElementById('modalJogoBg').classList.remove('open')">Cancelar</button>
     </div>
   </div>
@@ -140,8 +143,11 @@
 <script src="/js/api.js"></script>
 <script>
 setupNav();
-const user = requireAuth();
-if (!user) throw new Error('Usuário não autenticado');
+const user = getUser();
+if (!user || user.perfil !== 'Administrador') {
+  alert('Acesso restrito a administradores.');
+  window.location.href = '/index.html';
+}
 
 function switchSection(name, el) {
   document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
@@ -190,6 +196,7 @@ async function loadAdminJogos() {
         <td><span style="color:var(--accent);font-weight:600">${j.nota_media||'—'}</span></td>
         <td style="color:var(--muted)">${j.total_avaliacoes}</td>
         <td>
+          <button class="btn btn-ghost btn-sm" onclick="abrirModalJogo(${j.id_jogo})">Editar</button>
           <button class="btn btn-danger btn-sm" onclick="excluirJogo(${j.id_jogo},'${j.nome_jogo.replace(/'/g,"\'")}')">Excluir</button>
         </td>
       </tr>`).join('');
@@ -246,7 +253,47 @@ async function loadAdminContatos() {
   } catch(e) { toast(e.message,'error'); }
 }
 
-function abrirModalJogo() { document.getElementById('modalJogoBg').classList.add('open'); }
+async function abrirModalJogo(id = null) {
+  const modal = document.getElementById('modalJogoBg');
+  ['jogoId', 'jNome', 'jDev', 'jData', 'jDesc', 'jCapa'].forEach(fieldId => {
+    document.getElementById(fieldId).value = '';
+  });
+  document.getElementById('jogoErr').textContent = '';
+  document.getElementById('jogoModalTitle').textContent = id ? 'EDITAR JOGO' : 'CADASTRAR JOGO';
+  document.getElementById('btnSalvarJogo').textContent = id ? 'Salvar alterações' : 'Cadastrar';
+
+  try {
+    const [generos, plataformas] = await Promise.all([api.get('/generos'), api.get('/plataformas')]);
+    const fillSelect = (selectId, items, idKey, nameKey) => {
+      const select = document.getElementById(selectId);
+      select.replaceChildren(...items.map(item => {
+        const option = document.createElement('option');
+        option.value = item[idKey];
+        option.textContent = item[nameKey];
+        return option;
+      }));
+    };
+    fillSelect('jGeneros', generos, 'id_genero', 'nome_genero');
+    fillSelect('jPlataformas', plataformas, 'id_plataforma', 'nome_plataforma');
+
+    if (id) {
+      const jogo = await api.get(`/jogos/${id}`);
+      document.getElementById('jogoId').value = jogo.id_jogo;
+      document.getElementById('jNome').value = jogo.nome_jogo;
+      document.getElementById('jDev').value = jogo.desenvolvedora;
+      document.getElementById('jData').value = jogo.data_lancamento.slice(0, 10);
+      document.getElementById('jDesc').value = jogo.descricao;
+      document.getElementById('jCapa').value = jogo.capa || '';
+      const selectedGeneros = new Set(jogo.generos.map(item => String(item.id_genero)));
+      const selectedPlataformas = new Set(jogo.plataformas.map(item => String(item.id_plataforma)));
+      [...document.getElementById('jGeneros').options].forEach(option => option.selected = selectedGeneros.has(option.value));
+      [...document.getElementById('jPlataformas').options].forEach(option => option.selected = selectedPlataformas.has(option.value));
+    }
+    modal.classList.add('open');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
 
 document.getElementById('btnSalvarJogo').addEventListener('click', async () => {
   const nome_jogo       = document.getElementById('jNome').value.trim();
@@ -261,16 +308,21 @@ document.getElementById('btnSalvarJogo').addEventListener('click', async () => {
     err.textContent = 'Preencha todos os campos obrigatórios'; return;
   }
   const btn = document.getElementById('btnSalvarJogo');
+  const jogoId = document.getElementById('jogoId').value;
   btn.textContent = 'Salvando...'; btn.disabled = true;
   try {
-    await api.post('/jogos', { nome_jogo, desenvolvedora, data_lancamento, descricao, capa: capa||null });
+    const generos = [...document.getElementById('jGeneros').selectedOptions].map(option => Number(option.value));
+    const plataformas = [...document.getElementById('jPlataformas').selectedOptions].map(option => Number(option.value));
+    const payload = { nome_jogo, desenvolvedora, data_lancamento, descricao, capa: capa||null, generos, plataformas };
+    if (jogoId) await api.put(`/jogos/${jogoId}`, payload);
+    else await api.post('/jogos', payload);
     document.getElementById('modalJogoBg').classList.remove('open');
-    toast('Jogo cadastrado!','success');
+    toast(jogoId ? 'Jogo atualizado!' : 'Jogo cadastrado!','success');
     loaded.jogos = false; loadAdminJogos();
   } catch(e) {
     err.textContent = e.message;
   } finally {
-    btn.textContent = 'Cadastrar'; btn.disabled = false;
+    btn.textContent = jogoId ? 'Salvar alterações' : 'Cadastrar'; btn.disabled = false;
   }
 });
 

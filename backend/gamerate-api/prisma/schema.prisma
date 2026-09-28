@@ -1,62 +1,53 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Perfil {
-  id_perfil   Int      @id @default(autoincrement())
-  nome_perfil String   @unique
-
-  usuario     Usuario[]
+  id_perfil   Int       @id @default(autoincrement())
+  nome_perfil String    @unique
+  usuarios    Usuario[]
 
   @@map("perfil")
 }
 
 model Usuario {
-  id_usuario    Int        @id @default(autoincrement())
-  nome_usuario  String
-  email         String     @unique
-  senha         String
-  id_perfil_fk  Int
-  data_criacao  DateTime   @default(now())
-
-  perfil        Perfil     @relation(fields: [id_perfil_fk], references: [id_perfil])
-  avaliacao     Avaliacao[]
+  id_usuario   Int         @id @default(autoincrement())
+  nome_usuario String
+  email        String      @unique
+  senha        String
+  id_perfil_fk Int
+  data_criacao DateTime    @default(dbgenerated("CURRENT_DATE"))
+  perfil       Perfil      @relation(fields: [id_perfil_fk], references: [id_perfil], onDelete: NoAction, onUpdate: NoAction)
+  avaliacoes   Avaliacao[]
 
   @@map("usuario")
 }
 
 model Jogo {
-  id_jogo          Int                @id @default(autoincrement())
+  id_jogo          Int               @id @default(autoincrement())
   nome_jogo        String
   desenvolvedora   String
   data_lancamento  DateTime
   descricao        String
   nota_media       Float?
-  total_avaliacoes Int                @default(0)
+  total_avaliacoes Int               @default(0)
   capa             String?
-
-  jogo_plataforma  JogoPlataforma[]
-  jogo_genero      JogoGenero[]
-  avaliacao        Avaliacao[]
+  avaliacoes       Avaliacao[]
+  generos          JogoGenero[]
+  plataformas      JogoPlataforma[]
 
   @@map("jogo")
 }
 
 model Plataforma {
-  id_plataforma   Int                @id @default(autoincrement())
-  nome_plataforma String             @unique
-
-  jogo_plataforma JogoPlataforma[]
+  id_plataforma   Int              @id @default(autoincrement())
+  nome_plataforma String           @unique
+  jogos           JogoPlataforma[]
 
   @@map("plataforma")
 }
@@ -64,9 +55,8 @@ model Plataforma {
 model JogoPlataforma {
   id_jogo_fk       Int
   id_plataforma_fk Int
-
-  jogo             Jogo      @relation(fields: [id_jogo_fk], references: [id_jogo])
-  plataforma       Plataforma @relation(fields: [id_plataforma_fk], references: [id_plataforma])
+  jogo             Jogo       @relation(fields: [id_jogo_fk], references: [id_jogo], onDelete: NoAction, onUpdate: NoAction)
+  plataforma       Plataforma @relation(fields: [id_plataforma_fk], references: [id_plataforma], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_jogo_fk, id_plataforma_fk])
   @@map("jogo_plataforma")
@@ -75,8 +65,7 @@ model JogoPlataforma {
 model Genero {
   id_genero   Int          @id @default(autoincrement())
   nome_genero String       @unique
-
-  jogo_genero JogoGenero[]
+  jogos       JogoGenero[]
 
   @@map("genero")
 }
@@ -84,9 +73,8 @@ model Genero {
 model JogoGenero {
   id_jogo_fk   Int
   id_genero_fk Int
-
-  jogo         Jogo    @relation(fields: [id_jogo_fk], references: [id_jogo])
-  genero       Genero  @relation(fields: [id_genero_fk], references: [id_genero])
+  jogo         Jogo   @relation(fields: [id_jogo_fk], references: [id_jogo], onDelete: NoAction, onUpdate: NoAction)
+  genero       Genero @relation(fields: [id_genero_fk], references: [id_genero], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_jogo_fk, id_genero_fk])
   @@map("jogo_genero")
@@ -99,22 +87,20 @@ model Avaliacao {
   nota            Float
   titulo          String
   texto           String
-  data_publicacao DateTime @default(now())
-
-  usuario         Usuario  @relation(fields: [id_usuario_fk], references: [id_usuario])
-  jogo            Jogo     @relation(fields: [id_jogo_fk], references: [id_jogo])
+  data_publicacao DateTime @default(dbgenerated("CURRENT_DATE"))
+  usuario         Usuario @relation(fields: [id_usuario_fk], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  jogo            Jogo    @relation(fields: [id_jogo_fk], references: [id_jogo], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([id_usuario_fk, id_jogo_fk])
   @@map("avaliacao")
 }
 
-model Comunicacao_site {
+model ComunicacaoSite {
   id_comunicacao   Int      @id @default(autoincrement())
   email_contato    String
   tipo             String
   mensagem         String
-  data_comunicacao DateTime @default(now())
+  data_comunicacao DateTime @default(dbgenerated("CURRENT_DATE"))
 
   @@map("comunicacao_site")
 }
-

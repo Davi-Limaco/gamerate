@@ -24,6 +24,13 @@
     .nota-bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease;}
     .aval-texto{font-size:15px;color:var(--muted);line-height:1.8;white-space:pre-wrap;}
     .aval-actions{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+    .edit-form{display:grid;gap:14px;}
+    .edit-form label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+    .edit-form input,.edit-form textarea{width:100%;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-bg.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;margin-bottom:20px;}
 
     @media(max-width:600px){
       .aval-wrap{padding:24px 16px;}
@@ -54,6 +61,22 @@
   </div>
 </div>
 
+<div class="modal-bg" id="editAvalModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="editAvalTitle">
+    <h2 class="modal-title" id="editAvalTitle">EDITAR AVALIAÇÃO</h2>
+    <form class="edit-form" id="editAvalForm">
+      <div><label for="editNota">Nota (0,5 a 5)</label><input id="editNota" type="number" min="0.5" max="5" step="0.5" required/></div>
+      <div><label for="editTitulo">Título</label><input id="editTitulo" maxlength="200" required/></div>
+      <div><label for="editTexto">Texto</label><textarea id="editTexto" rows="5" maxlength="2000" required></textarea></div>
+      <div id="editAvalError" class="form-error" role="alert"></div>
+      <div class="aval-actions">
+        <button class="btn btn-accent" id="saveAvalButton" type="submit">Salvar alterações</button>
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('editAvalModal').classList.remove('open')">Cancelar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
 <footer class="footer">
   <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
   <div class="footer-copy">© 2025 GameRate</div>
@@ -64,6 +87,7 @@
 setupNav();
 const avalId = new URLSearchParams(location.search).get('id');
 if (!avalId) window.location.href = '/pages/catalogo.html';
+let avaliacaoAtual = null;
 
 document.getElementById('searchInput').addEventListener('keyup', e => {
   if (e.key === 'Enter') window.location.href = `/pages/catalogo.html?search=${e.target.value}`;
@@ -75,6 +99,7 @@ function colorFor(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return
 async function loadAvaliacao() {
   try {
     const a = await api.get(`/avaliacoes/${avalId}`);
+    avaliacaoAtual = a;
     document.title = `GameRate — ${a.titulo}`;
 
     const col    = colorFor(a.nome_usuario);
@@ -119,6 +144,7 @@ async function loadAvaliacao() {
         <div class="aval-texto">${a.texto}</div>
         ${isOwner ? `
           <div class="aval-actions">
+            <button class="btn btn-ghost btn-sm" onclick="abrirEdicaoAval()">Editar avaliação</button>
             <button class="btn btn-danger btn-sm" onclick="excluirAval()">Excluir avaliação</button>
           </div>` : ''}
       </div>`;
@@ -127,6 +153,38 @@ async function loadAvaliacao() {
       `<div class="empty-state"><p>Avaliação não encontrada.</p></div>`;
   }
 }
+
+function abrirEdicaoAval() {
+  document.getElementById('editNota').value = avaliacaoAtual.nota;
+  document.getElementById('editTitulo').value = avaliacaoAtual.titulo;
+  document.getElementById('editTexto').value = avaliacaoAtual.texto;
+  document.getElementById('editAvalError').textContent = '';
+  document.getElementById('editAvalModal').classList.add('open');
+}
+
+document.getElementById('editAvalForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = document.getElementById('saveAvalButton');
+  const error = document.getElementById('editAvalError');
+  button.disabled = true;
+  button.textContent = 'Salvando...';
+  error.textContent = '';
+  try {
+    await api.put(`/avaliacoes/${avalId}`, {
+      nota: Number(document.getElementById('editNota').value),
+      titulo: document.getElementById('editTitulo').value.trim(),
+      texto: document.getElementById('editTexto').value.trim(),
+    });
+    document.getElementById('editAvalModal').classList.remove('open');
+    toast('Avaliação atualizada', 'success');
+    await loadAvaliacao();
+  } catch (err) {
+    error.textContent = err.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Salvar alterações';
+  }
+});
 
 async function excluirAval() {
   if (!confirm('Excluir esta avaliação? Esta ação é irreversível.')) return;

@@ -15,6 +15,7 @@
     .auth-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
     .auth-footer a{color:var(--accent);text-decoration:none;}
     .btn-full{width:100%;justify-content:center;}
+    .form-group input:invalid{box-shadow:none;} /* evita highlight nativo antes do usuário interagir */
   </style>
 </head>
 <body>
@@ -22,20 +23,34 @@
   <a href="/index.html" class="auth-logo">GAME<span>RATE</span></a>
   <p class="auth-sub">Crie sua conta gratuita</p>
   <div class="auth-card">
-    <div class="form-group">
-      <label>Nome de usuário</label>
-      <input type="text" id="nome" placeholder="Ex: GamerPro123"/>
-    </div>
-    <div class="form-group">
-      <label>E-mail</label>
-      <input type="email" id="email" placeholder="seu@email.com"/>
-    </div>
-    <div class="form-group">
-      <label>Senha</label>
-      <input type="password" id="senha" placeholder="Mínimo 6 caracteres"/>
-    </div>
-    <div id="errMsg" class="form-error" style="margin-bottom:12px"></div>
-    <button class="btn btn-accent btn-full" id="btnCadastro">Criar Conta</button>
+    <form id="formCadastro" novalidate>
+      <div class="form-group">
+        <label for="nome">Nome de usuário</label>
+        <input type="text" id="nome" name="nome" placeholder="Ex: GamerPro123"
+               required minlength="3" maxlength="150" autocomplete="username"/>
+        <div class="form-error" id="nomeErr"></div>
+      </div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="seu@email.com"
+               required pattern="[^\s@]+@[^\s@]+\.[^\s@]+" autocomplete="email"/>
+        <div class="form-error" id="emailErr"></div>
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" placeholder="Mínimo 6 caracteres"
+               required minlength="6" maxlength="200" autocomplete="new-password"/>
+        <div class="form-error" id="senhaErr"></div>
+      </div>
+      <div class="form-group">
+        <label for="confirmarSenha">Confirmar senha</label>
+        <input type="password" id="confirmarSenha" name="confirmarSenha" placeholder="Repita a senha"
+               required autocomplete="new-password"/>
+        <div class="form-error" id="confirmarSenhaErr"></div>
+      </div>
+      <div id="errMsg" class="form-error" style="margin-bottom:12px"></div>
+      <button type="submit" class="btn btn-accent btn-full" id="btnCadastro">Criar Conta</button>
+    </form>
   </div>
   <div class="auth-footer">
     Já tem conta? <a href="/pages/login.html">Entrar</a> · <a href="/index.html">← Home</a>
@@ -46,26 +61,83 @@
 <script>
 if (isLoggedIn()) window.location.href = '/index.html';
 
-document.getElementById('btnCadastro').addEventListener('click', async () => {
-  const nome_usuario = document.getElementById('nome').value.trim();
-  const email  = document.getElementById('email').value.trim();
-  const senha  = document.getElementById('senha').value;
-  const err    = document.getElementById('errMsg');
-  err.textContent = '';
+const form            = document.getElementById('formCadastro');
+const nomeInput       = document.getElementById('nome');
+const emailInput      = document.getElementById('email');
+const senhaInput      = document.getElementById('senha');
+const confirmarInput  = document.getElementById('confirmarSenha');
+const btn             = document.getElementById('btnCadastro');
+const errMsg          = document.getElementById('errMsg');
 
-  if (!nome_usuario || !email || !senha) { err.textContent = 'Preencha todos os campos'; return; }
-  if (senha.length < 6) { err.textContent = 'Senha deve ter no mínimo 6 caracteres'; return; }
+const fieldErr = {
+  nome_usuario: document.getElementById('nomeErr'),
+  email:        document.getElementById('emailErr'),
+  senha:        document.getElementById('senhaErr'),
+};
 
-  const btn = document.getElementById('btnCadastro');
-  btn.textContent = 'Criando...'; btn.disabled = true;
+function limparErros() {
+  errMsg.textContent = '';
+  Object.values(fieldErr).forEach((el) => { el.textContent = ''; });
+  document.getElementById('confirmarSenhaErr').textContent = '';
+}
+
+// --- Validação nativa + JS: senha e confirmação precisam ser iguais -------
+// setCustomValidity é o que faz o navegador tratar o campo como inválido
+// (mensagem nativa + bloqueio do submit) mesmo sem regra "pattern" para isso.
+function validarConfirmacaoSenha() {
+  if (confirmarInput.value && confirmarInput.value !== senhaInput.value) {
+    confirmarInput.setCustomValidity('As senhas não coincidem');
+  } else {
+    confirmarInput.setCustomValidity('');
+  }
+}
+senhaInput.addEventListener('input', validarConfirmacaoSenha);
+confirmarInput.addEventListener('input', validarConfirmacaoSenha);
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  limparErros();
+
+  // 1) Validação nativa do HTML (required, minlength, type="email", e a
+  // confirmação de senha via setCustomValidity acima). Isso é só retorno
+  // imediato ao usuário — não substitui a validação da API/banco.
+  validarConfirmacaoSenha();
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const nome_usuario = nomeInput.value.trim();
+  const email        = emailInput.value.trim();
+  const senha        = senhaInput.value;
+
+  btn.textContent = 'Criando...';
+  btn.disabled = true;
 
   try {
-    const data = await api.post('/auth/cadastro', { nome_usuario, email, senha });
-    saveSession(data.nome, data.perfil, data.id);
+    const { token, usuario } = await api.post('/auth/cadastro', { nome_usuario, email, senha });
+    saveSession(token, usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario);
+    toast('Conta criada com sucesso! Verifique seu e-mail de boas-vindas.', 'success');
     window.location.href = '/index.html';
   } catch (e) {
-    err.textContent = e.message;
-    btn.textContent = 'Criar Conta'; btn.disabled = false;
+    // 2) Retorno dos erros da API no campo correspondente. Quando a API
+    // manda "issues" (400 do middleware de validação), cada issue já traz o
+    // "path" do campo que falhou; senão (ex.: 409 de e-mail duplicado),
+    // mapeamos pela mensagem/rota conhecida.
+    if (e.issues && e.issues.length) {
+      e.issues.forEach((issue) => {
+        const el = fieldErr[issue.path];
+        if (el) el.textContent = issue.message;
+      });
+    } else if (e.status === 409) {
+      fieldErr.email.textContent = e.message; // "E-mail já cadastrado"
+    } else {
+      errMsg.textContent = e.message;
+    }
+
+    toast(e.message || 'Não foi possível concluir o cadastro.', 'error');
+    btn.textContent = 'Criar Conta';
+    btn.disabled = false;
   }
 });
 </script>

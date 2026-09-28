@@ -4,7 +4,7 @@ import Jogo from '@/models/jogo.model.ts';
 import HttpError from '@/errors/HttpError.ts';
 import type { JogoFilter, JogoInput } from '@/types/Jogo.d.ts';
 
-async function getStats(req: Request, res: Response) {
+async function getStats(_req: Request, res: Response<unknown>) {
   try {
     res.json(await Jogo.getStats());
   } catch (error) {
@@ -12,7 +12,7 @@ async function getStats(req: Request, res: Response) {
   }
 }
 
-async function getDestaques(req: Request, res: Response) {
+async function getDestaques(_req: Request, res: Response<unknown>) {
   try {
     res.json(await Jogo.getDestaques());
   } catch (error) {
@@ -20,9 +20,9 @@ async function getDestaques(req: Request, res: Response) {
   }
 }
 
-async function read(req: Request, res: Response) {
+async function read(req: Request<Record<string, string>, unknown, unknown, JogoFilter>, res: Response<unknown>) {
   try {
-    const { search, genero, plataforma } = req.query as JogoFilter;
+    const { search, genero, plataforma } = req.query;
     const jogos = await Jogo.readAll({ search, genero, plataforma });
     res.json({ total: jogos.length, jogos });
   } catch (error) {
@@ -30,40 +30,44 @@ async function read(req: Request, res: Response) {
   }
 }
 
-async function readById(req: Request<{ id: string }>, res: Response) {
+async function readById(req: Request<{ id: string }, unknown>, res: Response<unknown>) {
   try {
     res.json(await Jogo.readById(Number(req.params.id)));
   } catch (error) {
-    throw new HttpError('Jogo não encontrado', 404);
+    if (error instanceof HttpError) throw error;
+    throw new HttpError('Erro ao buscar jogo', 500);
   }
 }
 
-async function create(req: Request, res: Response) {
+async function create(req: Request<Record<string, string>, unknown, JogoInput>, res: Response<unknown>) {
   try {
-    const jogo = req.body as JogoInput;
+    const jogo = req.body;
     res.status(201).json(await Jogo.create(jogo));
   } catch (error) {
-    throw new HttpError('Erro ao criar jogo', 400);
+    if (error instanceof HttpError) throw error;
+    throw new HttpError('Erro ao criar jogo', 500);
   }
 }
 
-async function update(req: Request<{ id: string }>, res: Response) {
+async function update(req: Request<{ id: string }, unknown, JogoInput>, res: Response<unknown>) {
   try {
-    const jogo = req.body as JogoInput;
+    const jogo = req.body;
     const { id } = req.params;
 
     res.json(await Jogo.update({ ...jogo, id: Number(id) }));
   } catch (error) {
-    throw new HttpError('Erro ao atualizar jogo', 400);
+    if (error instanceof HttpError) throw error;
+    throw new HttpError('Erro ao atualizar jogo', 500);
   }
 }
 
-async function remove(req: Request<{ id: string }>, res: Response) {
+async function remove(req: Request<{ id: string }, unknown>, res: Response<unknown>) {
   try {
     if (await Jogo.remove(Number(req.params.id))) return res.sendStatus(204);
     throw new HttpError('Jogo não encontrado', 404);
   } catch (error) {
-    throw new HttpError('Erro ao remover jogo', 400);
+    if (error instanceof HttpError) throw error;
+    throw new HttpError('Erro ao remover jogo', 500);
   }
 }
 
