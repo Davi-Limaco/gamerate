@@ -80,7 +80,22 @@ async function create({ nome_usuario, email, senha, id_perfil_fk = 1 }: UsuarioI
     throw new HttpError('Campos obrigatórios: nome_usuario, email, senha');
   }
 
-  const r = await prisma.usuario.create({ data: { nome_usuario, email, senha: hashPassword(senha), id_perfil_fk } });
+  const emailNormalizado = email.trim().toLowerCase();
+  const usuarioExistente = await prisma.usuario.findFirst({ where: { email: emailNormalizado } });
+
+  if (usuarioExistente) {
+    throw new HttpError('E-mail já cadastrado', 409);
+  }
+
+  const r = await prisma.usuario.create({
+    data: {
+      nome_usuario: nome_usuario.trim(),
+      email: emailNormalizado,
+      senha: hashPassword(senha),
+      id_perfil_fk,
+    },
+  });
+
   return readById(r.id_usuario);
 }
 

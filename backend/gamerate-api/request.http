@@ -380,13 +380,25 @@ Content-Type: application/json
 
 ###
 
-### [AUTH] Cadastro com e-mail já existente (esperado: 400)
+### [AUTH] Cadastro com e-mail já existente (esperado: 409)
 POST {{base}}/auth/cadastro
 Content-Type: application/json
 
 {
   "nome_usuario": "Admin Duplicado",
   "email": "admin@gamerate.com",
+  "senha": "senha123"
+}
+
+###
+
+### [AUTH] Cadastro com e-mail válido disparando e-mail de boas-vindas (esperado: 201)
+POST {{base}}/auth/cadastro
+Content-Type: application/json
+
+{
+  "nome_usuario": "Novo Usuario",
+  "email": "novo@teste.com",
   "senha": "senha123"
 }
 

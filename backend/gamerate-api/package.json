@@ -22,9 +22,12 @@
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@types/nodemailer": "^8.0.2",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "nodemailer": "^10.0.11",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

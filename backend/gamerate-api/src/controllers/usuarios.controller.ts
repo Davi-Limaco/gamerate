@@ -5,6 +5,7 @@ import HttpError from '@/errors/HttpError.ts';
 import type { LoginInput, UsuarioInput } from '@/types/Usuario.d.ts';
 import { signJwt } from '@/utils/jwt.ts';
 import { verifyPassword } from '@/utils/password.ts';
+import { sendWelcomeEmail } from '@/services/sendMail.ts';
 
 async function read(req: Request, res: Response) {
   try {
@@ -99,7 +100,16 @@ async function login(req: Request, res: Response) {
 async function cadastro(req: Request, res: Response) {
   try {
     const usuario = req.body as UsuarioInput;
-    const created = await Usuario.create({ ...usuario, id_perfil_fk: 1 });
+    const created = await Usuario.create({ ...usuario, id_perfil_fk: 1, email: usuario.email?.trim().toLowerCase() ?? usuario.email });
+
+    const mailResult = await sendWelcomeEmail({
+      nome: created.nome_usuario,
+      email: created.email,
+    });
+
+    if (mailResult && typeof mailResult === 'object' && 'ok' in mailResult && mailResult.ok === false) {
+      console.warn('Cadastro realizado, mas envio de e-mail falhou:', mailResult.response ?? mailResult.error ?? 'SMTP indisponível');
+    }
 
     res.status(201).json(created);
   } catch (error) {
