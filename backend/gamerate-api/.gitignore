@@ -1,0 +1,25 @@
+# Node / backend
+backend/gamerate-api/node_modules/
+backend/gamerate-api/.env
+backend/gamerate-api/.env.*
+!backend/gamerate-api/.env.example
+backend/gamerate-api/dist/
+backend/gamerate-api/coverage/
+
+# SQLite local de desenvolvimento
+backend/gamerate-api/src/database/*.sqlite
+backend/gamerate-api/src/database/*.sqlite-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Optional: arquivos temporários do ambiente
+*.tmp
