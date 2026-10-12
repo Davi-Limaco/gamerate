@@ -12,8 +12,12 @@ function getToken() {
 
 async function apiFetch(path, options = {}) {
   const token   = getToken();
+  // Em upload (corpo FormData) o Content-Type NÃO pode ser definido à mão: o
+  // navegador precisa gerar "multipart/form-data; boundary=..." sozinho, com o
+  // boundary correto. Só para JSON o cabeçalho é fixado aqui.
+  const isFormData = options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     // Envia o token salvo no login/cadastro em toda requisição, no formato
     // exigido pelo middleware `authenticate` do back-end: "Bearer <token>".
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -47,15 +51,23 @@ const api = {
   post:   (path, body) => apiFetch(path, { method: 'POST',   body: JSON.stringify(body) }),
   put:    (path, body) => apiFetch(path, { method: 'PUT',    body: JSON.stringify(body) }),
   delete: (path)       => apiFetch(path, { method: 'DELETE' }),
+  // Upload multipart: recebe um FormData pronto (ex.: com o campo "imagem").
+  upload: (method, path, formData) => apiFetch(path, { method, body: formData }),
 };
 
 // Chamada após login/cadastro bem-sucedidos: guarda o JWT (usado em toda
 // requisição futura) e os dados do usuário exibidos na interface (nome,
 // perfil, id) separadamente — a UI nunca decide "quem é o usuário" a partir
 // do token em si, só o back-end faz essa verificação criptográfica.
-function saveSession(token, nome, perfil, id) {
+function saveSession(token, nome, perfil, id, imagem = null) {
   localStorage.setItem('token', token);
-  localStorage.setItem('user', JSON.stringify({ id, nome, perfil }));
+  localStorage.setItem('user', JSON.stringify({ id, nome, perfil, imagem }));
+}
+// Atualiza só a foto guardada na sessão (após enviar/remover o avatar), para o
+// cabeçalho de todas as páginas refletir a mudança sem novo login.
+function setSessionImagem(imagem) {
+  const user = getUser();
+  if (user) localStorage.setItem('user', JSON.stringify({ ...user, imagem: imagem || null }));
 }
 function clearSession() {
   localStorage.removeItem('token');
@@ -72,7 +84,34 @@ function setupNav() {
     el.style.display = user ? 'inline-flex' : 'none'
   );
   const nomeEl = document.querySelector('.nav-username');
-  if (nomeEl && user) nomeEl.textContent = user.nome;
+  if (nomeEl && user) {
+    nomeEl.textContent = user.nome;
+    // Avatar no cabeçalho (foto enviada ou iniciais), antes do nome.
+    nomeEl.parentElement.querySelector('.avatar')?.remove();
+    nomeEl.insertAdjacentHTML('beforebegin', avatarHtml(user.nome, user.imagem, 26));
+  }
+}
+
+const AVATAR_CORES = ['#e8ff47', '#47c8ff', '#ff8c47', '#c847ff', '#47ffb0', '#ff4f8b'];
+function avatarCor(nome = '') {
+  let h = 0;
+  for (const ch of nome) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return AVATAR_CORES[h % AVATAR_CORES.length];
+}
+function escapeHtml(v = '') {
+  return String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Avatar reutilizável em qualquer tela: se o usuário tem foto, mostra a imagem
+// servida em /uploads/...; senão, um círculo colorido com as iniciais. Se a
+// imagem falhar ao carregar (arquivo removido), cai para as iniciais.
+function avatarHtml(nome, imagem, size = 36) {
+  const iniciais = escapeHtml((nome || '?').slice(0, 2).toUpperCase());
+  const base = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px`;
+  const fallback = `<span class="avatar avatar-fallback" style="${base};background:${avatarCor(nome)}">${iniciais}</span>`;
+  if (!imagem) return fallback;
+  return `<img class="avatar" style="${base}" src="${escapeHtml(imagem)}" alt="Foto de ${escapeHtml(nome)}"
+    onerror="this.outerHTML=this.dataset.fb" data-fb="${escapeHtml(fallback)}">`;
 }
 
 function logout() {

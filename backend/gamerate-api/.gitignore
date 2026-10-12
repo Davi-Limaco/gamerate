@@ -10,6 +10,12 @@ backend/gamerate-api/coverage/
 backend/gamerate-api/src/database/*.sqlite
 backend/gamerate-api/src/database/*.sqlite-journal
 
+# Uploads de usuários (fotos de perfil): conteúdo ignorado, estrutura mantida
+# (uploads/.gitignore + uploads/avatars/.gitignore; a API também recria as
+# pastas ao iniciar).
+uploads/avatars/*
+!uploads/avatars/.gitignore
+
 # Logs
 *.log
 npm-debug.log*

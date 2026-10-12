@@ -7,6 +7,8 @@ export interface Avaliacao {
   texto: string;
   data_publicacao: string;
   nome_usuario?: string;
+  /** Foto de perfil do autor (caminho público) ou null. */
+  caminho_imagem_usuario?: string | null;
   nome_jogo?: string;
   capa?: string | null;
   id_usuario?: number;

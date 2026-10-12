@@ -11,6 +11,16 @@
     /* Card principal com avatar, nome, badge e estatísticas */
     .perfil-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;display:flex;gap:28px;align-items:center;margin-bottom:32px;flex-wrap:wrap;}
     .perfil-avatar{width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--bg);flex-shrink:0;}
+    .perfil-avatar-wrap{position:relative;flex-shrink:0;}
+    .perfil-avatar-wrap .avatar{font-family:'Bebas Neue',sans-serif;font-weight:400;letter-spacing:1px;border:2px solid var(--border);}
+    .avatar-edit{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--bg);border:3px solid var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .2s;}
+    .avatar-edit:hover,.avatar-edit:focus-visible{transform:scale(1.1);outline:none;}
+    .foto-preview{width:160px;height:160px;border-radius:50%;object-fit:cover;background:var(--surface2);border:2px dashed var(--border);margin:0 auto 16px;display:block;}
+    .foto-preview.has-img{border-style:solid;border-color:var(--accent);}
+    .foto-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;}
+    .foto-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+    #fotoInput{width:100%;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;}
+    #fotoInput::file-selector-button{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-right:12px;font-family:'Outfit',sans-serif;cursor:pointer;}
     .perfil-info{flex:1;}
     .perfil-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:4px;}
     .perfil-email{font-size:13px;color:var(--muted);margin-bottom:10px;}
@@ -37,6 +47,8 @@
 
     @media(max-width:600px){
       .perfil-wrap{padding:24px 16px;}
+      .perfil-card{justify-content:center;text-align:center;}
+      .foto-actions .btn{flex:1;justify-content:center;}
       .perfil-card{padding:20px;}
       .perfil-name{font-size:28px;}
     }
@@ -90,6 +102,27 @@
   </section>
 </div>
 
+<div class="modal-bg" id="fotoModal" onclick="if(event.target===this)fecharFoto()">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="fotoTitle" style="max-width:420px">
+    <h2 class="modal-title" id="fotoTitle">FOTO DE PERFIL</h2>
+    <!-- enctype é informativo: o envio real é feito por fetch + FormData (ver enviarFoto) -->
+    <form id="fotoForm" enctype="multipart/form-data" novalidate>
+      <img id="fotoPreview" class="foto-preview" alt="Pré-visualização da foto escolhida"/>
+      <div class="form-group">
+        <label for="fotoInput">Escolha uma imagem</label>
+        <input id="fotoInput" name="imagem" type="file" accept="image/jpeg,image/png,image/gif"/>
+        <div class="foto-hint">JPEG, PNG ou GIF · até 2 MB</div>
+      </div>
+      <div id="fotoError" class="form-error" role="alert"></div>
+      <div class="foto-actions">
+        <button class="btn btn-accent" id="fotoEnviar" type="submit" disabled>Enviar foto</button>
+        <button class="btn btn-danger" id="fotoRemover" type="button" style="display:none" onclick="removerFoto()">Remover foto</button>
+        <button class="btn btn-ghost" type="button" onclick="fecharFoto()">Cancelar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
 <footer class="footer">
   <a href="/index.html" class="footer-logo">GAME<span>RATE</span></a>
   <div class="footer-copy">© 2025 GameRate</div>
@@ -112,9 +145,18 @@ async function loadPerfil() {
     const user = getUser();
     // Busca os dados do usuário pelo seu id na API
     const u = await api.get(`/usuarios/${user.id}`);
+    fotoAtual = u.caminho_imagem || null;
+    // Mantém a foto da sessão sincronizada com o banco e atualiza o cabeçalho.
+    setSessionImagem(fotoAtual);
+    setupNav();
 
     document.getElementById('perfilCard').innerHTML = `
-      <div class="perfil-avatar">${u.nome_usuario.slice(0,2).toUpperCase()}</div>
+      <div class="perfil-avatar-wrap">
+        ${avatarHtml(u.nome_usuario, u.caminho_imagem, 96)}
+        <button class="avatar-edit" type="button" onclick="abrirFoto()" aria-label="Alterar foto de perfil" title="Alterar foto de perfil">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
       <div class="perfil-info">
         <div class="perfil-name">${u.nome_usuario}</div>
         <div class="perfil-email">${u.email}</div>
@@ -197,7 +239,7 @@ document.getElementById('editPerfilForm').addEventListener('submit', async event
     const usuario = await api.put(`/usuarios/${user.id}`, payload);
     // Atualiza só os dados exibidos (nome/perfil/id); o token de sessão em si
     // não muda numa edição de perfil, então é preservado com getToken().
-    saveSession(getToken(), usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario);
+    saveSession(getToken(), usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario, usuario.caminho_imagem);
     document.getElementById('editPerfilModal').classList.remove('open');
     toast('Perfil atualizado', 'success');
     await loadPerfil();
@@ -209,6 +251,107 @@ document.getElementById('editPerfilForm').addEventListener('submit', async event
     button.textContent = 'Salvar alterações';
   }
 });
+
+// ───────── Foto de perfil (upload) ─────────
+const FOTO_TIPOS = ['image/jpeg', 'image/png', 'image/gif'];
+const FOTO_MAX_BYTES = 2 * 1024 * 1024; // 2 MB (o back-end também valida)
+let fotoAtual = null;     // caminho público da foto salva (ou null)
+let fotoPreviewUrl = null;
+
+const fotoInput  = document.getElementById('fotoInput');
+const fotoPreview = document.getElementById('fotoPreview');
+const fotoError  = document.getElementById('fotoError');
+const fotoEnviar = document.getElementById('fotoEnviar');
+
+function limparPreview() {
+  if (fotoPreviewUrl) URL.revokeObjectURL(fotoPreviewUrl);
+  fotoPreviewUrl = null;
+  fotoPreview.removeAttribute('src');
+  fotoPreview.classList.remove('has-img');
+}
+
+function abrirFoto() {
+  fotoInput.value = '';
+  fotoError.textContent = '';
+  fotoEnviar.disabled = true;
+  limparPreview();
+  // Mostra a foto atual como ponto de partida, se existir.
+  if (fotoAtual) { fotoPreview.src = fotoAtual; fotoPreview.classList.add('has-img'); }
+  document.getElementById('fotoRemover').style.display = fotoAtual ? '' : 'none';
+  document.getElementById('fotoModal').classList.add('open');
+}
+
+function fecharFoto() {
+  limparPreview();
+  document.getElementById('fotoModal').classList.remove('open');
+}
+
+// Ao escolher o arquivo: valida tipo/tamanho no cliente (resposta imediata) e
+// mostra a pré-visualização local, sem enviar nada ainda.
+fotoInput.addEventListener('change', () => {
+  const file = fotoInput.files[0];
+  fotoError.textContent = '';
+  fotoEnviar.disabled = true;
+  limparPreview();
+  if (!file) return;
+
+  if (!FOTO_TIPOS.includes(file.type)) {
+    fotoError.textContent = 'Tipo de arquivo não permitido. Envie uma imagem JPEG, PNG ou GIF.';
+    fotoInput.value = '';
+    return;
+  }
+  if (file.size > FOTO_MAX_BYTES) {
+    fotoError.textContent = `Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)} MB). O máximo é 2 MB.`;
+    fotoInput.value = '';
+    return;
+  }
+  fotoPreviewUrl = URL.createObjectURL(file);
+  fotoPreview.src = fotoPreviewUrl;
+  fotoPreview.classList.add('has-img');
+  fotoEnviar.disabled = false;
+});
+
+// Envio: FormData + fetch. NÃO definimos Content-Type — o navegador monta o
+// "multipart/form-data; boundary=..." sozinho. O token JWT vai no header
+// Authorization (api.upload -> apiFetch). Foto nova -> POST; já existe -> PUT.
+document.getElementById('fotoForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const file = fotoInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('imagem', file); // mesmo nome do campo esperado pelo Multer
+
+  fotoEnviar.disabled = true;
+  fotoEnviar.textContent = 'Enviando...';
+  fotoError.textContent = '';
+  try {
+    const { caminho } = await api.upload(fotoAtual ? 'PUT' : 'POST', '/usuarios/imagem', formData);
+    setSessionImagem(caminho);
+    fecharFoto();
+    toast('Foto de perfil atualizada', 'success');
+    await loadPerfil();   // redesenha o avatar do perfil e do cabeçalho
+  } catch (err) {
+    // Mensagens do servidor: 400 (tamanho/tipo), 401 (sessão expirada)...
+    fotoError.textContent = err.message;
+    fotoEnviar.disabled = false;
+  } finally {
+    fotoEnviar.textContent = 'Enviar foto';
+  }
+});
+
+async function removerFoto() {
+  if (!confirm('Remover sua foto de perfil?')) return;
+  try {
+    await api.delete('/usuarios/imagem');
+    setSessionImagem(null);
+    fecharFoto();
+    toast('Foto removida', 'success');
+    await loadPerfil();
+  } catch (err) {
+    fotoError.textContent = err.message;
+  }
+}
 
 loadPerfil();
 loadHistorico();

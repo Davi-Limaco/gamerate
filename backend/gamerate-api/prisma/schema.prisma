@@ -24,8 +24,25 @@ model Usuario {
   data_criacao DateTime    @default(dbgenerated("CURRENT_DATE"))
   perfil       Perfil      @relation(fields: [id_perfil_fk], references: [id_perfil], onDelete: NoAction, onUpdate: NoAction)
   avaliacoes   Avaliacao[]
+  imagem       Imagem?
 
   @@map("usuario")
+}
+
+// Foto de perfil (avatar) do usuário. A regra "um arquivo por usuário" é
+// garantida pelo próprio banco: `id_usuario_fk` é @unique (relação 1:1), então
+// um novo envio faz UPDATE do caminho em vez de criar um segundo registro.
+// `caminho` guarda só o caminho público (ex.: /uploads/avatars/<uuid>.png),
+// nunca o nome enviado pelo cliente. Ao remover o usuário, a imagem vai junto
+// (onDelete: Cascade); o arquivo em disco é apagado pela aplicação.
+model Imagem {
+  id_imagem     Int      @id @default(autoincrement())
+  caminho       String
+  id_usuario_fk Int      @unique
+  data_envio    DateTime @default(now())
+  usuario       Usuario  @relation(fields: [id_usuario_fk], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("imagem")
 }
 
 model Jogo {

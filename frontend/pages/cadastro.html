@@ -116,7 +116,7 @@ form.addEventListener('submit', async (event) => {
 
   try {
     const { token, usuario } = await api.post('/auth/cadastro', { nome_usuario, email, senha });
-    saveSession(token, usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario);
+    saveSession(token, usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario, usuario.caminho_imagem);
     toast('Conta criada com sucesso! Verifique seu e-mail de boas-vindas.', 'success');
     window.location.href = '/index.html';
   } catch (e) {

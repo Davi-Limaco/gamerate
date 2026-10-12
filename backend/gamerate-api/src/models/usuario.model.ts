@@ -5,8 +5,15 @@ import { throwPrismaError } from '@/errors/prismaErrors.ts';
 import prisma from '@/database/prisma.ts';
 import { toDateOnly } from '@/utils/dates.ts';
 import { hashPassword } from '@/utils/password.ts';
+import { removeAvatarByPublicPath } from '@/utils/uploads.ts';
 import type { Avaliacao } from '@/types/Avaliacao.d.ts';
 import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
+
+// Relações carregadas junto com todo usuário: nome do perfil e a foto (1:1).
+const perfilEImagem = {
+  perfil: { select: { nome_perfil: true } },
+  imagem: { select: { caminho: true } },
+} as const;
 
 function mapUsuario(usuario: {
   id_usuario: number;
@@ -16,6 +23,7 @@ function mapUsuario(usuario: {
   id_perfil_fk: number;
   data_criacao: Date;
   perfil: { nome_perfil: string };
+  imagem?: { caminho: string } | null;
   _count?: { avaliacoes: number };
 }, includeSenha = false): Usuario {
   return {
@@ -27,13 +35,14 @@ function mapUsuario(usuario: {
     nome_perfil: usuario.perfil.nome_perfil,
     data_criacao: toDateOnly(usuario.data_criacao),
     total_avaliacoes: usuario._count?.avaliacoes,
+    caminho_imagem: usuario.imagem?.caminho ?? null,
   };
 }
 
 async function readAll(): Promise<Usuario[]> {
   const usuarios = await prisma.usuario.findMany({
     orderBy: { id_usuario: 'asc' },
-    include: { perfil: { select: { nome_perfil: true } } },
+    include: perfilEImagem,
   });
   return usuarios.map((usuario) => mapUsuario(usuario));
 }
@@ -41,7 +50,7 @@ async function readAll(): Promise<Usuario[]> {
 async function readById(id: number): Promise<Usuario> {
   const usuario = await prisma.usuario.findUnique({
     where: { id_usuario: id },
-    include: { perfil: { select: { nome_perfil: true } }, _count: { select: { avaliacoes: true } } },
+    include: { ...perfilEImagem, _count: { select: { avaliacoes: true } } },
   });
   if (!usuario) throw new HttpError('Usuário não encontrado', 404);
   return mapUsuario(usuario);
@@ -55,7 +64,7 @@ async function readById(id: number): Promise<Usuario> {
 async function readByEmail(email: string): Promise<Usuario | undefined> {
   const usuario = await prisma.usuario.findUnique({
     where: { email },
-    include: { perfil: { select: { nome_perfil: true } } },
+    include: perfilEImagem,
   });
   return usuario ? mapUsuario(usuario, true) : undefined;
 }
@@ -76,7 +85,7 @@ async function create(input: UsuarioInput): Promise<Usuario> {
         id_perfil_fk: input.id_perfil_fk ?? 1,
         data_criacao: new Date(),
       },
-      include: { perfil: { select: { nome_perfil: true } } },
+      include: perfilEImagem,
     });
     return mapUsuario(usuario);
   } catch (error) {
@@ -98,7 +107,7 @@ async function update(input: UsuarioInput & { id?: number }): Promise<Usuario> {
     const usuario = await prisma.usuario.update({
       where: { id_usuario: input.id },
       data,
-      include: { perfil: { select: { nome_perfil: true } } },
+      include: perfilEImagem,
     });
     return mapUsuario(usuario);
   } catch (error) {
@@ -112,7 +121,7 @@ async function updatePerfil(input: { id?: number; id_perfil_fk?: number }): Prom
     const usuario = await prisma.usuario.update({
       where: { id_usuario: input.id },
       data: { id_perfil_fk: input.id_perfil_fk },
-      include: { perfil: { select: { nome_perfil: true } } },
+      include: perfilEImagem,
     });
     return mapUsuario(usuario);
   } catch (error) {
@@ -121,7 +130,11 @@ async function updatePerfil(input: { id?: number; id_perfil_fk?: number }): Prom
 }
 
 async function remove(id: number): Promise<boolean> {
-  return prisma.$transaction(async (tx) => {
+  // Guarda o caminho da foto para apagar o arquivo do disco depois que o
+  // registro (e, em cascata, a linha de `imagem`) for removido do banco.
+  const foto = await prisma.imagem.findUnique({ where: { id_usuario_fk: id }, select: { caminho: true } });
+
+  const removido = await prisma.$transaction(async (tx) => {
     const usuario = await tx.usuario.findUnique({ where: { id_usuario: id }, select: { id_usuario: true } });
     if (!usuario) throw new HttpError('Usuário não encontrado', 404);
     if (await tx.avaliacao.count({ where: { id_usuario_fk: id } })) {
@@ -130,6 +143,9 @@ async function remove(id: number): Promise<boolean> {
     await tx.usuario.delete({ where: { id_usuario: id } });
     return true;
   });
+
+  if (foto) await removeAvatarByPublicPath(foto.caminho);
+  return removido;
 }
 
 async function readAvaliacoes(id: number): Promise<Avaliacao[]> {

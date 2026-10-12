@@ -719,3 +719,205 @@ Authorization: Bearer {{adminLogin.response.body.token}}
 ### [CONTATO] Excluir mensagem (DELETE) com token de Administrador
 DELETE {{base}}/contato/1
 Authorization: Bearer {{adminLogin.response.body.token}}
+
+
+# =============================================================
+#  UPLOAD — Foto de perfil (multipart/form-data)
+#  Rotas: POST | PUT | DELETE {{base}}/usuarios/imagem
+#
+#  Como o arquivo e o token vão na requisição:
+#   - Token: header "Authorization: Bearer <jwt>" (aqui encadeado do login
+#     do jogador com {{jogadorLogin.response.body.token}}).
+#   - Arquivo: corpo multipart/form-data com um "boundary" definido no header
+#     Content-Type. A parte do arquivo tem name="imagem" (nome do campo que o
+#     Multer espera) e o conteúdo é lido do disco com "< ./caminho/arquivo".
+#     Os arquivos de teste ficam em ./test-files/.
+#   - Execute de cima para baixo (depende de "jogadorLogin" lá no início).
+# =============================================================
+
+@host = http://localhost:3000
+
+### [UPLOAD] Envio SEM token -> 401 (o arquivo nem chega a ser processado)
+POST {{base}}/usuarios/imagem
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Envio com token INVÁLIDO -> 401
+POST {{base}}/usuarios/imagem
+Authorization: Bearer token.invalido.aqui
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Envio VÁLIDO (PNG pequeno) -> 201 + { imagem, caminho }
+### O nome gerado é um UUID (nunca "avatar.png"). Guarda a resposta em "uploadValido".
+# @name uploadValido
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Acessar o caminho devolvido pela API -> 200 e a imagem é exibida
+### (o REST Client mostra a prévia da imagem na aba de resposta)
+GET {{host}}{{uploadValido.response.body.caminho}}
+
+###
+
+### [UPLOAD] O caminho ficou associado ao usuário -> /auth/me traz caminho_imagem
+GET {{base}}/auth/me
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [UPLOAD] Arquivo MAIOR que o limite (3 MB > 2 MB) -> 400 (LIMIT_FILE_SIZE)
+### Nada fica gravado em uploads/avatars (o Multer descarta o arquivo parcial).
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="grande.png"
+Content-Type: image/png
+
+< ./test-files/grande.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Tipo NÃO permitido (PDF) -> 400 (recusado pelo filtro de MIME, nada gravado)
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="documento.pdf"
+Content-Type: application/pdf
+
+< ./test-files/documento.pdf
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] MIME forjado (HTML enviado como image/png) -> 400
+### O conteúdo não tem assinatura de JPEG/PNG/GIF; o arquivo é apagado.
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="falso.png"
+Content-Type: image/png
+
+< ./test-files/falso.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Campo multipart com nome errado ("foto" em vez de "imagem") -> 400
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="foto"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Requisição sem nenhum arquivo (corpo JSON) -> 400
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{}
+
+###
+
+### [UPLOAD] REENVIO pelo mesmo usuário (PUT) -> 200 e caminho ATUALIZADO
+### Mesmo registro em "imagem" (id_imagem igual), novo caminho (outro UUID).
+# @name uploadReenvio
+PUT {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar2.png"
+Content-Type: image/png
+
+< ./test-files/avatar2.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] O caminho antigo deixou de existir (arquivo removido do disco) -> 404
+GET {{host}}{{uploadValido.response.body.caminho}}
+
+###
+
+### [UPLOAD] O novo caminho é exibido -> 200
+GET {{host}}{{uploadReenvio.response.body.caminho}}
+
+###
+
+### [UPLOAD] Reenvio também via POST -> 201 e continua UM único registro por usuário
+POST {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] PUT sem token -> 401
+PUT {{base}}/usuarios/imagem
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="imagem"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+--GameRateBoundary--
+
+###
+
+### [UPLOAD] Remover a foto -> 204
+DELETE {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [UPLOAD] Remover novamente (já não existe) -> 404
+DELETE {{base}}/usuarios/imagem
+Authorization: Bearer {{jogadorLogin.response.body.token}}

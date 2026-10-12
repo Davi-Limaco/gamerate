@@ -263,7 +263,7 @@ function reviewCardHTML(r, i) {
       <div class="review-text">${r.texto}</div>
       <div class="review-footer">
         <div class="review-author">
-          <div class="author-avatar" style="background:${col}">${r.nome_usuario.slice(0,2).toUpperCase()}</div>
+          ${avatarHtml(r.nome_usuario, r.caminho_imagem_usuario, 28)}
           <div class="author-name">@${r.nome_usuario}</div>
         </div>
         <div class="review-likes">🎮 ${r.nota||'—'} / 5</div>

@@ -59,7 +59,7 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 
   try {
     const { token, usuario } = await api.post('/auth/login', { email, senha });
-    saveSession(token, usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario);
+    saveSession(token, usuario.nome_usuario, usuario.nome_perfil, usuario.id_usuario, usuario.caminho_imagem);
     const dest = new URLSearchParams(location.search).get('next') || '/index.html';
     window.location.href = dest;
   } catch (e) {

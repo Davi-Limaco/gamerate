@@ -13,7 +13,7 @@ function mapAvaliacao(avaliacao: {
   titulo: string;
   texto: string;
   data_publicacao: Date;
-  usuario?: { id_usuario: number; nome_usuario: string };
+  usuario?: { id_usuario: number; nome_usuario: string; imagem?: { caminho: string } | null };
   jogo?: { id_jogo: number; nome_jogo: string; capa: string | null };
 }): Avaliacao {
   return {
@@ -25,6 +25,7 @@ function mapAvaliacao(avaliacao: {
     texto: avaliacao.texto,
     data_publicacao: toDateOnly(avaliacao.data_publicacao),
     nome_usuario: avaliacao.usuario?.nome_usuario,
+    caminho_imagem_usuario: avaliacao.usuario?.imagem?.caminho ?? null,
     nome_jogo: avaliacao.jogo?.nome_jogo,
     capa: avaliacao.jogo?.capa,
     id_usuario: avaliacao.usuario?.id_usuario,
@@ -32,7 +33,7 @@ function mapAvaliacao(avaliacao: {
   };
 }
 
-const relations = { usuario: { select: { id_usuario: true, nome_usuario: true } }, jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } };
+const relations = { usuario: { select: { id_usuario: true, nome_usuario: true, imagem: { select: { caminho: true } } } }, jogo: { select: { id_jogo: true, nome_jogo: true, capa: true } } };
 
 async function readAll(filter: AvaliacaoFilter = {}): Promise<Avaliacao[]> {
   const rows = await prisma.avaliacao.findMany({

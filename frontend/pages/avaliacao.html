@@ -125,7 +125,7 @@ async function loadAvaliacao() {
       <div class="aval-main">
         <div class="aval-titulo">${a.titulo}</div>
         <div class="aval-author-row">
-          <div class="aval-avatar" style="background:${col}">${a.nome_usuario.slice(0,2).toUpperCase()}</div>
+          ${avatarHtml(a.nome_usuario, a.caminho_imagem_usuario, 36)}
           <div>
             <div style="font-size:14px;font-weight:600">@${a.nome_usuario}</div>
             <div style="font-size:12px;color:var(--muted)">${fmtDate(a.data_publicacao)}</div>

@@ -7,6 +7,8 @@ export interface Usuario {
   nome_perfil?: string;
   data_criacao?: string;
   total_avaliacoes?: number;
+  /** Caminho público da foto de perfil (ex.: /uploads/avatars/<uuid>.png) ou null. */
+  caminho_imagem?: string | null;
 }
 
 export interface UsuarioInput {

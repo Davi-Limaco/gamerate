@@ -11,7 +11,7 @@ GameRate permite que jogadores descubram jogos, postem avaliações e consultem 
 -  **Home** — Exibição de jogos em destaque, estatísticas e descoberta de títulos
 -  **Game Catalog** — Busca e filtragem por gênero e plataforma
 -  **Reviews** — Criação, edição e exclusão de avaliações de jogos
--  **Usuários** — Cadastro, login e gerenciamento de perfis de usuário
+-  **Usuários** — Cadastro, login e gerenciamento de perfis de usuário, com foto de perfil (upload de imagem)
 -  **Contact Form** — Envio de mensagens de contato pelo site
 -  **Admin Panel** — Dashboard para gerenciar jogos, usuários, categorias e contatos
 
@@ -21,6 +21,7 @@ GameRate permite que jogadores descubram jogos, postem avaliações e consultem 
 - Node.js + Express + TypeScript
 - Prisma ORM + SQLite
 - `zod` para validação de dados (schemas de body/params/query)
+- `multer` para upload de arquivos (foto de perfil)
 - `nodemailer` para envio de e-mail transacional
 - `morgan` request logging
 
@@ -75,7 +76,21 @@ JWT_EXPIRES_IN="2h"
   recebe `401` e o front-end limpa a sessão local automaticamente (ver
   `frontend/js/api.js`).
 
-### 3. Configuração de e-mail (SMTP)
+### 3. Upload de foto de perfil
+
+O usuário autenticado envia uma imagem (JPEG, PNG ou GIF, até 2 MB) em
+`POST`/`PUT /api/usuarios/imagem` (`multipart/form-data`, campo `imagem`). O
+arquivo é salvo em `backend/gamerate-api/uploads/avatars/` com nome gerado pelo
+servidor, o caminho público (`/uploads/avatars/<uuid>.png`) é gravado na tabela
+`imagem` (um registro por usuário) e a pasta é servida em `/uploads`. Variáveis
+opcionais: `UPLOAD_DIR` e `UPLOAD_MAX_BYTES` (ver `.env.example`). A pasta
+`uploads/` não é versionada (só a estrutura). Detalhes e roteiro de apresentação
+em `backend/gamerate-api/docs/upload.md`; testes em `request.http` (seção UPLOAD).
+
+Após atualizar o código, aplique a nova migration: `npm run db:deploy`
+(ou `npm run db:setup` em uma instalação nova).
+
+### 4. Configuração de e-mail (SMTP)
 
 O envio de e-mail (`src/services/SendMail.ts`, usando Nodemailer) é configurado
 inteiramente por variáveis de ambiente — veja `.env.example`:
@@ -161,6 +176,8 @@ gamerate/
 │       │   ├── schema.prisma       # Entidades, constraints e relações
 │       │   └── seed.ts             # Dados iniciais idempotentes
 │       ├── public/                 # Front-end servido pelo Express
+│       ├── test-files/             # Arquivos usados nos testes de upload (request.http)
+│       ├── uploads/                # Fotos enviadas (conteúdo fora do git; estrutura versionada)
 │       ├── src/
 │       │   ├── controllers/        # Handlers HTTP e respostas (auth.controller.ts cuida do login/cadastro)
 │       │   ├── database/prisma.ts  # Prisma Client singleton

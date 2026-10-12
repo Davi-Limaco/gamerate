@@ -130,3 +130,8 @@ footer.footer{position:relative;z-index:1;border-top:1px solid var(--border);pad
   .section{padding:36px 16px;}
   footer.footer{padding:24px 16px;flex-direction:column;gap:14px;text-align:center;}
 }
+
+/* Avatar (foto de perfil ou iniciais) — usado no cabeçalho, perfil e avaliações */
+.avatar{border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);}
+.avatar-fallback{font-weight:700;color:var(--bg);border:none;}
+nav.nav-links .avatar{margin-right:2px;}

@@ -1,6 +1,6 @@
 # ERD — GameRate
 
-Este diagrama corresponde aos nove models e às tabelas `@@map` de
+Este diagrama corresponde aos dez models e às tabelas `@@map` de
 `prisma/schema.prisma`. Os tipos representam os tipos Prisma; campos `?` são
 nullable no SQLite. `PK`, `FK` e `UK` indicam chave primária, estrangeira e
 unicidade.
@@ -9,6 +9,7 @@ unicidade.
 erDiagram
     PERFIL ||--o{ USUARIO : possui
     USUARIO ||--o{ AVALIACAO : escreve
+    USUARIO ||--o| IMAGEM : possui_foto
     JOGO ||--o{ AVALIACAO : recebe
     JOGO ||--o{ JOGO_GENERO : classificado_por
     GENERO ||--o{ JOGO_GENERO : classifica
@@ -26,6 +27,12 @@ erDiagram
         String senha "NOT NULL"
         Int id_perfil_fk FK "NOT NULL"
         DateTime data_criacao "NOT NULL DEFAULT CURRENT_DATE"
+    }
+    IMAGEM {
+        Int id_imagem PK "autoincrement"
+        String caminho "NOT NULL (caminho público em /uploads/avatars)"
+        Int id_usuario_fk FK "NOT NULL; UNIQUE (1:1); ON DELETE CASCADE"
+        DateTime data_envio "NOT NULL DEFAULT CURRENT_TIMESTAMP"
     }
     JOGO {
         Int id_jogo PK "autoincrement"
@@ -74,6 +81,7 @@ erDiagram
 ## Cardinalidade
 
 - `Perfil 1:N Usuario`: cada usuário referencia exatamente um perfil; um perfil pode pertencer a zero ou muitos usuários.
+- `Usuario 1:0..1 Imagem`: cada usuário tem no máximo uma foto de perfil (`id_usuario_fk` único); novo envio atualiza o registro. A imagem é removida em cascata com o usuário.
 - `Usuario 1:N Avaliacao` e `Jogo 1:N Avaliacao`: cada avaliação tem exatamente um autor e um jogo.
 - `Jogo N:N Genero`, implementado por `JogoGenero` com PK composta (`id_jogo_fk`, `id_genero_fk`).
 - `Jogo N:N Plataforma`, implementado por `JogoPlataforma` com PK composta (`id_jogo_fk`, `id_plataforma_fk`).
