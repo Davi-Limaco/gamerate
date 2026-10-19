@@ -16,6 +16,15 @@ backend/gamerate-api/src/database/*.sqlite-journal
 uploads/avatars/*
 !uploads/avatars/.gitignore
 
+# Artefatos de testes (cobertura, relatórios, bancos e uploads descartáveis)
+coverage/
+playwright-report/
+test-results/
+uploads-test/
+uploads-e2e/
+src/database/test.sqlite*
+src/database/e2e.sqlite*
+
 # Logs
 *.log
 npm-debug.log*

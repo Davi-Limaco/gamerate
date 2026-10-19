@@ -12,7 +12,19 @@
     "db:migrate": "npm run prepare:env && prisma migrate dev",
     "db:deploy": "npm run prepare:env && prisma migrate deploy",
     "db:seed": "npm run prepare:env && tsx prisma/seed.ts",
-    "db:setup": "npm run prepare:env && npm run prisma:generate && npm run db:deploy && npm run db:seed"
+    "db:setup": "npm run prepare:env && npm run prisma:generate && npm run db:deploy && npm run db:seed",
+    "test:db": "node tests/setup/prepare-db.mjs tests/env/test.env",
+    "test:unit": "node --env-file=tests/env/test.env --import tsx --test --test-concurrency=1 --test-reporter=spec \"tests/unit/**/*.test.ts\"",
+    "test:routes": "npm run test:db && node --env-file=tests/env/test.env --import tsx --test --test-concurrency=1 --test-reporter=spec \"tests/routes/**/*.test.ts\"",
+    "test": "npm run test:db && node --env-file=tests/env/test.env --import tsx --test --test-concurrency=1 --test-reporter=spec \"tests/unit/**/*.test.ts\" \"tests/routes/**/*.test.ts\"",
+    "front:test": "vitest run",
+    "front:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install chromium",
+    "coverage:server": "npm run test:db && c8 node --env-file=tests/env/test.env --import tsx --test --test-concurrency=1 --test-reporter=spec \"tests/unit/**/*.test.ts\" \"tests/routes/**/*.test.ts\"",
+    "coverage": "npm run coverage:server && npm run front:coverage",
+    "test:all": "npm test && npm run front:test && npm run e2e",
+    "e2e:server": "node tests/setup/prepare-db.mjs tests/env/e2e.env && node --env-file=tests/env/e2e.env --import tsx src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -26,14 +38,21 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.3.0",
     "@types/node": "^22.0.0",
     "@types/nodemailer": "^6.4.17",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^5.0.5",
+    "c8": "^12.0.0",
+    "jsdom": "^30.1.3",
     "prisma": "^6.0.0",
+    "supertest": "^7.3.1",
     "tsx": "^4.22.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^5.0.5"
   }
 }

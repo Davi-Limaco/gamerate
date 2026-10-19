@@ -16,6 +16,10 @@ import type { Transporter } from 'nodemailer';
  * uma conta de teste na Ethereal (https://ethereal.email) na primeira vez que
  * for usado, e loga no terminal a URL de prévia de cada mensagem enviada —
  * nenhum e-mail real é entregue nesse modo.
+ *
+ * Com SMTP_DISABLED=true (usado nos testes automatizados) o serviço usa o
+ * `jsonTransport` do Nodemailer: a mensagem é apenas serializada em memória —
+ * sem rede, sem conta Ethereal e sem entrega de nenhum e-mail.
  */
 
 let transporterPromise: Promise<Transporter> | null = null;
@@ -35,6 +39,10 @@ async function getTransporter(): Promise<Transporter> {
   if (!transporterPromise) {
     transporterPromise = (async () => {
       const { host, port, secure, user, pass } = getEnv();
+
+      if (process.env.SMTP_DISABLED === 'true') {
+        return nodemailer.createTransport({ jsonTransport: true });
+      }
 
       if (host && user && pass) {
         return nodemailer.createTransport({ host, port, secure, auth: { user, pass } });

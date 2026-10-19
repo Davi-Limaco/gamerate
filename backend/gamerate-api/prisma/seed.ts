@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import prismaShared from '../src/database/prisma.ts';
 import process from 'node:process';
 import seedData from '../src/database/seeders.json' with { type: 'json' };
 import { hashPassword } from '../src/utils/password.ts';
 
-const prisma = new PrismaClient();
+const prisma = prismaShared;
 const avaliadores = [
   { nome: 'Ana Martins', email: 'ana.martins@gamerate.dev', nota: 5, titulo: 'Uma experiência marcante', texto: 'A direção de arte e a trilha sonora criam uma atmosfera que prende do começo ao fim.' },
   { nome: 'Bruno Costa', email: 'bruno.costa@gamerate.dev', nota: 4.5, titulo: 'Muito divertido', texto: 'A jogabilidade é envolvente e recompensa quem explora cada detalhe do mundo.' },

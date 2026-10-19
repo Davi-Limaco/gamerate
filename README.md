@@ -90,7 +90,18 @@ em `backend/gamerate-api/docs/upload.md`; testes em `request.http` (seção UPLO
 Após atualizar o código, aplique a nova migration: `npm run db:deploy`
 (ou `npm run db:setup` em uma instalação nova).
 
-### 4. Configuração de e-mail (SMTP)
+### 4. Testes automatizados
+
+```bash
+npm test            # unidade + rotas (node:test, supertest)
+npm run front:test  # front-end (Vitest + JSDOM)
+npm run e2e         # ponta a ponta (Playwright; rode antes `npm run e2e:install`)
+npm run coverage    # cobertura com piso mínimo
+```
+
+Detalhes, estrutura e decisões em `backend/gamerate-api/docs/testes.md`.
+
+### 5. Configuração de e-mail (SMTP)
 
 O envio de e-mail (`src/services/SendMail.ts`, usando Nodemailer) é configurado
 inteiramente por variáveis de ambiente — veja `.env.example`:

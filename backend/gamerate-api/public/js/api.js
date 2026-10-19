@@ -131,3 +131,14 @@ function toast(msg, tipo = 'info') {
 function fmtDate(d) {
   return new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 }
+
+// Exposição opcional para os testes (Vitest + JSDOM). Este arquivo é um script
+// clássico do navegador (sem import/export); no navegador `__GAMERATE_EXPORTS__`
+// não existe e esta linha não faz nada. Nos testes, o objeto é criado antes do
+// import e recebe as funções para serem exercitadas.
+if (globalThis.__GAMERATE_EXPORTS__) {
+  Object.assign(globalThis.__GAMERATE_EXPORTS__, {
+    api, apiFetch, getUser, getToken, saveSession, setSessionImagem, clearSession,
+    isLoggedIn, setupNav, logout, toast, fmtDate, avatarCor, escapeHtml, avatarHtml,
+  });
+}
