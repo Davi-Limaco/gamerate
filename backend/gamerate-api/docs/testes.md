@@ -7,7 +7,7 @@ valendo depois da próxima alteração. Há quatro tipos, mais cobertura com pis
 
 ```bash
 npm install
-npx playwright install chromium   # uma vez (só para o E2E)
+npm run e2e:install   # uma vez: baixa o Chromium e as bibliotecas do sistema (Linux/Codespaces)
 
 npm test              # unidade + rotas (rápido: rode a cada alteração)
 npm run front:test    # front-end (Vitest + JSDOM)
@@ -61,7 +61,8 @@ avatares (inclusive escape contra XSS).
 formulário, avaliação de um jogo e conferência na tela; erro de e-mail
 duplicado e de login; redirecionamento de visitante; envio, persistência e
 remoção da foto de perfil; erros de tipo e tamanho; favoritar e desfavoritar jogos; postar print e vídeo de gameplay,
-vê-los na galeria, excluir, e erros de tipo, arquivo ausente e título curto. `playwright.config.ts`
+vê-los na galeria, excluir, e erros de tipo, arquivo ausente e título curto; e um teste de regressão de corrida (resposta antiga e lenta
+da carga inicial não pode sobrescrever a galeria atualizada — `perfil.html` descarta cargas desatualizadas). `playwright.config.ts`
 define o `webServer` (`npm run e2e:server`: recria o banco `e2e.sqlite` e sobe
 a API na porta 3100 com `tests/env/e2e.env`).
 
@@ -96,3 +97,9 @@ segredo real; não afetam o `.env` de desenvolvimento.
 qualquer falha, galeria e filtros, edição, exclusão, moderação, remoção de usuário e de jogo) e
 `tests/routes/favoritos.routes.test.ts` (201, 409, 404, 400, isolamento entre usuários, ordem, cascade ao remover o jogo).
 O limite de mídia nos testes é 1 MB (`UPLOAD_MIDIA_MAX_BYTES` em `tests/env/test.env`), para o caso "grande demais" não precisar de 30 MB.
+
+## Solução de problemas do E2E
+
+`error while loading shared libraries: libatk-1.0.so.0` (todos os testes falham sem abrir a página): faltam
+bibliotecas do sistema para o Chromium. Rode `npm run e2e:install` (equivale a
+`playwright install --with-deps chromium`; em Linux pode pedir `sudo`).
