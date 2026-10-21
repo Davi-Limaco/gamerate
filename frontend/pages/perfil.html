@@ -459,6 +459,12 @@ async function removerFoto() {
   }
 }
 
+// Evita que uma resposta ANTIGA (requisição lenta) sobrescreva uma carga mais recente:
+// cada carga recebe um número e só a última iniciada pode desenhar na tela.
+const cargaAtual = {};
+const iniciarCarga = chave => (cargaAtual[chave] = (cargaAtual[chave] || 0) + 1);
+const cargaVigente = (chave, n) => cargaAtual[chave] === n;
+
 // ───────── Jogos favoritos ─────────
 let catalogo = null;          // jogos do banco (carregados uma vez, usados em favoritos e gameplays)
 let favoritosIds = new Set(); // ids dos jogos já favoritados
@@ -470,8 +476,10 @@ async function carregarCatalogo() {
 
 async function loadFavoritos() {
   const grid = document.getElementById('favGrid');
+  const carga = iniciarCarga('favoritos');
   try {
     const favoritos = await api.get('/favoritos');
+    if (!cargaVigente('favoritos', carga)) return; // chegou uma carga mais nova: descarta esta
     favoritosIds = new Set(favoritos.map(f => f.id_jogo));
     if (!favoritos.length) {
       grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⭐</div><p>Você ainda não favoritou nenhum jogo.</p></div>';
@@ -489,6 +497,7 @@ async function loadFavoritos() {
         <button class="fav-remove" type="button" onclick="removerFavorito(${f.id_jogo})" aria-label="Remover ${escapeHtml(f.nome_jogo)} dos favoritos" title="Remover dos favoritos">×</button>
       </article>`).join('');
   } catch (e) {
+    if (!cargaVigente('favoritos', carga)) return;
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Erro ao carregar favoritos.</p></div>';
   }
 }
@@ -652,9 +661,11 @@ document.getElementById('midiaForm').addEventListener('submit', async event => {
 
 async function loadMidias() {
   const grid = document.getElementById('midiaGrid');
+  const carga = iniciarCarga('midias');
   try {
     const user = getUser();
     const midias = await api.get(`/midias?usuario_id=${user.id}`);
+    if (!cargaVigente('midias', carga)) return; // chegou uma carga mais nova: descarta esta
     if (!midias.length) {
       grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎬</div><p>Você ainda não postou nenhum gameplay.</p></div>';
       return;
@@ -674,6 +685,7 @@ async function loadMidias() {
         </div>
       </article>`).join('');
   } catch (e) {
+    if (!cargaVigente('midias', carga)) return;
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Erro ao carregar gameplays.</p></div>';
   }
 }
