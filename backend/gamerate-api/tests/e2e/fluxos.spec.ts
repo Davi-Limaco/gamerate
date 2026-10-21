@@ -82,7 +82,7 @@ test.describe('cadastro, login e avaliação de um jogo', () => {
     await page.getByLabel('Confirmar senha').fill(usuario.senha);
     await page.getByRole('button', { name: 'Criar Conta' }).click();
 
-    await expect(page.getByText('já cadastrado')).toBeVisible();
+    await expect(page.getByText('Usuário já cadastrado')).toBeVisible();
     await expect(page).toHaveURL(/cadastro\.html/);
   });
 
