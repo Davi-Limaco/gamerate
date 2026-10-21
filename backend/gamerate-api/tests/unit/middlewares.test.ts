@@ -211,9 +211,10 @@ describe('errorHandlers', () => {
     ensureUploadDirs();
     const arquivo = path.join(MIDIA_DIR, 'orfao-teste.png');
     fs.writeFileSync(arquivo, 'x');
-    errorHandler(new HttpError('falhou depois do upload', 404), fakeReq({ file: { path: arquivo } }), fakeRes(), fakeNext());
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    assert.equal(fs.existsSync(arquivo), false);
+    const res = fakeRes();
+    await errorHandler(new HttpError('falhou depois do upload', 404), fakeReq({ file: { path: arquivo } }), res, fakeNext());
+    assert.equal(fs.existsSync(arquivo), false, 'o arquivo já foi removido quando o handler termina');
+    assert.equal(res.statusCode, 404);
   });
 
   it('erro desconhecido vira 500 genérico, sem vazar a mensagem interna', () => {

@@ -33,7 +33,7 @@ export const notFoundHandler = (
   res.status(404).json({ error: 'Content Not Found' });
 };
 
-export const errorHandler = (
+export const errorHandler = async (
   err: Error,
   req: Request,
   res: Response,
@@ -41,8 +41,10 @@ export const errorHandler = (
 ) => {
   // Qualquer erro depois do Multer (validação de campos, regra de negócio,
   // banco...) deixaria o arquivo recém-gravado órfão: apagamos aqui, em um
-  // único lugar, em vez de repetir a limpeza em cada controller.
-  if (req.file) void removeFileQuietly(req.file.path);
+  // único lugar, em vez de repetir a limpeza em cada controller. A remoção é
+  // aguardada ANTES de responder: quando o cliente recebe o erro, o arquivo
+  // já saiu do disco (sem corrida entre resposta e limpeza).
+  if (req.file) await removeFileQuietly(req.file.path);
 
   if (err instanceof HttpError) {
     // Quando o erro vem do middleware de validação (validate + Zod), issues
