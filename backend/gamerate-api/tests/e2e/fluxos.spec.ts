@@ -82,7 +82,8 @@ test.describe('cadastro, login e avaliação de um jogo', () => {
     await page.getByLabel('Confirmar senha').fill(usuario.senha);
     await page.getByRole('button', { name: 'Criar Conta' }).click();
 
-    await expect(page.getByText('Usuário já cadastrado')).toBeVisible();
+    // A mensagem aparece no campo e no toast: basta conferir que está visível.
+    await expect(page.getByText('Usuário já cadastrado').first()).toBeVisible();
     await expect(page).toHaveURL(/cadastro\.html/);
   });
 
@@ -270,5 +271,35 @@ test.describe('perfil: jogos favoritos e gameplays', () => {
     await dialogo.getByLabel('Título').fill('ab');
     await dialogo.getByRole('button', { name: 'Postar' }).click();
     await expect(dialogo.getByRole('alert')).toContainText('titulo deve ter no mínimo 3 caracteres');
+  });
+
+  test('resposta antiga e lenta da carga inicial não sobrescreve a galeria já atualizada (corrida)', async ({ page }) => {
+    const usuario = novoUsuario();
+    await cadastrarPelaApi(page, usuario);
+    await entrarPelaInterface(page, usuario);
+
+    // Só a PRIMEIRA resposta de GET /midias (carga inicial da página) chega atrasada ao navegador
+    let primeira = true;
+    await page.route('**/api/midias?usuario_id=*', async (route) => {
+      if (!primeira) return route.continue();
+      primeira = false;
+      const resposta = await route.fetch(); // o servidor responde logo, com a galeria ainda vazia...
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // ...mas a resposta demora a chegar
+      return route.fulfill({ response: resposta });
+    });
+
+    await page.goto('/pages/perfil.html');
+    await page.getByRole('button', { name: 'Postar gameplay' }).click();
+    const dialogo = page.getByRole('dialog', { name: 'POSTAR GAMEPLAY' });
+    await dialogo.getByLabel('Print ou vídeo').setInputFiles('test-files/print.jpg');
+    await dialogo.getByLabel('Título').fill(`Print ${usuario.nome}`);
+    await dialogo.getByRole('button', { name: 'Postar' }).click();
+
+    const galeria = page.getByRole('region', { name: 'Meus Gameplays' });
+    const print = galeria.getByRole('img', { name: `Print: Print ${usuario.nome}` });
+    await expect(print).toBeVisible();
+    // Depois que a resposta atrasada chega, a galeria atualizada continua na tela
+    await page.waitForTimeout(2500);
+    await expect(print).toBeVisible();
   });
 });
