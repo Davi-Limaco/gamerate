@@ -11,10 +11,12 @@ backend/gamerate-api/src/database/*.sqlite
 backend/gamerate-api/src/database/*.sqlite-journal
 
 # Uploads de usuários (fotos de perfil): conteúdo ignorado, estrutura mantida
-# (uploads/.gitignore + uploads/avatars/.gitignore; a API também recria as
+# (uploads/.gitignore + avatars/ e midias/.gitignore; a API também recria as
 # pastas ao iniciar).
 uploads/avatars/*
 !uploads/avatars/.gitignore
+uploads/midias/*
+!uploads/midias/.gitignore
 
 # Artefatos de testes (cobertura, relatórios, bancos e uploads descartáveis)
 coverage/
@@ -38,3 +40,6 @@ Thumbs.db
 
 # Optional: arquivos temporários do ambiente
 *.tmp
+
+# Arquivo gerado por test-files/gerar-midia-grande.mjs (acima do limite de upload)
+test-files/midia-grande.mp4

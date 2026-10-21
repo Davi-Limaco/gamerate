@@ -40,6 +40,45 @@
     .hist-game{font-size:14px;font-weight:600;}
     .hist-titulo{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .hist-nota{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);}
+
+    /* Cabeçalho de seção com ação (favoritos e gameplays) */
+    .secao-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .secao-head .secao-titulo{margin-bottom:0;}
+    .secao-bloco{margin-bottom:40px;}
+
+    /* Favoritos: grade de capas */
+    .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+    .fav-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s,transform .2s;}
+    .fav-card:hover{border-color:rgba(232,255,71,.3);transform:translateY(-2px);}
+    .fav-link{display:block;color:inherit;text-decoration:none;}
+    .fav-capa{width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--surface2);display:block;}
+    .fav-info{padding:10px 12px;}
+    .fav-nome{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .fav-nota{font-size:12px;color:var(--accent);margin-top:2px;}
+    .fav-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+    .fav-remove:hover,.fav-remove:focus-visible{background:var(--accent2);outline:none;}
+
+    /* Gameplays: grade de prints e vídeos */
+    .midia-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+    .midia-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+    .midia-media{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block;}
+    .midia-corpo{padding:12px 14px;display:flex;flex-direction:column;gap:4px;flex:1;}
+    .midia-titulo{font-size:14px;font-weight:600;word-break:break-word;}
+    .midia-meta{font-size:12px;color:var(--muted);}
+    .midia-desc{font-size:13px;color:var(--muted);margin-top:4px;word-break:break-word;}
+    .midia-acoes{padding:0 14px 12px;}
+    .midia-tipo{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);border:1px solid rgba(232,255,71,.3);border-radius:20px;padding:1px 8px;margin-right:6px;}
+    .midia-preview{width:100%;max-height:220px;border-radius:8px;background:#000;margin-bottom:14px;display:none;object-fit:contain;}
+    .midia-preview.visivel{display:block;}
+    #midiaArquivo{width:100%;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;}
+    #midiaArquivo::file-selector-button{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-right:12px;font-family:'Outfit',sans-serif;cursor:pointer;}
+    .form-group select option{background:var(--surface);color:var(--text);}
+
+    /* Modal de favoritos: busca + lista de jogos do catálogo */
+    .fav-busca-lista{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;margin-top:6px;}
+    .fav-busca-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+    .fav-busca-item img{width:36px;height:48px;border-radius:4px;object-fit:cover;background:var(--surface2);}
+    .fav-busca-item span{flex:1;font-size:14px;min-width:0;}
     .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
     .modal-bg.open{display:flex;}
     .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
@@ -76,6 +115,28 @@
     <div class="perfil-card" id="perfilCard">
       <div class="empty-state" style="width:100%"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
     </div>
+
+    <!-- Jogos favoritos do usuário (jogos que já existem no catálogo) -->
+    <section class="secao-bloco" aria-labelledby="favTitulo">
+      <div class="secao-head">
+        <h2 class="secao-titulo" id="favTitulo">Jogos Favoritos</h2>
+        <button class="btn btn-accent btn-sm" type="button" onclick="abrirFavoritos()">Adicionar favorito</button>
+      </div>
+      <div class="fav-grid" id="favGrid">
+        <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+      </div>
+    </section>
+
+    <!-- Prints e vídeos de gameplay postados pelo usuário -->
+    <section class="secao-bloco" aria-labelledby="midiaTitulo">
+      <div class="secao-head">
+        <h2 class="secao-titulo" id="midiaTitulo">Meus Posts</h2>
+        <button class="btn btn-accent btn-sm" type="button" onclick="abrirMidia()">Postar gameplay</button>
+      </div>
+      <div class="midia-grid" id="midiaGrid">
+        <div class="empty-state"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
+      </div>
+    </section>
 
     <!-- Lista de avaliações do usuário -->
     <div class="secao-titulo">Minhas Avaliações</div>
@@ -118,6 +179,51 @@
         <button class="btn btn-accent" id="fotoEnviar" type="submit" disabled>Enviar foto</button>
         <button class="btn btn-danger" id="fotoRemover" type="button" style="display:none" onclick="removerFoto()">Remover foto</button>
         <button class="btn btn-ghost" type="button" onclick="fecharFoto()">Cancelar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="modal-bg" id="favModal" onclick="if(event.target===this)fecharFavoritos()">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="favModalTitle" style="max-width:480px">
+    <h2 class="modal-title" id="favModalTitle">ADICIONAR FAVORITO</h2>
+    <div class="form-group">
+      <label for="favBusca">Buscar jogo no catálogo</label>
+      <input id="favBusca" type="search" placeholder="Digite o nome do jogo" autocomplete="off"/>
+    </div>
+    <div class="fav-busca-lista" id="favBuscaLista" aria-live="polite"></div>
+    <div class="foto-actions"><button class="btn btn-ghost" type="button" onclick="fecharFavoritos()">Fechar</button></div>
+  </section>
+</div>
+
+<div class="modal-bg" id="midiaModal" onclick="if(event.target===this)fecharMidia()">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="midiaModalTitle">
+    <h2 class="modal-title" id="midiaModalTitle">POSTAR GAMEPLAY</h2>
+    <!-- O envio real é feito por fetch + FormData (ver enviarMidia): sem Content-Type manual -->
+    <form id="midiaForm" enctype="multipart/form-data" novalidate>
+      <img id="midiaPreviewImg" class="midia-preview" alt="Pré-visualização do print escolhido"/>
+      <video id="midiaPreviewVideo" class="midia-preview" controls muted aria-label="Pré-visualização do vídeo escolhido"></video>
+      <div class="form-group">
+        <label for="midiaArquivo">Print ou vídeo</label>
+        <input id="midiaArquivo" name="arquivo" type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm"/>
+        <div class="foto-hint" style="text-align:left">JPEG, PNG, GIF, WebP, MP4 ou WebM · até 30 MB</div>
+      </div>
+      <div class="form-group">
+        <label for="midiaTituloInput">Título</label>
+        <input id="midiaTituloInput" name="titulo" maxlength="100" placeholder="Ex.: Boss final no modo difícil"/>
+      </div>
+      <div class="form-group">
+        <label for="midiaJogo">Jogo</label>
+        <select id="midiaJogo" name="id_jogo_fk"><option value="">Sem jogo específico</option></select>
+      </div>
+      <div class="form-group">
+        <label for="midiaDescricao">Descrição (opcional)</label>
+        <textarea id="midiaDescricao" name="descricao" rows="3" maxlength="500"></textarea>
+      </div>
+      <div id="midiaError" class="form-error" role="alert"></div>
+      <div class="foto-actions">
+        <button class="btn btn-accent" id="midiaEnviar" type="submit">Postar</button>
+        <button class="btn btn-ghost" type="button" onclick="fecharMidia()">Cancelar</button>
       </div>
     </form>
   </section>
@@ -353,7 +459,239 @@ async function removerFoto() {
   }
 }
 
+// ───────── Jogos favoritos ─────────
+let catalogo = null;          // jogos do banco (carregados uma vez, usados em favoritos e gameplays)
+let favoritosIds = new Set(); // ids dos jogos já favoritados
+
+async function carregarCatalogo() {
+  if (!catalogo) catalogo = (await api.get('/jogos')).jogos;
+  return catalogo;
+}
+
+async function loadFavoritos() {
+  const grid = document.getElementById('favGrid');
+  try {
+    const favoritos = await api.get('/favoritos');
+    favoritosIds = new Set(favoritos.map(f => f.id_jogo));
+    if (!favoritos.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⭐</div><p>Você ainda não favoritou nenhum jogo.</p></div>';
+      return;
+    }
+    grid.innerHTML = favoritos.map(f => `
+      <article class="fav-card">
+        <a class="fav-link" href="/pages/jogo.html?id=${f.id_jogo}">
+          <img class="fav-capa" src="${escapeHtml(f.capa || '')}" alt="Capa de ${escapeHtml(f.nome_jogo)}" onerror="this.removeAttribute('src')">
+          <div class="fav-info">
+            <div class="fav-nome">${escapeHtml(f.nome_jogo)}</div>
+            <div class="fav-nota">${f.nota_media != null ? '★ ' + Number(f.nota_media).toFixed(1) : 'Sem nota'}</div>
+          </div>
+        </a>
+        <button class="fav-remove" type="button" onclick="removerFavorito(${f.id_jogo})" aria-label="Remover ${escapeHtml(f.nome_jogo)} dos favoritos" title="Remover dos favoritos">×</button>
+      </article>`).join('');
+  } catch (e) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Erro ao carregar favoritos.</p></div>';
+  }
+}
+
+async function removerFavorito(idJogo) {
+  try {
+    await api.delete(`/favoritos/${idJogo}`);
+    toast('Removido dos favoritos', 'success');
+    await loadFavoritos();
+    if (document.getElementById('favModal').classList.contains('open')) renderBuscaFavoritos();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+function renderBuscaFavoritos() {
+  const termo = document.getElementById('favBusca').value.trim().toLowerCase();
+  const lista = (catalogo || []).filter(j => j.nome_jogo.toLowerCase().includes(termo));
+  document.getElementById('favBuscaLista').innerHTML = lista.length
+    ? lista.map(j => {
+        const jaFavorito = favoritosIds.has(j.id_jogo);
+        return `
+        <div class="fav-busca-item">
+          <img src="${escapeHtml(j.capa || '')}" alt="" onerror="this.removeAttribute('src')">
+          <span>${escapeHtml(j.nome_jogo)}</span>
+          ${jaFavorito
+            ? `<button class="btn btn-ghost btn-sm" type="button" onclick="removerFavorito(${j.id_jogo})" aria-label="Remover ${escapeHtml(j.nome_jogo)} dos favoritos">Remover</button>`
+            : `<button class="btn btn-accent btn-sm" type="button" onclick="adicionarFavorito(${j.id_jogo})" aria-label="Favoritar ${escapeHtml(j.nome_jogo)}">Favoritar</button>`}
+        </div>`;
+      }).join('')
+    : '<div class="empty-state"><p>Nenhum jogo encontrado.</p></div>';
+}
+
+async function abrirFavoritos() {
+  document.getElementById('favBusca').value = '';
+  document.getElementById('favModal').classList.add('open');
+  try {
+    await carregarCatalogo();
+    renderBuscaFavoritos();
+    document.getElementById('favBusca').focus();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+function fecharFavoritos() {
+  document.getElementById('favModal').classList.remove('open');
+}
+
+async function adicionarFavorito(idJogo) {
+  try {
+    await api.post('/favoritos', { id_jogo_fk: idJogo });
+    toast('Jogo adicionado aos favoritos', 'success');
+    await loadFavoritos();
+    renderBuscaFavoritos();
+  } catch (e) {
+    toast(e.message, 'error'); // ex.: 409 se já estava nos favoritos
+  }
+}
+
+document.getElementById('favBusca').addEventListener('input', renderBuscaFavoritos);
+
+// ───────── Gameplays (prints e vídeos) ─────────
+const MIDIA_TIPOS = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+const MIDIA_MAX_BYTES = 30 * 1024 * 1024; // 30 MB (o back-end também valida)
+let midiaPreviewUrl = null;
+
+const midiaInput = document.getElementById('midiaArquivo');
+const midiaImg   = document.getElementById('midiaPreviewImg');
+const midiaVideo = document.getElementById('midiaPreviewVideo');
+const midiaError = document.getElementById('midiaError');
+
+function limparPreviewMidia() {
+  if (midiaPreviewUrl) URL.revokeObjectURL(midiaPreviewUrl);
+  midiaPreviewUrl = null;
+  midiaImg.removeAttribute('src');
+  midiaImg.classList.remove('visivel');
+  midiaVideo.pause();
+  midiaVideo.removeAttribute('src');
+  midiaVideo.classList.remove('visivel');
+}
+
+async function abrirMidia() {
+  document.getElementById('midiaForm').reset();
+  midiaError.textContent = '';
+  limparPreviewMidia();
+  document.getElementById('midiaModal').classList.add('open');
+  try {
+    const jogos = await carregarCatalogo();
+    const select = document.getElementById('midiaJogo');
+    if (select.options.length === 1) {
+      select.insertAdjacentHTML('beforeend', jogos.map(j => `<option value="${j.id_jogo}">${escapeHtml(j.nome_jogo)}</option>`).join(''));
+    }
+  } catch (e) {
+    midiaError.textContent = e.message;
+  }
+}
+
+function fecharMidia() {
+  limparPreviewMidia();
+  document.getElementById('midiaModal').classList.remove('open');
+}
+
+// Validação rápida no cliente + pré-visualização local (nada é enviado ainda).
+midiaInput.addEventListener('change', () => {
+  const file = midiaInput.files[0];
+  midiaError.textContent = '';
+  limparPreviewMidia();
+  if (!file) return;
+
+  if (!MIDIA_TIPOS.includes(file.type)) {
+    midiaError.textContent = 'Tipo de arquivo não permitido. Envie uma imagem (JPEG, PNG, GIF, WebP) ou um vídeo (MP4, WebM).';
+    midiaInput.value = '';
+    return;
+  }
+  if (file.size > MIDIA_MAX_BYTES) {
+    midiaError.textContent = `Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)} MB). O máximo é 30 MB.`;
+    midiaInput.value = '';
+    return;
+  }
+  midiaPreviewUrl = URL.createObjectURL(file);
+  const alvo = file.type.startsWith('video/') ? midiaVideo : midiaImg;
+  alvo.src = midiaPreviewUrl;
+  alvo.classList.add('visivel');
+  if (!document.getElementById('midiaTituloInput').value) {
+    document.getElementById('midiaTituloInput').value = file.name.replace(/\.[^.]+$/, '').slice(0, 100);
+  }
+});
+
+// Envio: FormData + fetch, sem Content-Type manual; o token JWT vai em
+// Authorization (api.upload -> apiFetch). Campos de texto e arquivo no mesmo multipart.
+document.getElementById('midiaForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const botao = document.getElementById('midiaEnviar');
+  const file = midiaInput.files[0];
+  if (!file) { midiaError.textContent = 'Escolha um print ou vídeo para postar.'; return; }
+
+  const formData = new FormData();
+  formData.append('titulo', document.getElementById('midiaTituloInput').value.trim());
+  formData.append('descricao', document.getElementById('midiaDescricao').value.trim());
+  const jogo = document.getElementById('midiaJogo').value;
+  if (jogo) formData.append('id_jogo_fk', jogo);
+  formData.append('arquivo', file); // por último: campos de texto antes do arquivo
+
+  botao.disabled = true;
+  botao.textContent = 'Enviando...';
+  midiaError.textContent = '';
+  try {
+    await api.upload('POST', '/midias', formData);
+    fecharMidia();
+    toast('Gameplay postado!', 'success');
+    await loadMidias();
+  } catch (err) {
+    // 400 (tipo/tamanho/campos), 401 (sessão expirada), 404 (jogo inexistente)...
+    midiaError.textContent = err.issues?.length ? err.issues.map(i => i.message).join(' · ') : err.message;
+  } finally {
+    botao.disabled = false;
+    botao.textContent = 'Postar';
+  }
+});
+
+async function loadMidias() {
+  const grid = document.getElementById('midiaGrid');
+  try {
+    const user = getUser();
+    const midias = await api.get(`/midias?usuario_id=${user.id}`);
+    if (!midias.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎬</div><p>Você ainda não postou nenhum gameplay.</p></div>';
+      return;
+    }
+    grid.innerHTML = midias.map(m => `
+      <article class="midia-card">
+        ${m.tipo === 'video'
+          ? `<video class="midia-media" src="${escapeHtml(m.caminho)}" controls preload="metadata" aria-label="Vídeo: ${escapeHtml(m.titulo)}"></video>`
+          : `<a href="${escapeHtml(m.caminho)}" target="_blank" rel="noopener"><img class="midia-media" src="${escapeHtml(m.caminho)}" alt="Print: ${escapeHtml(m.titulo)}" loading="lazy"></a>`}
+        <div class="midia-corpo">
+          <div class="midia-titulo">${escapeHtml(m.titulo)}</div>
+          <div class="midia-meta"><span class="midia-tipo">${m.tipo === 'video' ? 'Vídeo' : 'Print'}</span>${m.nome_jogo ? escapeHtml(m.nome_jogo) + ' · ' : ''}${fmtDate(m.data_envio)}</div>
+          ${m.descricao ? `<div class="midia-desc">${escapeHtml(m.descricao)}</div>` : ''}
+        </div>
+        <div class="midia-acoes">
+          <button class="btn btn-danger btn-sm" type="button" onclick="removerMidia(${m.id_midia})" aria-label="Excluir gameplay ${escapeHtml(m.titulo)}">Excluir</button>
+        </div>
+      </article>`).join('');
+  } catch (e) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Erro ao carregar gameplays.</p></div>';
+  }
+}
+
+async function removerMidia(id) {
+  if (!confirm('Excluir este gameplay?')) return;
+  try {
+    await api.delete(`/midias/${id}`);
+    toast('Gameplay excluído', 'success');
+    await loadMidias();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
 loadPerfil();
+loadFavoritos();
+loadMidias();
 loadHistorico();
 </script>
 </body>

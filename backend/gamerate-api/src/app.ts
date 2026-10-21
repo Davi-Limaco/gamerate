@@ -7,6 +7,8 @@ import { UPLOAD_ROOT, ensureUploadDirs } from '@/utils/uploads.ts';
 
 import jogosRoutes      from '@/routes/jogos.routes.ts';
 import avaliacoesRoutes from '@/routes/avaliacoes.routes.ts';
+import favoritosRoutes from '@/routes/favoritos.routes.ts';
+import midiasRoutes     from '@/routes/midias.routes.ts';
 import imagemRoutes     from '@/routes/imagem.routes.ts';
 import usuariosRoutes   from '@/routes/usuarios.routes.ts';
 import authRoutes       from '@/routes/auth.routes.ts';
@@ -42,6 +44,8 @@ app.use('/api', avaliacoesRoutes);
 // imagemRoutes ANTES de usuariosRoutes: `/usuarios/imagem` não pode cair em `/usuarios/:id`.
 app.use('/api', imagemRoutes);
 app.use('/api', usuariosRoutes);
+app.use('/api', favoritosRoutes);
+app.use('/api', midiasRoutes);
 app.use('/api', authRoutes);
 app.use('/api', catalogRoutes);
 app.use('/api', contatoRoutes);

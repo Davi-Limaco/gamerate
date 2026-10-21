@@ -2,15 +2,22 @@ import type { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 
 import HttpError from '@/errors/HttpError.ts';
-import { MAX_UPLOAD_BYTES } from '@/utils/uploads.ts';
+import { MAX_MIDIA_BYTES, MAX_UPLOAD_BYTES, removeFileQuietly } from '@/utils/uploads.ts';
 
 /** Traduz erros do Multer (limites do upload) para mensagens claras em pt-BR. */
 function multerMessage(err: multer.MulterError): string {
   switch (err.code) {
-    case 'LIMIT_FILE_SIZE':
-      return `Arquivo muito grande. O tamanho máximo é ${(MAX_UPLOAD_BYTES / (1024 * 1024)).toFixed(0)} MB.`;
+    case 'LIMIT_FILE_SIZE': {
+      // O campo "arquivo" é o das mídias de gameplay; "imagem" é o da foto de perfil.
+      const limite = err.field === 'arquivo' ? MAX_MIDIA_BYTES : MAX_UPLOAD_BYTES;
+      return `Arquivo muito grande. O tamanho máximo é ${(limite / (1024 * 1024)).toFixed(0)} MB.`;
+    }
+    case 'LIMIT_FIELD_COUNT':
+    case 'LIMIT_FIELD_VALUE':
+    case 'LIMIT_FIELD_KEY':
+      return 'Campos do formulário inválidos ou em excesso.';
     case 'LIMIT_UNEXPECTED_FILE':
-      return 'Campo de arquivo inesperado. Envie uma única imagem no campo "imagem".';
+      return 'Campo de arquivo inesperado. Confira o nome do campo do arquivo no formulário.';
     case 'LIMIT_FILE_COUNT':
       return 'Envie apenas um arquivo por requisição.';
     default:
@@ -28,10 +35,15 @@ export const notFoundHandler = (
 
 export const errorHandler = (
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
+  // Qualquer erro depois do Multer (validação de campos, regra de negócio,
+  // banco...) deixaria o arquivo recém-gravado órfão: apagamos aqui, em um
+  // único lugar, em vez de repetir a limpeza em cada controller.
+  if (req.file) void removeFileQuietly(req.file.path);
+
   if (err instanceof HttpError) {
     // Quando o erro vem do middleware de validação (validate + Zod), issues
     // traz a lista de campos que falharam ({ path, message }) para o cliente

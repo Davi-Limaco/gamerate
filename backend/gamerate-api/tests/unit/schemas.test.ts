@@ -5,6 +5,8 @@ import type { ZodTypeAny } from 'zod';
 import { avaliacaoBodySchema, avaliacaoQuerySchema, avaliacaoUpdateBodySchema } from '@/schemas/avaliacao.schema.ts';
 import { generoBodySchema, perfilBodySchema, plataformaBodySchema } from '@/schemas/catalog.schema.ts';
 import { contatoBodySchema } from '@/schemas/contato.schema.ts';
+import { favoritoBodySchema, favoritoParamSchema } from '@/schemas/favorito.schema.ts';
+import { midiaBodySchema, midiaQuerySchema, midiaUpdateBodySchema } from '@/schemas/midia.schema.ts';
 import { idParamSchema } from '@/schemas/id-param.schema.ts';
 import { jogoBodySchema, jogoQuerySchema, jogoUpdateBodySchema } from '@/schemas/jogo.schema.ts';
 import {
@@ -234,6 +236,82 @@ describe('catalog.schema', () => {
       assert.ok(!schema.safeParse({ [campo]: '' }).success, `${campo} vazio`);
       assert.ok(!schema.safeParse({ [campo]: 'a'.repeat(61) }).success, `${campo} 61`);
       assert.ok(!schema.safeParse({}).success, `${campo} ausente`);
+    }
+  });
+});
+
+describe('midia.schema (gameplays)', () => {
+  it('aceita só o título; descrição e jogo são opcionais', () => {
+    assert.deepEqual(midiaBodySchema.parse({ titulo: 'Boss final' }), { titulo: 'Boss final' });
+  });
+
+  it('campos em branco do formulário multipart (string vazia) viram ausentes', () => {
+    const r = midiaBodySchema.parse({ titulo: 'Ok ok', descricao: '   ', id_jogo_fk: '' });
+    assert.equal(r.descricao, undefined);
+    assert.equal(r.id_jogo_fk, undefined);
+  });
+
+  it('converte id_jogo_fk de texto para número e apara espaços do título', () => {
+    const r = midiaBodySchema.parse({ titulo: '  Run perfeita  ', id_jogo_fk: '4' });
+    assert.equal(r.titulo, 'Run perfeita');
+    assert.equal(r.id_jogo_fk, 4);
+  });
+
+  it('título: 2 caracteres falha, 3 passa, 100 passa, 101 falha; ausente e vazio falham', () => {
+    assert.ok(!midiaBodySchema.safeParse({ titulo: 'ab' }).success);
+    assert.ok(midiaBodySchema.safeParse({ titulo: 'abc' }).success);
+    assert.ok(midiaBodySchema.safeParse({ titulo: 'a'.repeat(100) }).success);
+    assert.ok(!midiaBodySchema.safeParse({ titulo: 'a'.repeat(101) }).success);
+    assert.ok(erros(midiaBodySchema, {}).includes('titulo é obrigatório'));
+    assert.ok(!midiaBodySchema.safeParse({ titulo: '' }).success);
+  });
+
+  it('descrição acima de 500 caracteres falha; jogo inválido (0, negativo, decimal, texto) falha', () => {
+    assert.ok(midiaBodySchema.safeParse({ titulo: 'Valido', descricao: 'a'.repeat(500) }).success);
+    assert.ok(!midiaBodySchema.safeParse({ titulo: 'Valido', descricao: 'a'.repeat(501) }).success);
+    for (const id_jogo_fk of ['0', '-1', '1.5', 'abc']) assert.ok(!midiaBodySchema.safeParse({ titulo: 'Valido', id_jogo_fk }).success, id_jogo_fk);
+  });
+
+  it('o cliente não consegue definir tipo, caminho nem autor (campos extras são descartados)', () => {
+    const r = midiaBodySchema.parse({ titulo: 'Valido', tipo: 'video', caminho: '/etc/passwd', id_usuario_fk: 1 });
+    assert.deepEqual(Object.keys(r), ['titulo']);
+  });
+
+  it('atualização: parcial, nunca vazia', () => {
+    assert.deepEqual(midiaUpdateBodySchema.parse({ titulo: 'Novo título' }), { titulo: 'Novo título' });
+    assert.deepEqual(erros(midiaUpdateBodySchema, {}), ['Envie ao menos um campo para atualizar']);
+    assert.ok(!midiaUpdateBodySchema.safeParse({ titulo: 'ab' }).success);
+  });
+
+  it('filtros da galeria: tipo restrito, ids positivos e limit de 1 a 100', () => {
+    assert.ok(midiaQuerySchema.safeParse({}).success);
+    assert.ok(midiaQuerySchema.safeParse({ tipo: 'imagem', usuario_id: '3', jogo_id: '9', limit: '20' }).success);
+    assert.ok(midiaQuerySchema.safeParse({ limit: 100 }).success);
+    for (const query of [{ tipo: 'audio' }, { usuario_id: '0' }, { jogo_id: 'x' }, { limit: 0 }, { limit: 101 }, { limit: 1.5 }]) {
+      assert.ok(!midiaQuerySchema.safeParse(query).success, JSON.stringify(query));
+    }
+  });
+});
+
+describe('favorito.schema', () => {
+  it('aceita id_jogo_fk numérico ou em texto', () => {
+    assert.equal(favoritoBodySchema.parse({ id_jogo_fk: 7 }).id_jogo_fk, 7);
+    assert.equal(favoritoBodySchema.parse({ id_jogo_fk: '7' }).id_jogo_fk, 7);
+  });
+
+  it('rejeita ausente, zero, negativo, decimal e texto', () => {
+    assert.deepEqual(erros(favoritoBodySchema, {}), ['id_jogo_fk deve ser um número']); // coerce transforma ausente em NaN
+    for (const id_jogo_fk of [0, -1, 1.5, 'abc']) assert.ok(!favoritoBodySchema.safeParse({ id_jogo_fk }).success, String(id_jogo_fk));
+  });
+
+  it('o usuário nunca vem do corpo: id_usuario_fk é descartado', () => {
+    assert.deepEqual(Object.keys(favoritoBodySchema.parse({ id_jogo_fk: 1, id_usuario_fk: 99 })), ['id_jogo_fk']);
+  });
+
+  it('parâmetro da rota: inteiro positivo em texto, sem zeros à esquerda', () => {
+    assert.equal(favoritoParamSchema.parse({ id_jogo: '12' }).id_jogo, '12');
+    for (const id_jogo of ['0', '-1', '1.5', '007', 'abc', '', '9007199254740993']) {
+      assert.ok(!favoritoParamSchema.safeParse({ id_jogo }).success, id_jogo);
     }
   });
 });

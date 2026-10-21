@@ -1,5 +1,6 @@
 # Conteúdo enviado por usuários nunca vai para o repositório.
-# Mantém só a estrutura (uploads/avatars/) para a aplicação subir do zero.
+# Mantém só a estrutura (uploads/avatars/ e uploads/midias/) para a aplicação subir do zero.
 *
 !.gitignore
 !avatars/
+!midias/

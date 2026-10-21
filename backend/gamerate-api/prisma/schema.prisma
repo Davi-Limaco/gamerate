@@ -25,6 +25,8 @@ model Usuario {
   perfil       Perfil      @relation(fields: [id_perfil_fk], references: [id_perfil], onDelete: NoAction, onUpdate: NoAction)
   avaliacoes   Avaliacao[]
   imagem       Imagem?
+  favoritos    Favorito[]
+  midias       Midia[]
 
   @@map("usuario")
 }
@@ -45,6 +47,39 @@ model Imagem {
   @@map("imagem")
 }
 
+// Jogo favorito de um usuário (relação N:N entre Usuario e Jogo). A chave
+// única composta impede favoritar o mesmo jogo duas vezes (-> 409 na API).
+model Favorito {
+  id_favorito   Int      @id @default(autoincrement())
+  id_usuario_fk Int
+  id_jogo_fk    Int
+  data_criacao  DateTime @default(now())
+  usuario       Usuario  @relation(fields: [id_usuario_fk], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
+  jogo          Jogo     @relation(fields: [id_jogo_fk], references: [id_jogo], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([id_usuario_fk, id_jogo_fk])
+  @@map("favorito")
+}
+
+// Print ou vídeo de gameplay postado por um usuário. `tipo` ('imagem' |
+// 'video') é derivado do conteúdo do arquivo pelo servidor, nunca informado
+// pelo cliente. O jogo é opcional: se o jogo for removido, a mídia permanece.
+model Midia {
+  id_midia      Int      @id @default(autoincrement())
+  tipo          String
+  caminho       String
+  titulo        String
+  descricao     String?
+  id_usuario_fk Int
+  id_jogo_fk    Int?
+  data_envio    DateTime @default(now())
+  usuario       Usuario  @relation(fields: [id_usuario_fk], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction)
+  jogo          Jogo?    @relation(fields: [id_jogo_fk], references: [id_jogo], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([id_usuario_fk])
+  @@map("midia")
+}
+
 model Jogo {
   id_jogo          Int               @id @default(autoincrement())
   nome_jogo        String
@@ -57,6 +92,8 @@ model Jogo {
   avaliacoes       Avaliacao[]
   generos          JogoGenero[]
   plataformas      JogoPlataforma[]
+  favoritos        Favorito[]
+  midias           Midia[]
 
   @@map("jogo")
 }

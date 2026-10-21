@@ -10,6 +10,10 @@ erDiagram
     PERFIL ||--o{ USUARIO : possui
     USUARIO ||--o{ AVALIACAO : escreve
     USUARIO ||--o| IMAGEM : possui_foto
+    USUARIO ||--o{ FAVORITO : favorita
+    JOGO ||--o{ FAVORITO : e_favoritado
+    USUARIO ||--o{ MIDIA : posta
+    JOGO |o--o{ MIDIA : aparece_em
     JOGO ||--o{ AVALIACAO : recebe
     JOGO ||--o{ JOGO_GENERO : classificado_por
     GENERO ||--o{ JOGO_GENERO : classifica
@@ -32,6 +36,22 @@ erDiagram
         Int id_imagem PK "autoincrement"
         String caminho "NOT NULL (caminho público em /uploads/avatars)"
         Int id_usuario_fk FK "NOT NULL; UNIQUE (1:1); ON DELETE CASCADE"
+        DateTime data_envio "NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    }
+    FAVORITO {
+        Int id_favorito PK "autoincrement"
+        Int id_usuario_fk FK "NOT NULL; ON DELETE CASCADE"
+        Int id_jogo_fk FK "NOT NULL; ON DELETE CASCADE; UNIQUE (usuario, jogo)"
+        DateTime data_criacao "NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    }
+    MIDIA {
+        Int id_midia PK "autoincrement"
+        String tipo "'imagem' ou 'video' (definido pelo servidor)"
+        String caminho "NOT NULL (caminho público em /uploads/midias)"
+        String titulo "NOT NULL"
+        String descricao "NULL"
+        Int id_usuario_fk FK "NOT NULL; ON DELETE CASCADE"
+        Int id_jogo_fk FK "NULL; ON DELETE SET NULL"
         DateTime data_envio "NOT NULL DEFAULT CURRENT_TIMESTAMP"
     }
     JOGO {
@@ -82,6 +102,8 @@ erDiagram
 
 - `Perfil 1:N Usuario`: cada usuário referencia exatamente um perfil; um perfil pode pertencer a zero ou muitos usuários.
 - `Usuario 1:0..1 Imagem`: cada usuário tem no máximo uma foto de perfil (`id_usuario_fk` único); novo envio atualiza o registro. A imagem é removida em cascata com o usuário.
+- `Usuario 1:N Favorito` e `Jogo 1:N Favorito`: um usuário favorita um jogo no máximo uma vez (índice único composto).
+- `Usuario 1:N Midia` e `Jogo 1:N Midia` (opcional): prints e vídeos de gameplay; ao remover o jogo a mídia permanece sem o vínculo.
 - `Usuario 1:N Avaliacao` e `Jogo 1:N Avaliacao`: cada avaliação tem exatamente um autor e um jogo.
 - `Jogo N:N Genero`, implementado por `JogoGenero` com PK composta (`id_jogo_fk`, `id_genero_fk`).
 - `Jogo N:N Plataforma`, implementado por `JogoPlataforma` com PK composta (`id_jogo_fk`, `id_plataforma_fk`).

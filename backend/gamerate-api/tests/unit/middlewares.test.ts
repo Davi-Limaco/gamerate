@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, mock } from 'node:test';
 import multer from 'multer';
 import { z } from 'zod';
@@ -11,6 +13,7 @@ import { requireJsonContentType } from '@/middlewares/requireJsonContentType.ts'
 import { requireOwnerOrAdmin } from '@/middlewares/requireOwnerOrAdmin.ts';
 import { validate } from '@/middlewares/validate.ts';
 import { signToken } from '@/utils/jwt.ts';
+import { ensureUploadDirs, MIDIA_DIR } from '@/utils/uploads.ts';
 import { fakeNext, fakeReq, fakeRes } from './helpers.ts';
 
 // Middlewares exercitados com req/res/next falsos: nenhum servidor é aberto.
@@ -183,6 +186,34 @@ describe('errorHandlers', () => {
       assert.match(corpo.error, regex);
       assert.equal(corpo.code, code);
     }
+  });
+
+  it('o limite de tamanho citado depende do campo: "arquivo" (mídias) usa o limite das mídias, "imagem" o do avatar', () => {
+    const midia = fakeRes();
+    errorHandler(Object.assign(new multer.MulterError('LIMIT_FILE_SIZE', 'arquivo')), fakeReq(), midia, fakeNext());
+    assert.match((midia.body as { error: string }).error, /máximo é 1 MB/); // UPLOAD_MIDIA_MAX_BYTES do ambiente de teste
+
+    const avatar = fakeRes();
+    errorHandler(new multer.MulterError('LIMIT_FILE_SIZE', 'imagem'), fakeReq(), avatar, fakeNext());
+    assert.match((avatar.body as { error: string }).error, /máximo é 2 MB/);
+  });
+
+  it('erros de campos de texto do multipart viram 400 com mensagem própria', () => {
+    for (const code of ['LIMIT_FIELD_COUNT', 'LIMIT_FIELD_VALUE', 'LIMIT_FIELD_KEY'] as const) {
+      const res = fakeRes();
+      errorHandler(new multer.MulterError(code), fakeReq(), res, fakeNext());
+      assert.equal(res.statusCode, 400);
+      assert.match((res.body as { error: string }).error, /Campos do formulário/);
+    }
+  });
+
+  it('qualquer erro depois do upload apaga o arquivo recém-gravado (sem órfãos em disco)', async () => {
+    ensureUploadDirs();
+    const arquivo = path.join(MIDIA_DIR, 'orfao-teste.png');
+    fs.writeFileSync(arquivo, 'x');
+    errorHandler(new HttpError('falhou depois do upload', 404), fakeReq({ file: { path: arquivo } }), fakeRes(), fakeNext());
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(fs.existsSync(arquivo), false);
   });
 
   it('erro desconhecido vira 500 genérico, sem vazar a mensagem interna', () => {

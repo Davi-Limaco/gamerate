@@ -5,7 +5,8 @@ import { throwPrismaError } from '@/errors/prismaErrors.ts';
 import prisma from '@/database/prisma.ts';
 import { toDateOnly } from '@/utils/dates.ts';
 import { hashPassword } from '@/utils/password.ts';
-import { removeAvatarByPublicPath } from '@/utils/uploads.ts';
+import Midia from '@/models/midia.model.ts';
+import { removeAvatarByPublicPath, removeMidiaByPublicPath } from '@/utils/uploads.ts';
 import type { Avaliacao } from '@/types/Avaliacao.d.ts';
 import type { Usuario, UsuarioInput } from '@/types/Usuario.d.ts';
 
@@ -133,6 +134,7 @@ async function remove(id: number): Promise<boolean> {
   // Guarda o caminho da foto para apagar o arquivo do disco depois que o
   // registro (e, em cascata, a linha de `imagem`) for removido do banco.
   const foto = await prisma.imagem.findUnique({ where: { id_usuario_fk: id }, select: { caminho: true } });
+  const midias = await Midia.readCaminhosByUsuario(id);
 
   const removido = await prisma.$transaction(async (tx) => {
     const usuario = await tx.usuario.findUnique({ where: { id_usuario: id }, select: { id_usuario: true } });
@@ -145,6 +147,7 @@ async function remove(id: number): Promise<boolean> {
   });
 
   if (foto) await removeAvatarByPublicPath(foto.caminho);
+  await Promise.all(midias.map(removeMidiaByPublicPath));
   return removido;
 }
 

@@ -921,3 +921,270 @@ Authorization: Bearer {{jogadorLogin.response.body.token}}
 ### [UPLOAD] Remover novamente (já não existe) -> 404
 DELETE {{base}}/usuarios/imagem
 Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+
+# =============================================================
+#  GAMEPLAYS (prints e vídeos) — multipart/form-data
+#  Rotas: POST /midias | GET /midias | PUT e DELETE /midias/:id
+#
+#  Multipart: os campos de texto (titulo, descricao, id_jogo_fk) vêm ANTES
+#  da parte do arquivo, que se chama name="arquivo" (nome que o Multer
+#  espera). Arquivos de exemplo em ./test-files/ (print.jpg, gameplay.mp4,
+#  gameplay.webm). Para o teste de "mídia grande demais" gere o arquivo de
+#  31 MB com:  node test-files/gerar-midia-grande.mjs
+#  Execute de cima para baixo (depende de "jogadorLogin" do início).
+# =============================================================
+
+### [MÍDIA] Postar SEM token -> 401 (o arquivo nem é processado)
+POST {{base}}/midias
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Sem login
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="print.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/print.jpg
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Postar um PRINT -> 201, tipo "imagem", caminho /uploads/midias/<uuid>.jpg
+# @name midiaPrint
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Print da fase final
+--GameRateBoundary
+Content-Disposition: form-data; name="descricao"
+
+Cheguei no chefe com a vida cheia.
+--GameRateBoundary
+Content-Disposition: form-data; name="id_jogo_fk"
+
+1
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="print.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/print.jpg
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] O caminho devolvido abre a imagem -> 200
+GET {{host}}{{midiaPrint.response.body.caminho}}
+
+###
+
+### [MÍDIA] Postar um VÍDEO MP4 -> 201, tipo "video"
+# @name midiaVideo
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Speedrun em 1 segundo
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="gameplay.mp4"
+Content-Type: video/mp4
+
+< ./test-files/gameplay.mp4
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Vídeo WebM -> 201
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Clipe em WebM
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="gameplay.webm"
+Content-Type: video/webm
+
+< ./test-files/gameplay.webm
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Tipo NÃO permitido (PDF) -> 400, nada gravado
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Documento disfarçado
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="documento.pdf"
+Content-Type: application/pdf
+
+< ./test-files/documento.pdf
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] MIME forjado (HTML enviado como video/mp4) -> 400, arquivo apagado
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Vídeo falso
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="falso.mp4"
+Content-Type: video/mp4
+
+< ./test-files/falso.png
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Arquivo acima do limite (31 MB > 30 MB) -> 400 (LIMIT_FILE_SIZE)
+### Antes: node test-files/gerar-midia-grande.mjs
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+Vídeo gigante
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="midia-grande.mp4"
+Content-Type: video/mp4
+
+< ./test-files/midia-grande.mp4
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Título curto + jogo inexistente (campos inválidos) -> 400 com issues, arquivo apagado
+POST {{base}}/midias
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: multipart/form-data; boundary=GameRateBoundary
+
+--GameRateBoundary
+Content-Disposition: form-data; name="titulo"
+
+ab
+--GameRateBoundary
+Content-Disposition: form-data; name="arquivo"; filename="print.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/print.jpg
+--GameRateBoundary--
+
+###
+
+### [MÍDIA] Galeria pública do usuário (sem token) -> 200
+GET {{base}}/midias?usuario_id={{jogadorLogin.response.body.usuario.id_usuario}}
+
+###
+
+### [MÍDIA] Só vídeos -> 200
+GET {{base}}/midias?tipo=video&usuario_id={{jogadorLogin.response.body.usuario.id_usuario}}
+
+###
+
+### [MÍDIA] Editar título (JSON) -> 200
+PUT {{base}}/midias/{{midiaPrint.response.body.id_midia}}
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{ "titulo": "Print da fase final (editado)" }
+
+###
+
+### [MÍDIA] Excluir -> 204 (registro e arquivo removidos)
+DELETE {{base}}/midias/{{midiaPrint.response.body.id_midia}}
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [MÍDIA] O arquivo excluído não existe mais -> 404
+GET {{host}}{{midiaPrint.response.body.caminho}}
+
+###
+
+### [MÍDIA] Excluir sem token -> 401
+DELETE {{base}}/midias/{{midiaVideo.response.body.id_midia}}
+
+
+# =============================================================
+#  JOGOS FAVORITOS — rotas do usuário do token: /favoritos
+# =============================================================
+
+### [FAVORITO] Sem token -> 401
+GET {{base}}/favoritos
+
+###
+
+### [FAVORITO] Favoritar o jogo 1 -> 201
+POST {{base}}/favoritos
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{ "id_jogo_fk": 1 }
+
+###
+
+### [FAVORITO] Favoritar de novo -> 409
+POST {{base}}/favoritos
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{ "id_jogo_fk": 1 }
+
+###
+
+### [FAVORITO] Jogo que não existe -> 404
+POST {{base}}/favoritos
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{ "id_jogo_fk": 99999 }
+
+###
+
+### [FAVORITO] Corpo inválido -> 400
+POST {{base}}/favoritos
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+Content-Type: application/json
+
+{ "id_jogo_fk": "abc" }
+
+###
+
+### [FAVORITO] Listar meus favoritos -> 200
+GET {{base}}/favoritos
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [FAVORITO] Remover -> 204
+DELETE {{base}}/favoritos/1
+Authorization: Bearer {{jogadorLogin.response.body.token}}
+
+###
+
+### [FAVORITO] Remover de novo -> 404
+DELETE {{base}}/favoritos/1
+Authorization: Bearer {{jogadorLogin.response.body.token}}

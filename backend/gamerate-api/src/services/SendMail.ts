@@ -69,21 +69,26 @@ async function getTransporter(): Promise<Transporter> {
   return transporterPromise;
 }
 
+/** Escapa texto vindo do usuário antes de colocá-lo no HTML do e-mail. */
+function escapeHtml(valor: string): string {
+  return valor.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
 async function enviarEmailBoasVindas(destinatario: string, nomeUsuario: string): Promise<void> {
   const transporter = await getTransporter();
 
   const text =
     `Olá, ${nomeUsuario}!\n\n` +
     `Seu cadastro no GameRate foi concluído com sucesso.\n` +
-    `Agora você já pode avaliar jogos e acompanhar o catálogo.\n\n` +
+    `Agora você já pode avaliar jogos, favoritar seus preferidos e postar seus gameplays.\n\n` +
     `— Equipe GameRate`;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
       <h2 style="color:#e2264d;">GAME<span style="color:#111;">RATE</span></h2>
-      <p>Olá, <strong>${nomeUsuario}</strong>!</p>
+      <p>Olá, <strong>${escapeHtml(nomeUsuario)}</strong>!</p>
       <p>Seu cadastro no GameRate foi concluído com sucesso.</p>
-      <p>Agora você já pode avaliar jogos e acompanhar o catálogo.</p>
+      <p>Agora você já pode avaliar jogos, favoritar seus preferidos e postar seus gameplays.</p>
       <p style="color:#888; font-size:12px; margin-top:24px;">— Equipe GameRate</p>
     </div>
   `;

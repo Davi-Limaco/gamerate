@@ -11,7 +11,7 @@ GameRate permite que jogadores descubram jogos, postem avaliações e consultem 
 -  **Home** — Exibição de jogos em destaque, estatísticas e descoberta de títulos
 -  **Game Catalog** — Busca e filtragem por gênero e plataforma
 -  **Reviews** — Criação, edição e exclusão de avaliações de jogos
--  **Usuários** — Cadastro, login e gerenciamento de perfis de usuário, com foto de perfil (upload de imagem)
+-  **Usuários** — Cadastro, login e gerenciamento de perfis de usuário, com foto de perfil (upload de imagem), jogos favoritos e gameplays (prints e vídeos) no perfil
 -  **Contact Form** — Envio de mensagens de contato pelo site
 -  **Admin Panel** — Dashboard para gerenciar jogos, usuários, categorias e contatos
 
@@ -77,6 +77,8 @@ JWT_EXPIRES_IN="2h"
   `frontend/js/api.js`).
 
 ### 3. Upload de foto de perfil
+
+Na página de perfil o usuário também posta prints e vídeos de gameplay (`POST /api/midias`, até 30 MB, `UPLOAD_MIDIA_MAX_BYTES`) e favorita jogos do catálogo (`/api/favoritos`); ver `backend/gamerate-api/docs/upload.md`.
 
 O usuário autenticado envia uma imagem (JPEG, PNG ou GIF, até 2 MB) em
 `POST`/`PUT /api/usuarios/imagem` (`multipart/form-data`, campo `imagem`). O

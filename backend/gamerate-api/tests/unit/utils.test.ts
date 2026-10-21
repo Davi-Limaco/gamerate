@@ -11,8 +11,9 @@ import { fromDateOnly, toDateOnly } from '@/utils/dates.ts';
 import { signToken, verifyToken } from '@/utils/jwt.ts';
 import { hashPassword, verifyPassword } from '@/utils/password.ts';
 import {
-  ALLOWED_MIME_TYPES, AVATAR_DIR, AVATAR_PUBLIC_PREFIX, ensureUploadDirs, hasImageSignature,
-  removeAvatarByPublicPath, removeFileQuietly, toPublicAvatarPath, UPLOAD_ROOT,
+  ALLOWED_MIDIA_TYPES, ALLOWED_MIME_TYPES, AVATAR_DIR, AVATAR_PUBLIC_PREFIX, MIDIA_DIR, MIDIA_PUBLIC_PREFIX,
+  detectMediaKind, ensureUploadDirs, hasImageSignature, removeAvatarByPublicPath, removeFileQuietly,
+  removeMidiaByPublicPath, toPublicAvatarPath, toPublicMidiaPath, UPLOAD_ROOT,
 } from '@/utils/uploads.ts';
 
 // Funções utilitárias isoladas: sem servidor, sem banco, sem rede.
@@ -181,6 +182,70 @@ describe('uploads utils', () => {
     await assert.doesNotReject(() => removeFileQuietly(AVATAR_DIR));
     assert.equal(erro.mock.callCount(), 1);
     erro.mock.restore();
+  });
+});
+
+describe('uploads utils: mídias de gameplay', () => {
+  const criados: string[] = [];
+  const escrever = (nome: string, bytes: Buffer | string, dir = MIDIA_DIR) => {
+    const arquivo = path.join(dir, nome);
+    fs.writeFileSync(arquivo, bytes);
+    criados.push(arquivo);
+    return arquivo;
+  };
+
+  before(() => ensureUploadDirs());
+  after(() => { for (const f of criados) fs.rmSync(f, { force: true }); });
+
+  it('allowlist de mídias mapeia MIME -> extensão fixa e tipo lógico (imagem/vídeo)', () => {
+    assert.deepEqual(ALLOWED_MIDIA_TYPES['image/png'], { extensao: '.png', tipo: 'imagem' });
+    assert.deepEqual(ALLOWED_MIDIA_TYPES['video/mp4'], { extensao: '.mp4', tipo: 'video' });
+    assert.deepEqual(ALLOWED_MIDIA_TYPES['video/webm'], { extensao: '.webm', tipo: 'video' });
+    assert.equal(ALLOWED_MIDIA_TYPES['application/pdf'], undefined);
+  });
+
+  it('monta o caminho público das mídias e cria a pasta uploads/midias', () => {
+    assert.equal(toPublicMidiaPath('x.mp4'), `${MIDIA_PUBLIC_PREFIX}/x.mp4`);
+    assert.ok(fs.statSync(MIDIA_DIR).isDirectory());
+  });
+
+  it('detectMediaKind reconhece imagens (JPEG, PNG, GIF, WebP) pelos primeiros bytes', async () => {
+    const jpg = escrever('k-a.bin', Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]));
+    const png = escrever('k-b.bin', Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]));
+    const gif = escrever('k-c.bin', 'GIF89a......');
+    const webp = escrever('k-d.bin', Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBP')]));
+    for (const f of [jpg, png, gif, webp]) assert.equal(await detectMediaKind(f), 'imagem', f);
+  });
+
+  it('detectMediaKind reconhece vídeos (MP4 com "ftyp" e WebM/Matroska)', async () => {
+    const mp4 = escrever('k-e.bin', Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypmp42'), Buffer.alloc(4)]));
+    const webm = escrever('k-f.bin', Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 0, 0, 0, 0, 0, 0, 0, 0]));
+    assert.equal(await detectMediaKind(mp4), 'video');
+    assert.equal(await detectMediaKind(webm), 'video');
+  });
+
+  it('detectMediaKind devolve null para HTML, PDF, RIFF que não é WebP e arquivo vazio', async () => {
+    const html = escrever('k-g.bin', '<html>x</html>');
+    const pdf = escrever('k-h.bin', '%PDF-1.4 ...');
+    const wav = escrever('k-i.bin', Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WAVE')]));
+    const vazio = escrever('k-j.bin', '');
+    for (const f of [html, pdf, wav, vazio]) assert.equal(await detectMediaKind(f), null, f);
+  });
+
+  it('removeMidiaByPublicPath apaga o arquivo da pasta de mídias', async () => {
+    const f = escrever('k-k.mp4', 'x');
+    await removeMidiaByPublicPath(toPublicMidiaPath('k-k.mp4'));
+    assert.equal(fs.existsSync(f), false);
+  });
+
+  it('removeMidiaByPublicPath ignora prefixo estranho e não escapa da pasta (path traversal)', async () => {
+    const avatar = escrever('k-l.png', 'x', AVATAR_DIR);
+    const fora = escrever('k-fora.txt', 'x', UPLOAD_ROOT);
+    await removeMidiaByPublicPath(toPublicAvatarPath('k-l.png'));          // prefixo de outra pasta
+    await removeMidiaByPublicPath(`${MIDIA_PUBLIC_PREFIX}/../k-fora.txt`); // tentativa de sair da pasta
+    await removeMidiaByPublicPath('');
+    assert.equal(fs.existsSync(avatar), true);
+    assert.equal(fs.existsSync(fora), true);
   });
 });
 

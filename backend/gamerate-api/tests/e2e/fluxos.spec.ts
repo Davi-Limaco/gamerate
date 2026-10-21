@@ -173,3 +173,102 @@ test.describe('foto de perfil (upload)', () => {
     await expect(dialogo.getByRole('button', { name: 'Enviar foto' })).toBeDisabled();
   });
 });
+
+test.describe('perfil: jogos favoritos e gameplays', () => {
+  async function abrirPerfilLogado(page: Page) {
+    const usuario = novoUsuario();
+    await cadastrarPelaApi(page, usuario);
+    await entrarPelaInterface(page, usuario);
+    await page.goto('/pages/perfil.html');
+    return usuario;
+  }
+
+  test('usuário favorita um jogo do catálogo, vê no perfil, o favorito persiste e pode ser removido', async ({ page }) => {
+    await abrirPerfilLogado(page);
+    const secao = page.getByRole('region', { name: 'Jogos Favoritos' });
+    await expect(secao.getByText('Você ainda não favoritou nenhum jogo.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Adicionar favorito' }).click();
+    const dialogo = page.getByRole('dialog', { name: 'ADICIONAR FAVORITO' });
+    await dialogo.getByLabel('Buscar jogo no catálogo').fill('Hades');
+    await dialogo.getByRole('button', { name: 'Favoritar Hades' }).click();
+    await expect(page.getByText('Jogo adicionado aos favoritos')).toBeVisible();
+
+    // No próprio modal o botão passa a oferecer a remoção
+    await expect(dialogo.getByRole('button', { name: 'Remover Hades dos favoritos' })).toBeVisible();
+    await dialogo.getByRole('button', { name: 'Fechar' }).click();
+    await expect(secao.getByRole('link', { name: /Hades/ })).toBeVisible();
+
+    // Persistência: depois de recarregar, o favorito veio do banco
+    await page.reload();
+    await expect(secao.getByRole('link', { name: /Hades/ })).toBeVisible();
+
+    await secao.getByRole('button', { name: 'Remover Hades dos favoritos' }).click();
+    await expect(page.getByText('Removido dos favoritos')).toBeVisible();
+    await expect(secao.getByRole('link', { name: /Hades/ })).toHaveCount(0);
+  });
+
+  test('usuário posta um print e um vídeo de gameplay, vê na galeria do perfil e exclui o print', async ({ page }) => {
+    const usuario = await abrirPerfilLogado(page);
+    const galeria = page.getByRole('region', { name: 'Meus Gameplays' });
+    const tituloPrint = `Print ${usuario.nome}`;
+    const tituloVideo = `Vídeo ${usuario.nome}`;
+
+    // Print: escolher o arquivo mostra a pré-visualização e sugere o título
+    await page.getByRole('button', { name: 'Postar gameplay' }).click();
+    const dialogo = page.getByRole('dialog', { name: 'POSTAR GAMEPLAY' });
+    await dialogo.getByLabel('Print ou vídeo').setInputFiles('test-files/print.jpg');
+    await expect(dialogo.getByRole('img', { name: 'Pré-visualização do print escolhido' })).toHaveAttribute('src', /^blob:/);
+    await dialogo.getByLabel('Título').fill(tituloPrint);
+    await dialogo.getByLabel('Jogo', { exact: true }).selectOption({ label: 'Hades' });
+    await dialogo.getByLabel('Descrição (opcional)').fill('Print enviado pelo teste E2E.');
+    await dialogo.getByRole('button', { name: 'Postar' }).click();
+
+    await expect(page.getByText('Gameplay postado!')).toBeVisible();
+    await expect(dialogo).toBeHidden();
+    const print = galeria.getByRole('img', { name: `Print: ${tituloPrint}` });
+    await expect(print).toHaveAttribute('src', /^\/uploads\/midias\/[0-9a-f-]{36}\.jpg$/);
+    await expect.poll(() => print.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    await expect(galeria.getByText('Hades')).toBeVisible();
+
+    // Vídeo: pré-visualização com player e publicação
+    await page.getByRole('button', { name: 'Postar gameplay' }).click();
+    await dialogo.getByLabel('Print ou vídeo').setInputFiles('test-files/gameplay.mp4');
+    await expect(dialogo.getByLabel('Pré-visualização do vídeo escolhido')).toHaveAttribute('src', /^blob:/);
+    await dialogo.getByLabel('Título').fill(tituloVideo);
+    await dialogo.getByRole('button', { name: 'Postar' }).click();
+    const video = galeria.getByLabel(`Vídeo: ${tituloVideo}`);
+    await expect(video).toHaveAttribute('src', /^\/uploads\/midias\/[0-9a-f-]{36}\.mp4$/);
+
+    // Persistência e exclusão
+    await page.reload();
+    await expect(galeria.getByRole('img', { name: `Print: ${tituloPrint}` })).toBeVisible();
+    page.once('dialog', (confirmacao) => confirmacao.accept());
+    await galeria.getByRole('button', { name: `Excluir gameplay ${tituloPrint}` }).click();
+    await expect(page.getByText('Gameplay excluído')).toBeVisible();
+    await expect(galeria.getByRole('img', { name: `Print: ${tituloPrint}` })).toHaveCount(0);
+    await expect(video).toBeVisible();
+  });
+
+  test('gameplay: tipo inválido e envio sem arquivo mostram o erro ao usuário', async ({ page }) => {
+    await abrirPerfilLogado(page);
+    await page.getByRole('button', { name: 'Postar gameplay' }).click();
+    const dialogo = page.getByRole('dialog', { name: 'POSTAR GAMEPLAY' });
+
+    await dialogo.getByRole('button', { name: 'Postar' }).click();
+    await expect(dialogo.getByRole('alert')).toContainText('Escolha um print ou vídeo');
+
+    await dialogo.getByLabel('Print ou vídeo').setInputFiles({ name: 'documento.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') });
+    await expect(dialogo.getByRole('alert')).toContainText('Tipo de arquivo não permitido');
+  });
+
+  test('título curto é recusado pelo servidor e o erro por campo aparece no formulário', async ({ page }) => {
+    await abrirPerfilLogado(page);
+    await page.getByRole('button', { name: 'Postar gameplay' }).click();
+    const dialogo = page.getByRole('dialog', { name: 'POSTAR GAMEPLAY' });
+    await dialogo.getByLabel('Print ou vídeo').setInputFiles('test-files/print.jpg');
+    await dialogo.getByLabel('Título').fill('ab');
+    await dialogo.getByRole('button', { name: 'Postar' }).click();
+    await expect(dialogo.getByRole('alert')).toContainText('titulo deve ter no mínimo 3 caracteres');
+  });
+});
