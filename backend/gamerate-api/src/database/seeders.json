@@ -332,7 +332,7 @@
       "descricao": "Jogo de puzzles em primeira pessoa nas instalações da Aperture Science, com a arma de portais, géis especiais e a presença sarcástica de GLaDOS. Inclui uma campanha cooperativa para dois jogadores.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/portal2.jpg",
       "generos": [
         11,
         3
@@ -350,7 +350,7 @@
       "descricao": "RPG de ação sombrio e desafiador que encerra a trilogia Dark Souls. Combates mais ágeis, chefes memoráveis e um mundo interligado em declínio marcam a jornada do Inextinguível.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/darksouls3.jpg",
       "generos": [
         1,
         2
@@ -368,7 +368,7 @@
       "descricao": "Jogo sandbox de mundo aberto formado por blocos, em que é possível sobreviver, construir e explorar livremente. Aceita desde construções simples até máquinas complexas com redstone, além de servidores e modificações da comunidade.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/minecraft.jpg",
       "generos": [
         3,
         6
@@ -390,7 +390,7 @@
       "descricao": "Shooter em primeira pessoa frenético em que o Doom Slayer combate as hordas do inferno. O ritmo exige alternar armas, glory kills, motosserra e movimentação para manter munição e vida.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/doometernal.jpg",
       "generos": [
         12,
         1
@@ -411,7 +411,7 @@
       "descricao": "Remake do clássico de 2005, em que o agente Leon S. Kennedy precisa resgatar a filha do presidente dos Estados Unidos em uma vila europeia dominada por um culto. Une ação e terror em um combate mais fluido.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/residentevil4.jpg",
       "generos": [
         15,
         1
@@ -430,7 +430,7 @@
       "descricao": "Aventura de plataforma 3D em que Mario viaja por reinos variados com o chapéu Cappy para impedir o casamento forçado da princesa Peach com Bowser. A mecânica de capturar inimigos e objetos renova a exploração.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/supermarioodyssey.jpg",
       "generos": [
         9,
         3
@@ -446,7 +446,7 @@
       "descricao": "Versão expandida de Persona 5, um RPG de turnos em que estudantes se tornam os Ladrões Fantasmas para mudar o coração de adultos corruptos. Equilibra a rotina escolar em Tóquio com a exploração de palácios.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/persona5royal.jpg",
       "generos": [
         2
       ],
@@ -466,7 +466,7 @@
       "descricao": "RPG de ação de mundo aberto num futuro em que máquinas gigantes dominam a natureza. Aloy, uma caçadora marginalizada, investiga sua origem e os segredos do mundo antigo.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/horizonzerodawn.jpg",
       "generos": [
         1,
         2
@@ -483,7 +483,7 @@
       "descricao": "Aventura criada por Hideo Kojima em que Sam Porter Bridges atravessa os Estados Unidos devastados entregando cargas e reconectando comunidades. A travessia do terreno e a conexão assíncrona com outros jogadores são o centro da experiência.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/deathstranding.jpg",
       "generos": [
         1,
         3
@@ -501,7 +501,7 @@
       "descricao": "Jogo de plataforma e tiro com foco em chefes, inspirado nos desenhos animados dos anos 1930. Visual desenhado à mão, trilha de jazz e dificuldade alta, com modo cooperativo para dois.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/cuphead.jpg",
       "generos": [
         9,
         1
@@ -520,7 +520,7 @@
       "descricao": "Jogo de corrida de mundo aberto ambientado em uma versão do México, com festival de carros, centenas de veículos e eventos variados. O foco está em um modo arcade acessível e em visuais de alto nível.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/forzahorizon5.jpg",
       "generos": [
         10
       ],
@@ -538,7 +538,7 @@
       "descricao": "Jogo de estratégia por turnos em que você conduz uma civilização da Idade da Pedra até a era da informação. Distritos que ocupam o mapa, diplomacia e várias formas de vitória definem cada partida.",
       "nota_media": 0,
       "total_avaliacoes": 0,
-      "capa": "/assets/",
+      "capa": "/assets/civilizationv.jpg",
       "generos": [
         5
       ],
