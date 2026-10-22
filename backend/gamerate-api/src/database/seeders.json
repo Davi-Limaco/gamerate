@@ -1,8 +1,14 @@
 {
   "perfis": [
-    { "nome_perfil": "Jogador" },
-    { "nome_perfil": "Crítico Especializado" },
-    { "nome_perfil": "Administrador" }
+    {
+      "nome_perfil": "Jogador"
+    },
+    {
+      "nome_perfil": "Crítico Especializado"
+    },
+    {
+      "nome_perfil": "Administrador"
+    }
   ],
   "usuarios": [
     {
@@ -13,33 +19,83 @@
     }
   ],
   "plataformas": [
-    { "nome_plataforma": "PC" },
-    { "nome_plataforma": "PlayStation 5" },
-    { "nome_plataforma": "PlayStation 4" },
-    { "nome_plataforma": "Xbox Series X" },
-    { "nome_plataforma": "Xbox One" },
-    { "nome_plataforma": "Nintendo Switch" },
-    { "nome_plataforma": "Android" },
-    { "nome_plataforma": "iOS" },
-    { "nome_plataforma": "PlayStation 3" },
-    { "nome_plataforma": "Xbox 360" }
+    {
+      "nome_plataforma": "PC"
+    },
+    {
+      "nome_plataforma": "PlayStation 5"
+    },
+    {
+      "nome_plataforma": "PlayStation 4"
+    },
+    {
+      "nome_plataforma": "Xbox Series X"
+    },
+    {
+      "nome_plataforma": "Xbox One"
+    },
+    {
+      "nome_plataforma": "Nintendo Switch"
+    },
+    {
+      "nome_plataforma": "Android"
+    },
+    {
+      "nome_plataforma": "iOS"
+    },
+    {
+      "nome_plataforma": "PlayStation 3"
+    },
+    {
+      "nome_plataforma": "Xbox 360"
+    }
   ],
   "generos": [
-    { "nome_genero": "Ação" },
-    { "nome_genero": "RPG" },
-    { "nome_genero": "Aventura" },
-    { "nome_genero": "Terror" },
-    { "nome_genero": "Estratégia" },
-    { "nome_genero": "Simulação" },
-    { "nome_genero": "Esportes" },
-    { "nome_genero": "Luta" },
-    { "nome_genero": "Plataforma" },
-    { "nome_genero": "Corrida" },
-    { "nome_genero": "Puzzle" },
-    { "nome_genero": "Tiro" },
-    { "nome_genero": "Roguelike" },
-    { "nome_genero": "Metroidvania" },
-    { "nome_genero": "Survival Horror" }
+    {
+      "nome_genero": "Ação"
+    },
+    {
+      "nome_genero": "RPG"
+    },
+    {
+      "nome_genero": "Aventura"
+    },
+    {
+      "nome_genero": "Terror"
+    },
+    {
+      "nome_genero": "Estratégia"
+    },
+    {
+      "nome_genero": "Simulação"
+    },
+    {
+      "nome_genero": "Esportes"
+    },
+    {
+      "nome_genero": "Luta"
+    },
+    {
+      "nome_genero": "Plataforma"
+    },
+    {
+      "nome_genero": "Corrida"
+    },
+    {
+      "nome_genero": "Puzzle"
+    },
+    {
+      "nome_genero": "Tiro"
+    },
+    {
+      "nome_genero": "Roguelike"
+    },
+    {
+      "nome_genero": "Metroidvania"
+    },
+    {
+      "nome_genero": "Survival Horror"
+    }
   ],
   "jogos": [
     {
@@ -50,8 +106,17 @@
       "nota_media": 4.8,
       "total_avaliacoes": 0,
       "capa": "/assets/eldenring.jpg",
-      "generos": [1, 2],
-      "plataformas": [1, 2, 3, 4, 5]
+      "generos": [
+        1,
+        2
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "nome_jogo": "God of War Ragnarök",
@@ -61,8 +126,14 @@
       "nota_media": 4.9,
       "total_avaliacoes": 0,
       "capa": "/assets/gowragnarok.jpg",
-      "generos": [1, 3],
-      "plataformas": [2, 3]
+      "generos": [
+        1,
+        3
+      ],
+      "plataformas": [
+        2,
+        3
+      ]
     },
     {
       "nome_jogo": "Baldur's Gate 3",
@@ -72,8 +143,14 @@
       "nota_media": 5.0,
       "total_avaliacoes": 0,
       "capa": "/assets/baldursgate3.jpg",
-      "generos": [2, 3],
-      "plataformas": [1, 2]
+      "generos": [
+        2,
+        3
+      ],
+      "plataformas": [
+        1,
+        2
+      ]
     },
     {
       "nome_jogo": "Cyberpunk 2077",
@@ -83,8 +160,17 @@
       "nota_media": 4.5,
       "total_avaliacoes": 0,
       "capa": "/assets/cyberpunk2077.jpg",
-      "generos": [2, 1],
-      "plataformas": [1, 2, 3, 4, 5]
+      "generos": [
+        2,
+        1
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "nome_jogo": "Hollow Knight",
@@ -94,8 +180,14 @@
       "nota_media": 4.7,
       "total_avaliacoes": 0,
       "capa": "/assets/hollowknight.jpg",
-      "generos": [2, 1],
-      "plataformas": [1, 6]
+      "generos": [
+        2,
+        1
+      ],
+      "plataformas": [
+        1,
+        6
+      ]
     },
     {
       "nome_jogo": "Red Dead Redemption 2",
@@ -105,8 +197,17 @@
       "nota_media": 4.9,
       "total_avaliacoes": 0,
       "capa": "/assets/reddeadredemption2.jpg",
-      "generos": [3, 1],
-      "plataformas": [1, 2, 3, 4, 5]
+      "generos": [
+        3,
+        1
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     },
     {
       "nome_jogo": "Hades",
@@ -116,8 +217,15 @@
       "nota_media": 4.8,
       "total_avaliacoes": 0,
       "capa": "/assets/hades.jpg",
-      "generos": [1, 2],
-      "plataformas": [1, 2, 6]
+      "generos": [
+        1,
+        2
+      ],
+      "plataformas": [
+        1,
+        2,
+        6
+      ]
     },
     {
       "nome_jogo": "The Witcher 3: Wild Hunt",
@@ -127,8 +235,321 @@
       "nota_media": 4.9,
       "total_avaliacoes": 0,
       "capa": "/assets/thewitcher3.jpg",
-      "generos": [2, 3],
-      "plataformas": [1, 2, 3, 4, 5, 6]
+      "generos": [
+        2,
+        3
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "The Legend of Zelda: Breath of the Wild",
+      "desenvolvedora": "Nintendo EPD",
+      "data_lancamento": "2017-03-03",
+      "descricao": "Aventura de mundo aberto em que Link desperta em Hyrule sem memória e precisa derrotar a Calamidade Ganon. Escalar, planar e usar a física do mundo a seu favor é parte central da exploração.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/zeldabreathofthewild.jpg",
+      "generos": [
+        3,
+        1
+      ],
+      "plataformas": [
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Celeste",
+      "desenvolvedora": "Maddy Makes Games",
+      "data_lancamento": "2018-01-25",
+      "descricao": "Plataforma 2D sobre Madeline e sua escalada da montanha Celeste. Combina fases exigentes e precisas com uma história sobre ansiedade e superação, além de opções de assistência para ajustar a dificuldade.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        9,
+        11
+      ],
+      "plataformas": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Stardew Valley",
+      "desenvolvedora": "ConcernedApe",
+      "data_lancamento": "2016-02-26",
+      "descricao": "Simulador de fazenda em que você herda a propriedade do avô e reconstrói a vida em Pelican Town. Cultivo, pesca, mineração e relacionamentos se alternam ao longo das estações.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        6,
+        2
+      ],
+      "plataformas": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "nome_jogo": "Disco Elysium",
+      "desenvolvedora": "ZA/UM",
+      "data_lancamento": "2019-10-15",
+      "descricao": "RPG de investigação sem combates tradicionais, em que um detetive com amnésia tenta resolver um assassinato na cidade de Revachol. As habilidades do personagem funcionam como vozes que discutem a cada decisão.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        2,
+        3
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Portal 2",
+      "desenvolvedora": "Valve",
+      "data_lancamento": "2011-04-19",
+      "descricao": "Jogo de puzzles em primeira pessoa nas instalações da Aperture Science, com a arma de portais, géis especiais e a presença sarcástica de GLaDOS. Inclui uma campanha cooperativa para dois jogadores.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        11,
+        3
+      ],
+      "plataformas": [
+        1,
+        9,
+        10
+      ]
+    },
+    {
+      "nome_jogo": "Dark Souls III",
+      "desenvolvedora": "FromSoftware",
+      "data_lancamento": "2016-03-24",
+      "descricao": "RPG de ação sombrio e desafiador que encerra a trilogia Dark Souls. Combates mais ágeis, chefes memoráveis e um mundo interligado em declínio marcam a jornada do Inextinguível.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        1,
+        2
+      ],
+      "plataformas": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "nome_jogo": "Minecraft",
+      "desenvolvedora": "Mojang Studios",
+      "data_lancamento": "2011-11-18",
+      "descricao": "Jogo sandbox de mundo aberto formado por blocos, em que é possível sobreviver, construir e explorar livremente. Aceita desde construções simples até máquinas complexas com redstone, além de servidores e modificações da comunidade.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        3,
+        6
+      ],
+      "plataformas": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "nome_jogo": "DOOM Eternal",
+      "desenvolvedora": "id Software",
+      "data_lancamento": "2020-03-20",
+      "descricao": "Shooter em primeira pessoa frenético em que o Doom Slayer combate as hordas do inferno. O ritmo exige alternar armas, glory kills, motosserra e movimentação para manter munição e vida.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        12,
+        1
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Resident Evil 4",
+      "desenvolvedora": "Capcom",
+      "data_lancamento": "2023-03-24",
+      "descricao": "Remake do clássico de 2005, em que o agente Leon S. Kennedy precisa resgatar a filha do presidente dos Estados Unidos em uma vila europeia dominada por um culto. Une ação e terror em um combate mais fluido.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        15,
+        1
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "nome_jogo": "Super Mario Odyssey",
+      "desenvolvedora": "Nintendo EPD",
+      "data_lancamento": "2017-10-27",
+      "descricao": "Aventura de plataforma 3D em que Mario viaja por reinos variados com o chapéu Cappy para impedir o casamento forçado da princesa Peach com Bowser. A mecânica de capturar inimigos e objetos renova a exploração.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        9,
+        3
+      ],
+      "plataformas": [
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Persona 5 Royal",
+      "desenvolvedora": "Atlus",
+      "data_lancamento": "2019-10-31",
+      "descricao": "Versão expandida de Persona 5, um RPG de turnos em que estudantes se tornam os Ladrões Fantasmas para mudar o coração de adultos corruptos. Equilibra a rotina escolar em Tóquio com a exploração de palácios.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        2
+      ],
+      "plataformas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Horizon Zero Dawn",
+      "desenvolvedora": "Guerrilla Games",
+      "data_lancamento": "2017-02-28",
+      "descricao": "RPG de ação de mundo aberto num futuro em que máquinas gigantes dominam a natureza. Aloy, uma caçadora marginalizada, investiga sua origem e os segredos do mundo antigo.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        1,
+        2
+      ],
+      "plataformas": [
+        1,
+        3
+      ]
+    },
+    {
+      "nome_jogo": "Death Stranding",
+      "desenvolvedora": "Kojima Productions",
+      "data_lancamento": "2019-11-08",
+      "descricao": "Aventura criada por Hideo Kojima em que Sam Porter Bridges atravessa os Estados Unidos devastados entregando cargas e reconectando comunidades. A travessia do terreno e a conexão assíncrona com outros jogadores são o centro da experiência.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        1,
+        3
+      ],
+      "plataformas": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "nome_jogo": "Cuphead",
+      "desenvolvedora": "Studio MDHR",
+      "data_lancamento": "2017-09-29",
+      "descricao": "Jogo de plataforma e tiro com foco em chefes, inspirado nos desenhos animados dos anos 1930. Visual desenhado à mão, trilha de jazz e dificuldade alta, com modo cooperativo para dois.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        9,
+        1
+      ],
+      "plataformas": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "nome_jogo": "Forza Horizon 5",
+      "desenvolvedora": "Playground Games",
+      "data_lancamento": "2021-11-09",
+      "descricao": "Jogo de corrida de mundo aberto ambientado em uma versão do México, com festival de carros, centenas de veículos e eventos variados. O foco está em um modo arcade acessível e em visuais de alto nível.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        10
+      ],
+      "plataformas": [
+        1,
+        2,
+        4,
+        5
+      ]
+    },
+    {
+      "nome_jogo": "Sid Meier's Civilization VI",
+      "desenvolvedora": "Firaxis Games",
+      "data_lancamento": "2016-10-21",
+      "descricao": "Jogo de estratégia por turnos em que você conduz uma civilização da Idade da Pedra até a era da informação. Distritos que ocupam o mapa, diplomacia e várias formas de vitória definem cada partida.",
+      "nota_media": 0,
+      "total_avaliacoes": 0,
+      "capa": "/assets/",
+      "generos": [
+        5
+      ],
+      "plataformas": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        8
+      ]
     }
   ]
 }

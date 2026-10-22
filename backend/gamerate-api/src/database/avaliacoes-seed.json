@@ -1,0 +1,514 @@
+{
+  "The Legend of Zelda: Breath of the Wild": [
+    {
+      "avaliador": "Ana Martins",
+      "nota": 5,
+      "titulo": "Liberdade de verdade",
+      "texto": "Poucas vezes senti tanta vontade de explorar. Vejo uma montanha distante, escalo até lá e sempre encontro algo que valeu o esforço."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 4.5,
+      "titulo": "O mundo é o grande protagonista",
+      "texto": "A física e os elementos se combinam de formas que eu não esperava: fogo na grama, metal atraindo raio. Brincar com isso é muito divertido."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 4,
+      "titulo": "Lindo, mas as armas quebram",
+      "texto": "Adoro a exploração e a direção de arte, mas ver a espada quebrar no meio de uma luta importante cansa depois de algumas dezenas de horas."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 5,
+      "titulo": "Hyrule nunca foi tão viva",
+      "texto": "A trilha discreta, o clima mudando e os santuários espalhados fazem cada caminhada render uma pequena história."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4.5,
+      "titulo": "Um novo padrão para aventuras",
+      "texto": "Dá para ir direto ao chefe final ou passar centenas de horas descobrindo segredos. Poucos jogos deixam o jogador escolher assim."
+    }
+  ],
+  "Celeste": [
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 5,
+      "titulo": "Difícil e acolhedor ao mesmo tempo",
+      "texto": "Morri centenas de vezes e nunca me senti punido. Reiniciar é instantâneo e cada tela ensina uma ideia nova."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 5,
+      "titulo": "A trilha sonora é impecável",
+      "texto": "A música acompanha a subida e emociona nos momentos certos. Só pela combinação de jogabilidade e trilha já valeria a nota máxima."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 4.5,
+      "titulo": "História que fala de ansiedade",
+      "texto": "A jornada da Madeline é tratada com delicadeza e sem soar forçada. O modo assistido permite que mais gente chegue ao final."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 4,
+      "titulo": "Os lados B são para os obstinados",
+      "texto": "A campanha principal é perfeita, mas os lados B exigem uma precisão que me frustrou. Ainda assim, vale tentar."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 4.5,
+      "titulo": "Controle preciso",
+      "texto": "O movimento é exato, e é por isso que os desafios parecem justos. Quando eu errava, sabia que a culpa era minha."
+    }
+  ],
+  "Stardew Valley": [
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 5,
+      "titulo": "Perfeito para relaxar",
+      "texto": "Comecei achando que era só plantar e acabei perdendo a noção do tempo regando, pescando e descobrindo as pessoas da cidade."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 4.5,
+      "titulo": "Um jogo gigante feito por uma pessoa",
+      "texto": "É impressionante a quantidade de conteúdo. Cada estação traz festivais, tarefas e motivos para continuar mais um dia."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 4,
+      "titulo": "Começo lento, depois vicia",
+      "texto": "Nas primeiras horas a energia acaba rápido, mas quando a fazenda engrena a vontade de otimizar tudo não passa."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 5,
+      "titulo": "Jogando em cooperativo",
+      "texto": "Dividir a fazenda com amigos tornou tudo mais divertido. Combinar quem planta, quem minera e quem pesca virou rotina."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 4.5,
+      "titulo": "Charme em cada detalhe",
+      "texto": "O visual em pixel art e a trilha por estação deixam o jogo aconchegante, e os moradores têm mais personalidade do que eu imaginava."
+    }
+  ],
+  "Disco Elysium": [
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 5,
+      "titulo": "Roteiro excepcional",
+      "texto": "Nunca li tanto texto num jogo com tanta vontade. Os diálogos são ácidos, engraçados e às vezes muito tristes."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 4.5,
+      "titulo": "As vozes na cabeça são geniais",
+      "texto": "Ver minhas próprias habilidades discutindo comigo mesmo muda a forma de decidir. Cada teste falho rende uma cena boa."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 4,
+      "titulo": "Não é para qualquer um",
+      "texto": "Quem espera combate vai estranhar. É um RPG de ler, pensar e aceitar as consequências, e funciona muito bem nisso."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 5,
+      "titulo": "Revachol é inesquecível",
+      "texto": "A cidade parece ter uma história própria. Cada personagem tem opinião, passado e um jeito de falar que fica na memória."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 4.5,
+      "titulo": "Falhar é parte da graça",
+      "texto": "Eu errava testes e o jogo seguia por caminhos melhores do que se eu tivesse acertado. É raro ver um RPG que premia o fracasso."
+    }
+  ],
+  "Portal 2": [
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 5,
+      "titulo": "Humor e puzzles em equilíbrio",
+      "texto": "A progressão dos puzzles é perfeita e o texto da GLaDOS e do Wheatley me fez rir alto em várias cenas."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 5,
+      "titulo": "O cooperativo é uma joia",
+      "texto": "Resolver as câmaras com um amigo, combinando portais, exige comunicação e rende muita risada. Recomendo jogar com alguém."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4.5,
+      "titulo": "Os géis mudam tudo",
+      "texto": "Introduzem ideias novas sem deixar o jogo complicado demais. Cada sala tem uma solução satisfatória."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 4,
+      "titulo": "Curto, porém impecável",
+      "texto": "Terminei rápido, mas não vi nenhuma sala fraca. Gostaria apenas de mais conteúdo na campanha principal."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 5,
+      "titulo": "Uma aula de design",
+      "texto": "Aprende-se jogando, sem tutoriais longos. Dá vontade de estudar como cada fase foi construída."
+    }
+  ],
+  "Dark Souls III": [
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 4.5,
+      "titulo": "Combate afiado",
+      "texto": "O ritmo é mais rápido que nos anteriores e as lutas contra chefes são o ponto alto. Cada vitória dá uma sensação de conquista real."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 5,
+      "titulo": "Atmosfera sombria impecável",
+      "texto": "Do Santuário de Firelink ao último confronto, o clima de fim de mundo nunca se perde. A direção de arte é excelente."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 4,
+      "titulo": "Muito bom, mas derivativo",
+      "texto": "Reúne o que a série fez de melhor, só que sente menos ousadia em relação aos jogos anteriores. Ainda assim, diverte muito."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 4.5,
+      "titulo": "A dificuldade ensina",
+      "texto": "Morri bastante no começo, mas aprendi os padrões dos inimigos. A sensação de evoluir é o melhor do jogo."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 5,
+      "titulo": "Chefes inesquecíveis",
+      "texto": "Cada luta tem uma identidade própria, com música e cenário que a tornam épica. Tem momentos de arrepiar."
+    }
+  ],
+  "Minecraft": [
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 5,
+      "titulo": "Cada um joga do seu jeito",
+      "texto": "Já passei semanas só construindo e outras só explorando cavernas. Poucos jogos permitem tanta liberdade."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 4.5,
+      "titulo": "Ótimo para jogar com amigos",
+      "texto": "Montar uma base em conjunto, dividir tarefas e se aventurar no Nether é muito divertido em grupo."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 4,
+      "titulo": "Curva de aprendizado sem guia",
+      "texto": "Sem tutorial claro, aprendi muita coisa consultando vídeos. Depois que se entende as receitas, o jogo flui."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 5,
+      "titulo": "Criatividade ilimitada",
+      "texto": "Do castelo ao circuito de redstone, o limite é a imaginação. Meu irmão mais novo e eu jogamos juntos até hoje."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 4.5,
+      "titulo": "Sempre se renova",
+      "texto": "As atualizações constantes e as modificações da comunidade fazem o jogo parecer novo mesmo depois de anos."
+    }
+  ],
+  "DOOM Eternal": [
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 5,
+      "titulo": "Adrenalina pura",
+      "texto": "A luta nunca para: trocar de arma, usar a motosserra para pegar munição e encadear glory kills vira uma dança."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 4.5,
+      "titulo": "Trilha pesada e combate sincronizado",
+      "texto": "A música acompanha o ritmo da ação e as arenas são projetadas para o jogador se manter em movimento constante."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 4,
+      "titulo": "Curva de aprendizado alta",
+      "texto": "No começo senti que eram regras demais para gerenciar. Quando o ritmo encaixa, o combate fica incrível."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4.5,
+      "titulo": "Tiroteio com estratégia",
+      "texto": "Cada demônio exige uma abordagem diferente. Descobrir qual arma funciona melhor em cada um dá muita satisfação."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 3.5,
+      "titulo": "Algumas sequências de plataforma cansam",
+      "texto": "Gosto muito do combate, mas as partes de plataforma e a narrativa cheia de lore me deixaram menos animado."
+    }
+  ],
+  "Resident Evil 4": [
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 5,
+      "titulo": "Remake à altura do original",
+      "texto": "Mantém o que fazia o clássico especial e melhora o combate. A vila nos primeiros minutos é de tensão máxima."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 4.5,
+      "titulo": "Ação e terror bem dosados",
+      "texto": "A munição contada e a necessidade de decidir quando atirar ou fugir mantêm a tensão do início ao fim."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 4,
+      "titulo": "Leon mais carismático",
+      "texto": "Gostei das frases de efeito e da relação com a Ashley. Alguns trechos da parte final poderiam ser mais variados."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 5,
+      "titulo": "O combate com faca é viciante",
+      "texto": "Defender ataques com a faca no momento certo deixa os confrontos mais dinâmicos e recompensa a atenção do jogador."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 4.5,
+      "titulo": "Ritmo excelente",
+      "texto": "A campanha alterna lutas, exploração e puzzles sem perder o fôlego, e o mercador continua sendo um alívio."
+    }
+  ],
+  "Super Mario Odyssey": [
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 5,
+      "titulo": "Alegria em cada reino",
+      "texto": "Cada reino tem uma identidade e um tipo de surpresa diferente. Dá vontade de procurar todas as luas só para ver o que vem."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 4.5,
+      "titulo": "A mecânica de captura é genial",
+      "texto": "Assumir o controle de inimigos e objetos renova o jogo toda hora. Uma das melhores ideias da série."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 4,
+      "titulo": "Fácil, mas encantador",
+      "texto": "A campanha principal não é difícil, mas a diversão está em explorar e nas missões extras que exigem mais habilidade."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 5,
+      "titulo": "Perfeito para toda a família",
+      "texto": "Joguei com meus sobrinhos e todos se divertiram. Dá para ajudar quem tem menos experiência no modo cooperativo."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 4.5,
+      "titulo": "Trilha e visual excelentes",
+      "texto": "A música da cidade de Nova Donk é inesquecível, e o jogo roda de forma muito fluida e colorida."
+    }
+  ],
+  "Persona 5 Royal": [
+    {
+      "avaliador": "Ana Martins",
+      "nota": 5,
+      "titulo": "Estilo em cada menu",
+      "texto": "A interface, a música e a direção de arte tornam até a navegação nos menus uma experiência bonita de ver."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 4.5,
+      "titulo": "Dia a dia vira jogo",
+      "texto": "Dividir o tempo entre estudar, passar tempo com amigos e entrar nos palácios dá um ritmo único à história."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 4,
+      "titulo": "Muito longo",
+      "texto": "A história é ótima e os personagens cativam, mas passa das 100 horas e em alguns momentos parece arrastar."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 5,
+      "titulo": "Trilha sonora marcante",
+      "texto": "Muitas músicas ficam na cabeça por dias. O jazz e o rock combinam muito com o clima de Tóquio e dos ladrões."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4.5,
+      "titulo": "Combate estratégico",
+      "texto": "Explorar as fraquezas dos inimigos e encadear ataques em equipe dá sensação de controle. A versão Royal acrescenta bastante conteúdo."
+    }
+  ],
+  "Horizon Zero Dawn": [
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 4.5,
+      "titulo": "Mundo lindo e cheio de máquinas",
+      "texto": "Enfrentar os animais robóticos usando arco e armadilhas é empolgante, e as paisagens são de tirar o fôlego."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4,
+      "titulo": "História envolvente",
+      "texto": "Descobrir o que aconteceu com o mundo antigo me prendeu mais do que eu esperava. A Aloy é uma protagonista forte."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 4.5,
+      "titulo": "Combate tático",
+      "texto": "Mirar em pontos fracos e usar armadilhas faz cada luta contra uma máquina grande parecer um desafio planejado."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 3.5,
+      "titulo": "Missões secundárias irregulares",
+      "texto": "O núcleo da história é muito bom, mas parte das missões opcionais segue fórmulas repetitivas."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 5,
+      "titulo": "Gráficos impressionantes",
+      "texto": "As paisagens, o clima e as máquinas têm um nível de detalhe que me fez parar várias vezes só para olhar."
+    }
+  ],
+  "Death Stranding": [
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 4.5,
+      "titulo": "Experiência única",
+      "texto": "É um jogo sobre caminhar e entregar, e de alguma forma isso funciona. Atravessar o terreno com cuidado é estranhamente relaxante."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 4,
+      "titulo": "Visual e música impressionantes",
+      "texto": "A direção de arte é marcante e as músicas surgem nos momentos certos. Não é para todo mundo, mas me conquistou."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 3.5,
+      "titulo": "Lento no início",
+      "texto": "Demorei para me envolver porque as primeiras horas são bem arrastadas. Depois que as ferramentas liberam, melhora muito."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 5,
+      "titulo": "Ideia ousada",
+      "texto": "As estruturas deixadas por outros jogadores ajudam sem precisar de contato direto. A sensação de cooperação é rara."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 4.5,
+      "titulo": "História intrigante",
+      "texto": "O enredo é complexo e cheio de reviravoltas, e a atuação do elenco é muito boa. Vale prestar atenção nos detalhes."
+    }
+  ],
+  "Cuphead": [
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 5,
+      "titulo": "Arte de outra época",
+      "texto": "Cada chefe parece uma animação clássica desenhada à mão. A trilha de jazz completa a atmosfera de forma perfeita."
+    },
+    {
+      "avaliador": "Ana Martins",
+      "nota": 4.5,
+      "titulo": "Desafio justo",
+      "texto": "Os padrões de ataque são difíceis, mas aprendíveis. Cada derrota ensina algo, e vencer o chefe dá muita satisfação."
+    },
+    {
+      "avaliador": "Bruno Costa",
+      "nota": 4,
+      "titulo": "Mais divertido em dupla",
+      "texto": "Jogar em cooperativo com um amigo é caótico e engraçado. Sozinho exige muita paciência."
+    },
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 4.5,
+      "titulo": "Cada luta é um espetáculo",
+      "texto": "As transformações dos chefes surpreendem e mantêm cada confronto diferente do anterior."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 3.5,
+      "titulo": "Bonito, mas frustrante",
+      "texto": "A parte visual é fantástica, mas a dificuldade alta me deixou irritado algumas vezes. Não é para quem tem pouca paciência."
+    }
+  ],
+  "Forza Horizon 5": [
+    {
+      "avaliador": "Camila Rocha",
+      "nota": 5,
+      "titulo": "O México mais bonito que já corri",
+      "texto": "As paisagens variadas, do deserto à selva, dão vontade de sair da pista. O ciclo de estações muda tudo."
+    },
+    {
+      "avaliador": "Daniel Souza",
+      "nota": 4.5,
+      "titulo": "Corrida para todos os níveis",
+      "texto": "Dá para ajustar ajudas e dificuldade, então tanto iniciantes quanto fãs de simulação se divertem."
+    },
+    {
+      "avaliador": "Eduarda Lima",
+      "nota": 4,
+      "titulo": "Conteúdo de sobra",
+      "texto": "Há tantos eventos e carros que às vezes não sei o que fazer. Mesmo assim, é uma boa escolha para quem gosta de corrida."
+    },
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 5,
+      "titulo": "Sensação de velocidade",
+      "texto": "O som dos motores e a resposta dos carros são excelentes, e o festival tem uma energia contagiante."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 4.5,
+      "titulo": "Ótimo para jogar online",
+      "texto": "Participar de eventos com amigos e criar desafios próprios prolonga muito a diversão."
+    }
+  ],
+  "Sid Meier's Civilization VI": [
+    {
+      "avaliador": "Felipe Alves",
+      "nota": 5,
+      "titulo": "Mais um turno... e já é de manhã",
+      "texto": "O ciclo de decisões é tão viciante que perco a noção do tempo. Cada partida acaba contando uma história diferente."
+    },
+    {
+      "avaliador": "Gabriela Nunes",
+      "nota": 4.5,
+      "titulo": "Distritos trazem novas decisões",
+      "texto": "Planejar onde posicionar cada distrito dá mais profundidade ao posicionamento das cidades."
+    },
+    {
+      "avaliador": "Henrique Melo",
+      "nota": 4,
+      "titulo": "A IA ainda tropeça",
+      "texto": "Os sistemas são ótimos, mas a inteligência artificial às vezes toma decisões estranhas na guerra e na diplomacia."
+    },
+    {
+      "avaliador": "Isabela Freitas",
+      "nota": 4.5,
+      "titulo": "Visual agradável e fácil de ler",
+      "texto": "O mapa colorido e os ícones deixam a informação clara, e dá para jogar em dificuldades diferentes."
+    },
+    {
+      "avaliador": "João Ribeiro",
+      "nota": 4,
+      "titulo": "Partidas longas, mas recompensadoras",
+      "texto": "As partidas podem demorar muitas horas, mas jogar com amigos em multiplayer é muito divertido."
+    }
+  ]
+}
