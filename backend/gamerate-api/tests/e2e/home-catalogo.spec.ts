@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 
 /** Clica na seta até ela se desabilitar (fim do percurso). A seta pode ser desabilitada no meio do
  * clique, quando a rolagem suave termina, por isso o clique tolera esse caso. */

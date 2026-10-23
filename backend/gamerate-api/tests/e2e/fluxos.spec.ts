@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 
 // Localizadores por papel acessível (getByRole / getByLabel) e dados únicos por
 // execução: nada depende de ids, classes CSS nem de dados já existentes.

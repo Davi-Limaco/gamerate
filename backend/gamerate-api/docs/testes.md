@@ -103,3 +103,10 @@ O limite de mídia nos testes é 1 MB (`UPLOAD_MIDIA_MAX_BYTES` em `tests/env/te
 `error while loading shared libraries: libatk-1.0.so.0` (todos os testes falham sem abrir a página): faltam
 bibliotecas do sistema para o Chromium. Rode `npm run e2e:install` (equivale a
 `playwright install --with-deps chromium`; em Linux pode pedir `sudo`).
+
+## E2E sem depender da internet
+
+Os testes importam `test`/`expect` de `tests/e2e/fixtures.ts`, que aborta toda requisição para fora do servidor da
+aplicação (YouTube, Google Fonts...). Sem isso, um YouTube lento ou bloqueado impedia o evento `load` da página inicial
+e os testes que passam por ela estouravam o tempo (`page.waitForURL` / `page.goto` esperando o `load`). A própria home
+também só define o `src` do player do YouTube depois do `load`, para que um YouTube lento não atrase a página.
