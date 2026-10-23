@@ -135,3 +135,5 @@ footer.footer{position:relative;z-index:1;border-top:1px solid var(--border);pad
 .avatar{border-radius:50%;object-fit:cover;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);}
 .avatar-fallback{font-weight:700;color:var(--bg);border:none;}
 nav.nav-links .avatar{margin-right:2px;}
+.scroll-btn:hover:not(:disabled){background:rgba(255,255,255,.14);}
+.scroll-btn:disabled{opacity:.3;cursor:default;}

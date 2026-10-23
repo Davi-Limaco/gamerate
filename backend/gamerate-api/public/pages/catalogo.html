@@ -21,10 +21,6 @@
     .cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
     .cat-header h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;}
     .cat-header .total{font-size:13px;color:var(--muted);}
-    .pagination{display:flex;gap:8px;justify-content:center;margin-top:40px;flex-wrap:wrap;}
-    .page-btn{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
-    .page-btn:hover,.page-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
-    .page-btn:disabled{opacity:.3;cursor:default;pointer-events:none;}
     @media(max-width:900px){
       .cat-layout{grid-template-columns:1fr;padding:24px 16px;}
       .filters-panel{position:static;}
@@ -70,7 +66,6 @@
       <div class="games-grid" id="gamesGrid">
         <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>
       </div>
-      <div class="pagination" id="pagination"></div>
     </main>
   </div>
 </div>
@@ -86,25 +81,20 @@
 setupNav();
 
 const params = new URLSearchParams(location.search);
-let page     = 1;
-const LIMIT  = 20;
 let carregando = false; // flag para evitar requisições duplicadas
 
 // Popula busca vinda da URL
 if (params.get('search')) document.getElementById('searchInput').value = params.get('search');
 
-// Eventos — só mudam page=1 e recarregam, sem disparar durante loadFiltros
+// Eventos — recarregam a lista, sem disparar durante loadFiltros
 document.getElementById('searchInput').addEventListener('keyup', e => {
-  if (e.key === 'Enter') { page = 1; loadJogos(); }
+  if (e.key === 'Enter') loadJogos();
 });
 
 // Adiciona listeners APÓS loadFiltros terminar (ver abaixo)
 function addFilterListeners() {
   ['fGenero','fPlat'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => {
-      page = 1;
-      loadJogos();
-    })
+    document.getElementById(id).addEventListener('change', loadJogos)
   );
 }
 
@@ -112,7 +102,6 @@ function resetFiltros() {
   document.getElementById('fGenero').value = '';
   document.getElementById('fPlat').value   = '';
   document.getElementById('searchInput').value = '';
-  page = 1;
   loadJogos();
 }
 
@@ -150,7 +139,6 @@ async function loadJogos() {
 
   const grid = document.getElementById('gamesGrid');
   grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p>Carregando...</p></div>';
-  document.getElementById('pagination').innerHTML = '';
 
   const q = new URLSearchParams();
   const search = document.getElementById('searchInput').value.trim();
@@ -187,38 +175,11 @@ async function loadJogos() {
       }).join('');
     }
 
-    renderPagination(data.total);
   } catch(e) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Erro: ${e.message}</p></div>`;
   } finally {
     carregando = false;
   }
-}
-
-function renderPagination(total) {
-  const pages = Math.ceil(total / LIMIT);
-  const pag   = document.getElementById('pagination');
-  if (pages <= 1) { pag.innerHTML = ''; return; }
-
-  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>`;
-
-  for (let i = 1; i <= pages; i++) {
-    if (i === 1 || i === pages || Math.abs(i - page) <= 1) {
-      html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    } else if (Math.abs(i - page) === 2) {
-      html += `<span style="color:var(--muted);padding:0 4px;line-height:36px">…</span>`;
-    }
-  }
-
-  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}>›</button>`;
-  pag.innerHTML = html;
-}
-
-function goPage(p) {
-  if (p < 1 || carregando) return;
-  page = p;
-  loadJogos();
-  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 loadFiltros();

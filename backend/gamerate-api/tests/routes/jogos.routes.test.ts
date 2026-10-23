@@ -52,7 +52,11 @@ describe('rotas /api/jogos', () => {
       const stats = await http().get('/api/jogos/stats');
       assert.equal(stats.status, 200);
       assert.ok(stats.body.total_jogos >= 8);
-      assert.equal((await http().get('/api/jogos/destaques')).status, 200);
+      const destaques = await http().get('/api/jogos/destaques');
+      assert.equal(destaques.status, 200);
+      // Cada carrossel da home recebe até 12 jogos (o seed tem 24): o suficiente para as setas rolarem.
+      assert.equal(destaques.body.lancamentos.length, 12);
+      assert.equal(destaques.body.melhores.length, 12);
     });
   });
 

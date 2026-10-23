@@ -153,10 +153,14 @@ async function getStats() {
   return { total_jogos, total_aval, total_usuarios, total_plat };
 }
 
+// Quantidade de jogos em cada carrossel da página inicial (precisa passar da largura
+// da tela para as setas terem o que rolar, inclusive em monitores largos).
+const DESTAQUES_POR_LISTA = 12;
+
 async function getDestaques() {
   const [lancamentos, melhores] = await Promise.all([
-    prisma.jogo.findMany({ orderBy: { data_lancamento: 'desc' }, take: 8, select: resumoSelect }),
-    prisma.jogo.findMany({ where: { nota_media: { not: null } }, orderBy: { nota_media: 'desc' }, take: 8, select: resumoSelect }),
+    prisma.jogo.findMany({ orderBy: { data_lancamento: 'desc' }, take: DESTAQUES_POR_LISTA, select: resumoSelect }),
+    prisma.jogo.findMany({ where: { nota_media: { not: null } }, orderBy: { nota_media: 'desc' }, take: DESTAQUES_POR_LISTA, select: resumoSelect }),
   ]);
 
   return { lancamentos: lancamentos.map(mapResumo), melhores: melhores.map(mapResumo) };

@@ -127,8 +127,8 @@
     </div>
     <div style="display:flex;align-items:center;gap:16px">
       <div class="scroll-btns">
-        <button class="scroll-btn" id="sL1">&#8592;</button>
-        <button class="scroll-btn" id="sR1">&#8594;</button>
+        <button class="scroll-btn" id="sL1" type="button" aria-label="Rolar para a esquerda">&#8592;</button>
+        <button class="scroll-btn" id="sR1" type="button" aria-label="Rolar para a direita">&#8594;</button>
       </div>
       <a href="/pages/catalogo.html" class="see-all">Ver todos →</a>
     </div>
@@ -146,8 +146,8 @@
     </div>
     <div style="display:flex;align-items:center;gap:16px">
       <div class="scroll-btns">
-        <button class="scroll-btn" id="sL2">&#8592;</button>
-        <button class="scroll-btn" id="sR2">&#8594;</button>
+        <button class="scroll-btn" id="sL2" type="button" aria-label="Rolar para a esquerda">&#8592;</button>
+        <button class="scroll-btn" id="sR2" type="button" aria-label="Rolar para a direita">&#8594;</button>
       </div>
       <a href="/pages/catalogo.html?ordem=nota_media" class="see-all">Ver todos →</a>
     </div>
@@ -320,10 +320,29 @@ function animateCount(el, target) {
   requestAnimationFrame(step);
 }
 
+// Setas do carrossel: rolam quase uma "página" visível por clique, ficam
+// desabilitadas nas pontas e somem quando todos os cards já cabem na tela.
 function setupScroll(lId, rId, rowId) {
   const row = document.getElementById(rowId);
-  document.getElementById(lId).addEventListener('click', () => row.scrollBy({left:-440, behavior:'smooth'}));
-  document.getElementById(rId).addEventListener('click', () => row.scrollBy({left: 440, behavior:'smooth'}));
+  const esq = document.getElementById(lId);
+  const dir = document.getElementById(rId);
+  const passo = () => Math.max(row.clientWidth * 0.8, 220);
+
+  function atualizar() {
+    const sobra = row.scrollWidth - row.clientWidth;
+    const rolavel = sobra > 4;
+    for (const b of [esq, dir]) b.style.visibility = rolavel ? 'visible' : 'hidden';
+    esq.disabled = row.scrollLeft <= 4;
+    dir.disabled = row.scrollLeft >= sobra - 4;
+  }
+
+  esq.addEventListener('click', () => row.scrollBy({ left: -passo(), behavior: 'smooth' }));
+  dir.addEventListener('click', () => row.scrollBy({ left:  passo(), behavior: 'smooth' }));
+  row.addEventListener('scroll', atualizar, { passive: true });
+  window.addEventListener('resize', atualizar);
+  // Os cards chegam depois do fetch: reavalia quando o conteúdo da linha mudar.
+  new MutationObserver(atualizar).observe(row, { childList: true });
+  atualizar();
 }
 setupScroll('sL1','sR1','rowLancamentos');
 setupScroll('sL2','sR2','rowMelhores');
